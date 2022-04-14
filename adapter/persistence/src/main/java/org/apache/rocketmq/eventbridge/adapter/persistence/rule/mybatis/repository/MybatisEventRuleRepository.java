@@ -59,6 +59,7 @@
          return eventRuleMapper.deleteEventRule(accountId, eventBusName, eventRuleName) == 1;
      }
 
+     @Override
      public EventRule getEventRule(String accountId, String eventBusName, String eventRuleName) {
          return eventRuleMapper.getEventRule(accountId, eventBusName, eventRuleName);
 
