@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.mapper.EventTargetClassMapper">
+
+    <sql id="TABLE_NAME">
+        event_target_class
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        name,api_params,target_transform,required_params,visual_config,description,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap"
+               type="org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.dataobject.EventTargetClassDO">
+        <result property="name" column="name"/>
+        <result property="apiParams" column="api_params"/>
+        <result property="targetTransform" column="target_transform"/>
+        <result property="requiredParams" column="required_params"/>
+        <result property="visualConfig" column="visual_config"/>
+        <result property="description" column="description"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+    <select id="getEventTargetClass" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE name = #{name}
+    </select>
+
+</mapper>

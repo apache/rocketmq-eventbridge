@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.mapper.EventSourceMapper">
+
+    <sql id="TABLE_NAME">
+        event_source
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        account_id,bus,name,description,status,type,class_name,config,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap"
+               type="org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.dataobject.EventSourceDO">
+        <result property="accountId" column="account_id"/>
+        <result property="eventBusName" column="bus"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="className" column="class_name"/>
+        <result property="config" column="config"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+
+    <insert id="createEventSource" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="COLUMN_LIST"/>
+        )
+        VALUES
+        (#{accountId},#{eventBusName},#{eventSourceName},#{description},#{status},#{type},#{className},#{config},now(),now())
+    </insert>
+
+
+    <select id="listEventSources" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        LIMIT #{nextToken}, #{maxResults}
+    </select>
+
+    <select id="getEventSource" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND name = #{eventSourceName}
+    </select>
+
+    <select id="getEventSourceCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+    </select>
+
+    <delete id="deleteEventSource">
+        DELETE FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND name = #{eventSourceName}
+    </delete>
+
+    <update id="updateEventSource">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now(),
+            <if test="description != null">
+                description= #{description}
+            </if>
+            <if test="status != null">
+                status= #{status}
+            </if>
+            <if test="config != null">
+                type= #{config}
+            </if>
+        </set>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND name = #{eventSourceName}
+    </update>
+
+</mapper>

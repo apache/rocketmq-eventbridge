@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.rule.mybatis.mapper.EventRuleMapper">
+
+    <sql id="TABLE_NAME">
+        event_rule
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        account_id,bus,name,description,filter_pattern,status,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap" type="org.apache.rocketmq.eventbridge.domain.model.rule.EventRule">
+        <result property="accountId" column="account_id"/>
+        <result property="bus" column="eventBusName"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="filterPattern" column="filter_pattern"/>
+        <result property="status" column="status"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+
+    <insert id="createEventRule" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="COLUMN_LIST"/>
+        )
+        VALUES
+        (#{accountId},#{eventBusName},#{eventRuleName},#{description},#{filterPattern},#{status},now(),now())
+    </insert>
+
+    <select id="getEventRule" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND name = #{eventRuleName}
+        LIMIT 1
+    </select>
+
+    <delete id="deleteEventRule" parameterType="java.util.Map">
+        DELETE
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND name = #{eventRuleName}
+    </delete>
+
+    <select id="getEventRulesCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+    </select>
+
+    <select id="listEventRules" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        LIMIT #{nextToken} , #{maxResults}
+    </select>
+
+    <update id="updateEventRule" parameterType="java.util.Map">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now()
+            <if test="description != null">
+                ,description= #{description}
+            </if>
+            <if test="filterPattern != null">
+                ,filter_pattern= #{filterPattern}
+            </if>
+            <if test="status != null">
+                ,status= #{status}
+            </if>
+        </set>
+        WHERE account_id = #{accountId} AND name = #{eventBusName} AND name = #{eventRuleName}
+    </update>
+
+</mapper>

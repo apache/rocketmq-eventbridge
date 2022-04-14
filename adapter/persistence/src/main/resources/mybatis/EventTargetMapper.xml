@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.mapper.EventTargetMapper">
+
+    <sql id="TABLE_NAME">
+        event_target
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        account_id,bus,rule,name,class_name,config,run_options,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap"
+               type="org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetDO">
+        <result property="accountId" column="account_id"/>
+        <result property="eventBusName" column="bus"/>
+        <result property="eventRuleName" column="rule"/>
+        <result property="eventTargetName" column="name"/>
+        <result property="className" column="class_name"/>
+        <result property="config" column="config"/>
+        <result property="runOptions" column="run_options"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+
+    <insert id="createEventTarget" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="COLUMN_LIST"/>
+        )
+        VALUES
+        (#{accountId},#{eventBusName},#{eventRuleName},#{eventTargetName},#{className},#{config},#{runOptions},now(),now())
+    </insert>
+
+    <select id="getEventTarget" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND rule = #{eventRuleName}
+        AND name = #{eventTargetName}
+    </select>
+
+    <select id="listEventTargets" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND rule = #{eventRuleName}
+    </select>
+
+    <delete id="deleteEventTarget">
+        DELETE FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND rule = #{eventRuleName}
+        AND name = #{eventTargetName}
+    </delete>
+
+    <update id="updateEventTarget">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now()
+            <if test="config != null">
+                ,config= #{config}
+            </if>
+            <if test="runOptions != null">
+                ,run_options= #{runOptions}
+            </if>
+        </set>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND rule = #{eventRuleName}
+        AND name = #{eventTargetName}
+    </update>
+
+</mapper>
