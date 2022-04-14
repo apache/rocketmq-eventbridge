@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.bus.mybatis.mapper.EventBusMapper">
+
+    <sql id="TABLE_NAME">
+        event_bus
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        account_id,name,description,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap" type="org.apache.rocketmq.eventbridge.domain.model.bus.EventBus">
+        <result property="accountId" column="account_id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+    <select id="listEventBuses" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+    </select>
+
+    <select id="getEventBusesCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+    </select>
+
+
+    <select id="getEventBus" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId} AND name = #{eventBusName}
+        limit 1;
+    </select>
+
+    <insert id="createEventBus" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="COLUMN_LIST"/>
+        )
+        VALUES
+        (#{accountId},#{eventBusName},#{description},now(),now())
+    </insert>
+
+    <delete id="deleteEventBus">
+        DELETE FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId} AND name = #{eventBusName}
+    </delete>
+
+    <update id="updateEventBus">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now()
+            <if test="description != null">
+                ,description= #{description}
+            </if>
+        </set>
+        WHERE account_id = #{accountId} AND name = #{eventBusName}
+    </update>
+
+</mapper>

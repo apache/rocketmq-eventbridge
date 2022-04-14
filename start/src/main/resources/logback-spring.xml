@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <jmxConfigurator/>
+
+    <springProperty scope="context" name="app.name" source="app.name"/>
+    <springProperty scope="context" name="log.path" source="log.path"/>
+    <springProperty scope="context" name="log.level" source="log.level"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}@@%X{traceId:-}@@%X{parentId:-}@@%X{spanId:-}@@[%thread]@@%level@@%logger{36}[%line]@@%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PROJECT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/${app.name}/${app.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/${app.name}/${app.name}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}@@%X{traceId:-}@@%X{parentId:-}@@%X{spanId:-}@@[%thread]@@%level@@%logger{36}[%line]@@%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${log.level}">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="PROJECT"/>
+    </root>
+</configuration>

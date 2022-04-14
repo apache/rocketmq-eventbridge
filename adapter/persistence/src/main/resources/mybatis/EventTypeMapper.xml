@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.apache.rocketmq.eventbridge.adapter.persistence.type.mybatis.mapper.EventTypeMapper">
+
+    <sql id="TABLE_NAME">
+        event_type
+    </sql>
+
+    <sql id="COLUMN_LIST">
+        account_id,bus,source,name,description,gmt_create,gmt_modify
+    </sql>
+    <resultMap id="resultMap" type="org.apache.rocketmq.eventbridge.domain.model.source.EventType">
+        <result property="accountId" column="account_id"/>
+        <result property="bus" column="eventBusName"/>
+        <result property="source" column="eventSourceName"/>
+        <result property="name" column="eventTypeName"/>
+        <result property="description" column="description"/>
+        <result property="gmtCreate" column="gmt_create"/>
+        <result property="gmtModify" column="gmt_modify"/>
+    </resultMap>
+
+
+    <insert id="createEventType" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="COLUMN_LIST"/>
+        )
+        VALUES
+        (#{accountId},#{eventBusName},#{eventSourceName},#{eventTypeName},#{description},now(),now())
+    </insert>
+
+
+    <select id="listEventTypes" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND source = #{eventSourceName}
+        LIMIT #{nextToken} #{maxResults}
+    </select>
+
+    <select id="getEventTypeCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND source = #{eventSourceName}
+    </select>
+
+
+    <delete id="deleteEventType">
+        DELETE FROM
+        <include refid="TABLE_NAME"/>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND source = #{eventSourceName}
+        AND name = #{eventTypeName}
+    </delete>
+
+    <update id="updateEventType">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now()
+            <if test="description != null">
+                ,description= #{description}
+            </if>
+        </set>
+        WHERE account_id = #{accountId}
+        AND bus = #{eventBusName}
+        AND source = #{eventSourceName}
+        AND name = #{eventTypeName}
+    </update>
+
+</mapper>
