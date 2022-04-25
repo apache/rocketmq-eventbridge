@@ -30,6 +30,7 @@
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.9</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
+        <caffeine.version>2.9.3</caffeine.version>
     </properties>
     <modules>
         <module>start</module>
@@ -103,6 +104,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
             </dependency>
@@ -162,6 +168,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>${apache.commons-text.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
             </dependency>
 
             <!-- Log -->
