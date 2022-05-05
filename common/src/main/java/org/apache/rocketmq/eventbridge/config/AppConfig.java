@@ -19,13 +19,22 @@ package org.apache.rocketmq.eventbridge.config;
 public abstract class AppConfig {
 
     protected static GlobalConfig globalConfig = new GlobalConfig();
+    protected static LocalConfig localConfig = new LocalConfig();
 
     public static GlobalConfig getGlobalConfig() {
         return globalConfig;
     }
 
-    public static void refresh(GlobalConfig globalConfig) {
+    public static LocalConfig getLocalConfig() {
+        return localConfig;
+    }
+
+    public static void refreshGlobalConfig(GlobalConfig globalConfig) {
         AppConfig.globalConfig = globalConfig;
+    }
+
+    public static void refreshLocalConfig(LocalConfig localConfig) {
+        AppConfig.localConfig = localConfig;
     }
 
 }

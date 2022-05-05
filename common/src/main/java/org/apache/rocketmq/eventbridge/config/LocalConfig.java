@@ -20,5 +20,9 @@ import lombok.Data;
 
 public @Data
 class LocalConfig {
-
+    private String region;
+    private String publicHttpWebhookSchema;
+    private String publicHttpsWebhookSchema;
+    private String vpcHttpWebhookSchema;
+    private String vpcHttpsWebhookSchema;
 }

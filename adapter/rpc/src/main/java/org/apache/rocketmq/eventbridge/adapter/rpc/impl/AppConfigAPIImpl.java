@@ -34,6 +34,6 @@ public class AppConfigAPIImpl {
         Set<String> extensionKeys = Sets.newHashSet();
         extensionKeys.add("aliyuneventbusname");
         globalConfig.setEventExtensionKeys(extensionKeys);
-        AppConfig.refresh(globalConfig);
+        AppConfig.refreshGlobalConfig(globalConfig);
     }
 }

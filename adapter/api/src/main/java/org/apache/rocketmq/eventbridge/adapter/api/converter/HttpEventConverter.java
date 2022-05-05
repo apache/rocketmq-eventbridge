@@ -17,50 +17,51 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
-import com.google.common.net.MediaType;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.net.util.SubnetUtils;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.data.HttpEventData;
-import org.apache.rocketmq.eventbridge.domain.cache.EventSourceCacheService;
-import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
-import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.tools.ARNHelper;
-import org.apache.rocketmq.eventbridge.tools.NetUtil;
-import org.apache.rocketmq.eventbridge.tools.transform.Data;
-import org.apache.rocketmq.eventbridge.tools.transform.StringData;
-import org.apache.rocketmq.eventbridge.tools.transform.Transform;
-import org.apache.rocketmq.eventbridge.tools.transform.TransformBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+ import com.google.common.net.MediaType;
+ import com.google.common.reflect.TypeToken;
+ import com.google.gson.Gson;
+ import io.cloudevents.CloudEvent;
+ import io.cloudevents.core.v1.CloudEventBuilder;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.net.util.SubnetUtils;
+ import org.apache.rocketmq.eventbridge.adapter.api.dto.data.HttpEventData;
+ import org.apache.rocketmq.eventbridge.config.AppConfig;
+ import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
+ import org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService;
+ import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
+ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+ import org.apache.rocketmq.eventbridge.tools.NetUtil;
+ import org.apache.rocketmq.eventbridge.tools.transform.Data;
+ import org.apache.rocketmq.eventbridge.tools.transform.StringData;
+ import org.apache.rocketmq.eventbridge.tools.transform.Transform;
+ import org.apache.rocketmq.eventbridge.tools.transform.TransformBuilder;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.http.HttpHeaders;
+ import org.springframework.http.HttpMethod;
+ import org.springframework.http.server.reactive.ServerHttpRequest;
+ import org.springframework.stereotype.Service;
+ import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+ import java.lang.reflect.Type;
+ import java.net.URI;
+ import java.nio.charset.StandardCharsets;
+ import java.time.OffsetDateTime;
+ import java.time.ZonedDateTime;
+ import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.UUID;
 
-import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.JSON_ATTRIBUTE_INVALID;
-import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.PutEventsRequestSecurityCheckFailed;
-import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_IP;
-import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_NONE;
-import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_REFERER;
+ import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.JSON_ATTRIBUTE_INVALID;
+ import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.PutEventsRequestSecurityCheckFailed;
+ import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_IP;
+ import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_NONE;
+ import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_REFERER;
 
 /**
  * @Author changfeng
@@ -71,24 +72,18 @@ public class HttpEventConverter {
     private static final Logger logger = LoggerFactory.getLogger(HttpEventConverter.class);
 
     @Autowired
-    EventSourceCacheService eventSourceCacheService;
-
-    private static final String TYPE = "eventbridge:Events:HTTPEvent";
-    private static final String DATA_CONTENT_TYPE = "application/json";
+    HttpEventAPI httpEventAPI;
+    @Autowired
+    HTTPEventSourceService httpEventSourceService;
 
     private static final String HEADER_X_REAL_IP = "x-real-ip";
-    public static final String HEADER_EVENTBRIDGE_DATE = "x-eventbridge-date";
+    private static final String TYPE = "eventbridge:Events:HTTPEvent";
+    private static final String DATA_CONTENT_TYPE = "application/json";
 
     private static final String SECURITY_CONFIG = "SecurityConfig";
     private static final String IP_CONFIG = "Ip";
     private static final String METHOD_CONFIG = "Method";
     private static final String REFERER_CONFIG = "Referer";
-
-    public static final String EXTENSION_REGIONID = "aliyunregionid";
-    public static final String EXTENSION_ACCOUNTID = "aliyunaccountid";
-    public static final String EXTENSION_PUBLISHADDR = "aliyunpublishaddr";
-    public static final String EXTENSION_PUBLISHTIME = "aliyunpublishtime";
-    public static final String EXTENSION_EVENTBUS = "aliyuneventbusname";
 
     private static final Set<String> DISCARD_FIELDS = new HashSet<>();
 
@@ -111,14 +106,13 @@ public class HttpEventConverter {
     private CloudEvent parseRequest(ServerHttpRequest request, byte[] body,
                                     Map<String, String> headers, String accountId, String token, String extractJson,
                                     String template) {
-        EventSource eventSource = eventSourceCacheService.getEventSourceByToken(accountId, token);
+        EventSource eventSource = httpEventSourceService.getEventSourceByToken(accountId, token);
         HttpEventData httpEventData = getHttpEventData(request, body, headers, accountId, token);
         Map<String, Object> schema = parseSchema(httpEventData, extractJson, template);
         CloudEventBuilder builder = new CloudEventBuilder();
-        // TODO get regionID
-        String regionId = "";
+        String regionId = AppConfig.getLocalConfig().getRegion();
         CloudEventBuilder builderWithAttributes = addAttributes(regionId, accountId, eventSource.getName(), eventSource.getEventBusName(), schema, builder);
-        CloudEventBuilder builderWithExtensions = addExtensions(request, regionId, accountId, headers, eventSource.getEventBusName(), builderWithAttributes);
+        CloudEventBuilder builderWithExtensions = addExtensions(request, regionId, accountId, headers, eventSource, builderWithAttributes);
         HttpEventData data = (HttpEventData) schema.get("data");
         CloudEventBuilder builderWithData = builderWithExtensions.withData(new Gson().toJson(data).getBytes(StandardCharsets.UTF_8));
         return builderWithData.build();
@@ -138,7 +132,7 @@ public class HttpEventConverter {
         if (StringUtils.isNotBlank(subject)) {
             newBuilder.withSubject(subject);
         } else {
-            newBuilder.withSubject(ARNHelper.getEventSourceARN(regionId, accountId, busName, sourceName));
+            newBuilder.withSubject(httpEventAPI.generateSubject(regionId, accountId, busName, sourceName));
         }
 
         if (StringUtils.isNotBlank(time)) {
@@ -159,24 +153,8 @@ public class HttpEventConverter {
                                             String regionId,
                                             String accountId,
                                             Map<String, String> headers,
-                                            String busName, CloudEventBuilder cloudEventBuilder) {
-        CloudEventBuilder newBuilder = cloudEventBuilder.newBuilder();
-        String date = null;
-        if (headers.containsKey(HEADER_EVENTBRIDGE_DATE)) {
-            date = headers.get(HEADER_EVENTBRIDGE_DATE);
-        } else if (headers.containsKey(HttpHeaders.DATE)) {
-            date = headers.get(HttpHeaders.DATE);
-        }
-        String sourceAddr = request.getRemoteAddress().getAddress().toString();
-        if (headers.containsKey(HEADER_X_REAL_IP)) {
-            sourceAddr = headers.get(HEADER_X_REAL_IP);
-        }
-        newBuilder.withExtension(EXTENSION_REGIONID, regionId);
-        newBuilder.withExtension(EXTENSION_ACCOUNTID, accountId);
-        newBuilder.withExtension(EXTENSION_EVENTBUS, busName);
-        newBuilder.withExtension(EXTENSION_PUBLISHADDR, sourceAddr);
-        newBuilder.withExtension(EXTENSION_PUBLISHTIME, date);
-        return newBuilder;
+                                            EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
+        return httpEventAPI.addExtensions(request, regionId, accountId, headers, eventSource, cloudEventBuilder);
     }
 
     private void checkConfig(ServerHttpRequest request, Map<String, String> headers, String accountId, String token) {
@@ -190,7 +168,7 @@ public class HttpEventConverter {
             requestReferer = headers.get(HttpHeaders.REFERER);
         }
 
-        EventSource eventSource = eventSourceCacheService.getEventSourceByToken(accountId, token);
+        EventSource eventSource = httpEventSourceService.getEventSourceByToken(accountId, token);
         String securityConfig = (String) eventSource.getConfig().get(SECURITY_CONFIG);
         List<String> methods = (List<String>) eventSource.getConfig().get(METHOD_CONFIG);
         List<String> ips = (List<String>) eventSource.getConfig().get(IP_CONFIG);

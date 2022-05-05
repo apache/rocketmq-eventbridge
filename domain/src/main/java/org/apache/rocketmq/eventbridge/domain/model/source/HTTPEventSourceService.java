@@ -17,6 +17,26 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.source;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.eventbridge.config.AppConfig;
+import org.apache.rocketmq.eventbridge.domain.cache.CacheManager;
+import org.apache.rocketmq.eventbridge.domain.cache.GeneralKeyGenerator;
+import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
+import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.bus.EventBus;
+import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
+import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NetUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.DigestUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,18 +48,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
-import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
-import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
-import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
-import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.tools.NetUtil;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
-
+import static org.apache.rocketmq.eventbridge.domain.cache.CacheName.EVENT_SOURCE;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ExceedHttpSourceParametersCount;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.GenerateTokenError;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.HttpSourceParametersEmpty;
@@ -47,14 +56,11 @@ import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridg
 
 @Service
 public class HTTPEventSourceService extends EventSourceService {
+    private static final Logger logger = LoggerFactory.getLogger(HTTPEventSourceService.class);
 
     private static final String CLASS_NAME = "HttpEvent";
-
     private static final Integer GET_TOKEN_TIMES = 100;
-    public static final String PUBLIC_HTTP_WEBHOOK_SCHEMA = "http://%s.eventbridge.%s.aliyuncs.com/webhook/putEvents?token=%s";
-    public static final String PUBLIC_HTTPS_WEBHOOK_SCHEMA = "https://%s.eventbridge.%s.aliyuncs.com/webhook/putEvents?token=%s";
-    public static final String VPC_HTTP_WEBHOOK_SCHEMA = "http://%s.eventbridge.%s-vpc.aliyuncs.com/webhook/putEvents?token=%s";
-    public static final String VPC_HTTPS_WEBHOOK_SCHEMA = "https://%s.eventbridge.%s-vpc.aliyuncs.com/webhook/putEvents?token=%s";
+    private static final String TOKEN_CONFIG = "Token";
 
     private static final Set<String> SOURCE_PARAM_METHODS = new HashSet<>(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"));
     private static final Set<String> SOURCE_PARAM_TYPES = new HashSet<>(Arrays.asList("HTTP", "HTTPS", "HTTP&HTTPS"));
@@ -67,6 +73,8 @@ public class HTTPEventSourceService extends EventSourceService {
     private static final Integer SECURITY_CONFIG_LENGTH = 5;
     private static final Integer REFERER_LENGTH_LIMIT = 256;
 
+    @Autowired
+    CacheManager cacheManager;
     public HTTPEventSourceService(EventBusService eventBusService, EventSourceRepository eventSourceRepository) {
         super(eventBusService, eventSourceRepository);
     }
@@ -89,6 +97,18 @@ public class HTTPEventSourceService extends EventSourceService {
         // 渲染
         Map<String, Object> renderConfig = renderConfig(accountId, eventBusName, eventSourceName, inputConfig);
         return super.createEventSource(accountId, eventBusName, eventSourceName, description, className, renderConfig);
+    }
+
+    @Override
+    public boolean deleteEventSource(String accountId, String eventBusName, String eventSourceName) {
+        this.evict(accountId, eventBusName, eventSourceName);
+        return super.deleteEventSource(accountId, eventBusName, eventSourceName);
+    }
+
+    @Override
+    public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description, String className, Map<String, Object> inputConfig) {
+        this.evict(accountId, eventBusName, eventSourceName);
+        return super.updateEventSource(accountId, eventBusName, eventSourceName, description, className, inputConfig);
     }
 
     private void checkConfig(Map<String, Object> inputConfig) {
@@ -122,8 +142,7 @@ public class HTTPEventSourceService extends EventSourceService {
 
         EventSource eventSource = super.getEventSource(accountId, eventBusName, eventSourceName);
         if (eventSource == null || StringUtils.isBlank((String) eventSource.getConfig().get("Token"))) {
-            // TODO
-            String regionId = "";
+            String regionId = AppConfig.getLocalConfig().getRegion();
             String type = (String) inputConfig.get("Type");
             String token = generateToken(accountId, eventBusName);
             result.put("Token", token);
@@ -157,8 +176,10 @@ public class HTTPEventSourceService extends EventSourceService {
 
     public List<String> generateWebHookUrl(String regionId, String accountId, String type, String token, boolean isVpc) {
         List<String> webHookUrl = new ArrayList<>();
-        String httpWebHookSchema = isVpc ? VPC_HTTP_WEBHOOK_SCHEMA : PUBLIC_HTTP_WEBHOOK_SCHEMA;
-        String httpsWebHookSchema = isVpc ? VPC_HTTPS_WEBHOOK_SCHEMA : PUBLIC_HTTPS_WEBHOOK_SCHEMA;
+        String httpWebHookSchema = isVpc ? AppConfig.getLocalConfig().getVpcHttpWebhookSchema() :
+                AppConfig.getLocalConfig().getPublicHttpWebhookSchema();
+        String httpsWebHookSchema = isVpc ? AppConfig.getLocalConfig().getVpcHttpsWebhookSchema() :
+                AppConfig.getLocalConfig().getPublicHttpsWebhookSchema();
         if ("HTTP".equalsIgnoreCase(type)) {
             webHookUrl.add(String.format(httpWebHookSchema, accountId, regionId, token));
         } else if ("HTTPS".equalsIgnoreCase(type)) {
@@ -239,6 +260,40 @@ public class HTTPEventSourceService extends EventSourceService {
                 if (referer.length() > REFERER_LENGTH_LIMIT) {
                     throw new EventBridgeException(HttpSourceParametersInvalid, "Parameter Referer too long. referer=" + referer);
                 }
+            }
+        }
+    }
+
+
+    @Cacheable(cacheNames = EVENT_SOURCE, keyGenerator = "generalKeyGenerator", unless = "#result == null")
+    public EventSource getEventSourceByToken(String accountId, String token) {
+        try {
+            int busCount = this.eventBusService.getEventBusesCount(accountId);
+            PaginationResult<List<EventBus>> paginationResult =
+                    eventBusService.listEventBuses(accountId, "0", busCount);
+            for (EventBus eventBus: paginationResult.getData()) {
+                int sourceCount = eventSourceRepository.getEventSourceCount(accountId, eventBus.getName());
+                List<EventSource> eventSources = eventSourceRepository
+                        .listEventSources(accountId, eventBus.getName(), "0", sourceCount);
+                for (EventSource eventSource: eventSources) {
+                    String sourceToken = (String) eventSource.getConfig().get(TOKEN_CONFIG);
+                    if (StringUtils.isNotBlank(sourceToken) && StringUtils.equals(sourceToken, token)) {
+                        return eventSource;
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error("EventSourceCacheService getEventSourceByToken error.", t);
+        }
+        return null;
+    }
+
+    public void evict(String accountId, String eventBusName, String eventSourceName) {
+        EventSource eventSource = eventSourceRepository.getEventSource(accountId, eventBusName, eventSourceName);
+        if (eventSource != null) {
+            String token = (String) eventSource.getConfig().get(TOKEN_CONFIG);
+            if (StringUtils.isNotBlank(token)) {
+                cacheManager.getCache(EVENT_SOURCE).evict(GeneralKeyGenerator.generateKey(accountId, token));
             }
         }
     }

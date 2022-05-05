@@ -16,21 +16,20 @@
   */
  package org.apache.rocketmq.eventbridge.domain.model.source;
 
- import java.util.List;
- import java.util.Map;
-
  import com.google.common.base.Strings;
  import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;
  import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
  import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
  import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
  import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
- import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
  import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
  import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
  import org.springframework.dao.DuplicateKeyException;
  import org.springframework.stereotype.Service;
  import org.springframework.transaction.annotation.Transactional;
+
+ import java.util.List;
+ import java.util.Map;
 
  import static org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants.EVENT_SOURCE_COUNT_LIMIT;
  import static org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants.EVENT_SOURCE_NAME_MAX_LENGTH;
@@ -45,8 +44,8 @@
  @Service
  public class EventSourceService extends AbstractResourceService {
 
-     private final EventBusService eventBusService;
-     private final EventSourceRepository eventSourceRepository;
+     protected final EventBusService eventBusService;
+     protected final EventSourceRepository eventSourceRepository;
 
      public EventSourceService(EventBusService eventBusService, EventSourceRepository eventSourceRepository) {
          this.eventBusService = eventBusService;
