@@ -106,9 +106,13 @@ public class HTTPEventSourceService extends EventSourceService {
     }
 
     @Override
-    public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description, String className, Map<String, Object> inputConfig) {
+    public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description, String className, Integer status, Map<String, Object> inputConfig) {
         this.evict(accountId, eventBusName, eventSourceName);
-        return super.updateEventSource(accountId, eventBusName, eventSourceName, description, className, inputConfig);
+        // 校验
+        checkConfig(inputConfig);
+        // 渲染
+        Map<String, Object> renderConfig = renderConfig(accountId, eventBusName, eventSourceName, inputConfig);
+        return super.updateEventSource(accountId, eventBusName, eventSourceName, description, className, status, renderConfig);
     }
 
     private void checkConfig(Map<String, Object> inputConfig) {
@@ -140,15 +144,20 @@ public class HTTPEventSourceService extends EventSourceService {
         result.putIfAbsent("Ip", new ArrayList<>());
         result.putIfAbsent("Referer", new ArrayList<>());
 
-        EventSource eventSource = super.getEventSource(accountId, eventBusName, eventSourceName);
-        if (eventSource == null || StringUtils.isBlank((String) eventSource.getConfig().get("Token"))) {
-            String regionId = AppConfig.getLocalConfig().getRegion();
-            String type = (String) inputConfig.get("Type");
-            String token = generateToken(accountId, eventBusName);
-            result.put("Token", token);
-            result.put("PublicWebHookUrl", generateWebHookUrl(regionId, accountId, type, token, false));
-            result.put("VpcWebHookUrl", generateWebHookUrl(regionId, accountId, type, token, true));
+        EventSource eventSource =  eventSourceRepository.getEventSource(accountId, eventBusName, eventSourceName);
+
+        String regionId = AppConfig.getLocalConfig().getRegion();
+        String type = (String) inputConfig.get(TOKEN_CONFIG);
+        String token;
+        if (eventSource != null && this.match(eventSource.getType(), eventSource.getClassName())) {
+            token = (String) eventSource.getConfig().get(TOKEN_CONFIG);
+        } else {
+            token = generateToken(accountId, eventBusName);
         }
+        result.put(TOKEN_CONFIG, token);
+        result.put("PublicWebHookUrl", generateWebHookUrl(regionId, accountId, type, token, false));
+        result.put("VpcWebHookUrl", generateWebHookUrl(regionId, accountId, type, token, true));
+
         return result;
     }
 
@@ -161,7 +170,7 @@ public class HTTPEventSourceService extends EventSourceService {
         Set<String> tokenSet = paginationResult.getData()
                 .stream()
                 .filter(eventSource -> this.match(eventSource.getType(), eventSource.getClassName()))
-                .map(eventSource -> (String) eventSource.getConfig().get("Token")).collect(Collectors.toSet());
+                .map(eventSource -> (String) eventSource.getConfig().get(TOKEN_CONFIG)).collect(Collectors.toSet());
 
         if (count > 0 && tokenSet.contains(token)) {
             token = DigestUtils.md5DigestAsHex(

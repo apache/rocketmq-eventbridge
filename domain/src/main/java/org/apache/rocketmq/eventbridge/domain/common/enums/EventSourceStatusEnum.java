@@ -17,6 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.domain.common.enums;
 
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+
+import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.EventSourceStatusInvalid;
+
 public enum EventSourceStatusEnum {
     ACTIVATED(1),
     FROZEN(0);
@@ -29,6 +33,15 @@ public enum EventSourceStatusEnum {
 
     public Integer getCode() {
         return code;
+    }
+
+    public static EventSourceStatusEnum parseFromCode(int code) {
+        for (EventSourceStatusEnum sourceStatusType : EventSourceStatusEnum.values()) {
+            if (sourceStatusType.code == code) {
+                return sourceStatusType;
+            }
+        }
+        throw new EventBridgeException(EventSourceStatusInvalid, code);
     }
 
 }

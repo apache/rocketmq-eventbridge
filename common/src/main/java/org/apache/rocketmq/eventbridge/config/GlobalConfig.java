@@ -29,7 +29,7 @@ class GlobalConfig {
 
     private String defaultDataPersistentClusterName;
 
-    private int eventSizeUpLimit = (2 ^ 10) * 64;
+    private int eventSizeUpLimit = (1 << 10) * 64;
 
 
 }

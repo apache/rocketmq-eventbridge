@@ -22,6 +22,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.config.GlobalConfig;
+import org.apache.rocketmq.eventbridge.config.LocalConfig;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,6 +35,15 @@ public class AppConfigAPIImpl {
         Set<String> extensionKeys = Sets.newHashSet();
         extensionKeys.add("aliyuneventbusname");
         globalConfig.setEventExtensionKeys(extensionKeys);
+
+        LocalConfig localConfig = new LocalConfig();
+        localConfig.setRegion("cn-hangzhou");
+        localConfig.setPublicHttpWebhookSchema("http://%s.eventbridge.%s.com/webhook/putEvents?token=%s");
+        localConfig.setPublicHttpsWebhookSchema("https://%s.eventbridge.%s.com/webhook/putEvents?token=%s");
+        localConfig.setVpcHttpWebhookSchema("http://%s.eventbridge-vpc.%s.com/webhook/putEvents?token=%s");
+        localConfig.setVpcHttpsWebhookSchema("https://%s.eventbridge-vpc.%s.com/webhook/putEvents?token=%s");
+
         AppConfig.refreshGlobalConfig(globalConfig);
+        AppConfig.refreshLocalConfig(localConfig);
     }
 }

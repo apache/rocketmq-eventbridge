@@ -18,9 +18,9 @@
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
 import io.cloudevents.core.v1.CloudEventBuilder;
+import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
 import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 
@@ -32,14 +32,6 @@ import java.util.Map;
  */
 @Service
 public class HttpEventAPIImpl implements HttpEventAPI {
-    private static final String HEADER_X_REAL_IP = "x-real-ip";
-    public static final String HEADER_EVENTBRIDGE_DATE = "x-eventbridge-date";
-
-    public static final String EXTENSION_REGIONID = "regionid";
-    public static final String EXTENSION_ACCOUNTID = "accountid";
-    public static final String EXTENSION_PUBLISHADDR = "publishaddr";
-    public static final String EXTENSION_PUBLISHTIME = "publishtime";
-    public static final String EXTENSION_EVENTBUS = "eventbusname";
 
     public static final String EVENTSOURCE_PATTERN = "eventbridge:%s:%s:eventbus/%s/eventsource/%s";
 
@@ -52,21 +44,10 @@ public class HttpEventAPIImpl implements HttpEventAPI {
                                            Map<String, String> headers,
                                            EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
         CloudEventBuilder newBuilder = cloudEventBuilder.newBuilder();
-        String date = null;
-        if (headers.containsKey(HEADER_EVENTBRIDGE_DATE)) {
-            date = headers.get(HEADER_EVENTBRIDGE_DATE);
-        } else if (headers.containsKey(HttpHeaders.DATE)) {
-            date = headers.get(HttpHeaders.DATE);
-        }
-        String sourceAddr = request.getRemoteAddress().getAddress().toString();
-        if (headers.containsKey(HEADER_X_REAL_IP)) {
-            sourceAddr = headers.get(HEADER_X_REAL_IP);
-        }
-        newBuilder.withExtension(EXTENSION_REGIONID, regionId);
-        newBuilder.withExtension(EXTENSION_ACCOUNTID, accountId);
-        newBuilder.withExtension(EXTENSION_EVENTBUS, eventSource.getEventBusName());
-        newBuilder.withExtension(EXTENSION_PUBLISHADDR, sourceAddr);
-        newBuilder.withExtension(EXTENSION_PUBLISHTIME, date);
+
+        newBuilder.withExtension(AppConfig.getGlobalConfig().getGetEventBusExtensionKey(),
+                eventSource.getEventBusName());
+
         return newBuilder;
     }
 

@@ -38,5 +38,5 @@ public interface EventSourceRepository {
     List<EventSource> listEventSources(String accountId, String eventBusName, String nextToken, int maxResults);
 
     boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description,
-        Map<String, Object> config);
+        Integer status, Map<String, Object> config);
 }

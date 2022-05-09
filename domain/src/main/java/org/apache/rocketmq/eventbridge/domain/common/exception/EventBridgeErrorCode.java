@@ -52,6 +52,7 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
         "The current count of event source is [{0}], which will exceed the limit quota [{1}]"),
     EventSourceNameInvalid(409, "EventSourceNameInvalid", "The event source name [{0}] is invalid!"),
     EventSourceTypeInvalid(409, "EventSourceTypeInvalid", "The event source type[{0}] is invalid!"),
+    EventSourceStatusInvalid(409, "EventSourceStatusInvalid", "The event source status[{0}] is invalid!"),
     EventSourceTypeOrClassInvalid(409, "EventSourceTypeOrClassInvalid",
         "The event source type[{0}] or class[{1}] is invalid!"),
     HttpSourceParametersInvalid(409, "HttpSourceParametersInvalid",

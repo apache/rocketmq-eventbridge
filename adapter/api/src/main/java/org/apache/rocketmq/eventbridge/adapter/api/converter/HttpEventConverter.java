@@ -159,7 +159,7 @@ public class HttpEventConverter {
 
     private void checkConfig(ServerHttpRequest request, Map<String, String> headers, String accountId, String token) {
         HttpMethod requestMethod = request.getMethod();
-        String requestIp = request.getRemoteAddress().getAddress().toString();
+        String requestIp = request.getRemoteAddress().getAddress().getHostAddress();
         if (headers.containsKey(HEADER_X_REAL_IP)) {
             requestIp = headers.get(HEADER_X_REAL_IP);
         }

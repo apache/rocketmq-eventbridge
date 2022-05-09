@@ -86,9 +86,9 @@
 
      @Transactional
      public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description,
-         String className, Map<String, Object> inputConfig) {
+         String className, Integer status, Map<String, Object> inputConfig) {
          this.checkExist(accountId, eventBusName, eventSourceName);
-         return eventSourceRepository.updateEventSource(accountId, eventBusName, eventSourceName, description,
+         return eventSourceRepository.updateEventSource(accountId, eventBusName, eventSourceName, description, status,
              inputConfig);
 
      }
