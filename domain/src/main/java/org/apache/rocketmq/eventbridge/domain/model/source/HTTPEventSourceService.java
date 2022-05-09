@@ -28,6 +28,7 @@ import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.NetUtil;
+import org.apache.rocketmq.eventbridge.tools.TokenUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +36,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,8 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.apache.rocketmq.eventbridge.domain.cache.CacheName.EVENT_SOURCE;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ExceedHttpSourceParametersCount;
@@ -147,12 +144,12 @@ public class HTTPEventSourceService extends EventSourceService {
         EventSource eventSource =  eventSourceRepository.getEventSource(accountId, eventBusName, eventSourceName);
 
         String regionId = AppConfig.getLocalConfig().getRegion();
-        String type = (String) inputConfig.get(TOKEN_CONFIG);
+        String type = (String) inputConfig.get("Type");
         String token;
         if (eventSource != null && this.match(eventSource.getType(), eventSource.getClassName())) {
             token = (String) eventSource.getConfig().get(TOKEN_CONFIG);
         } else {
-            token = generateToken(accountId, eventBusName);
+            token = generateToken(accountId);
         }
         result.put(TOKEN_CONFIG, token);
         result.put("PublicWebHookUrl", generateWebHookUrl(regionId, accountId, type, token, false));
@@ -161,20 +158,27 @@ public class HTTPEventSourceService extends EventSourceService {
         return result;
     }
 
-    public String generateToken(String accountId, String eventBusName) throws EventBridgeException {
+    public String generateToken(String accountId) throws EventBridgeException {
         int count = GET_TOKEN_TIMES;
-        String token = DigestUtils.md5DigestAsHex(
-                (accountId + eventBusName + UUID.randomUUID()).getBytes(StandardCharsets.UTF_8));
-        int sourceCount = super.getEventSourceCount(accountId, eventBusName);
-        PaginationResult<List<EventSource>> paginationResult = super.listEventSources(accountId, eventBusName, "0", sourceCount);
-        Set<String> tokenSet = paginationResult.getData()
-                .stream()
-                .filter(eventSource -> this.match(eventSource.getType(), eventSource.getClassName()))
-                .map(eventSource -> (String) eventSource.getConfig().get(TOKEN_CONFIG)).collect(Collectors.toSet());
+        String token = TokenUtil.generateHttpSourceToken();
+
+        Set<String> tokenSet = new HashSet<>();
+        int busCount = eventBusService.getEventBusesCount(accountId);
+        PaginationResult<List<EventBus>> paginationResult =
+                eventBusService.listEventBuses(accountId, "0", busCount);
+
+        for (EventBus eventBus: paginationResult.getData()) {
+            int sourceCount = getEventSourceCount(accountId, eventBus.getName());
+            PaginationResult<List<EventSource>> listEventSources =
+                    listEventSources(accountId, eventBus.getName(), "0", sourceCount);
+
+            listEventSources.getData().stream()
+                    .filter(eventSource -> this.match(eventSource.getType(), eventSource.getClassName()))
+                    .forEach(eventSource -> tokenSet.add((String) eventSource.getConfig().get(TOKEN_CONFIG)));
+        }
 
         if (count > 0 && tokenSet.contains(token)) {
-            token = DigestUtils.md5DigestAsHex(
-                    (accountId + eventBusName + UUID.randomUUID()).getBytes(StandardCharsets.UTF_8));
+            token = TokenUtil.generateHttpSourceToken();
             count--;
         }
         if (count == 0) {
