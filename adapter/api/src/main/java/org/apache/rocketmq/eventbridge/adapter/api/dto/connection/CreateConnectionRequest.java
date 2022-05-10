@@ -10,4 +10,10 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 @ToString
 public class CreateConnectionRequest extends BaseRequest {
 
+    private String name;
+
+    private String description;
+
+    private NetworkParameters networkParameters;
+
 }
