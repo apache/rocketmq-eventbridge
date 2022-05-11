@@ -5,6 +5,9 @@ import org.apache.rocketmq.eventbridge.domain.model.apidestination.EventApiDesti
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
+
 @Repository
 public class MybatisApiDestinationRepository implements ApiDestinationRepository {
 
@@ -15,38 +18,36 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
     }
 
     @Override
-    public String createApiDestination() {
-        EventApiDestination eventApiDestination = new EventApiDestination();
-        eventApiDestinationMapper.insertSelective(eventApiDestination);
-        return null;
+    public Boolean createApiDestination(EventApiDestination eventApiDestination) {
+        eventApiDestination.setGmtCreate(new Date());
+        eventApiDestination.setGmtModify(new Date());
+        eventApiDestination.setProtocol("Http");
+        return eventApiDestinationMapper.insertSelective(eventApiDestination) == 1;
     }
 
     @Override
-    public String updateApiDestination() {
-        // TODO 根据name更新
-        EventApiDestination eventApiDestination = new EventApiDestination();
-        eventApiDestinationMapper.updateByPrimaryKeySelective(eventApiDestination);
-        return null;
+    public Boolean updateApiDestination(EventApiDestination eventApiDestination) {
+        return eventApiDestinationMapper.updateByNameAndAccountId(eventApiDestination) == 1;
     }
 
     @Override
-    public String getApiDestination() {
-        // TODO 修改SQL进行查询
-        eventApiDestinationMapper.selectByPrimaryKey(0);
-        return null;
+    public EventApiDestination getApiDestination(String accountId, String apiDestinationName) {
+        return eventApiDestinationMapper.selectByAccountIdAndName(accountId, apiDestinationName);
     }
 
     @Override
-    public String deleteApiDestination() {
-        // TODO 根据name进行删除
-        eventApiDestinationMapper.deleteByPrimaryKey(0);
-        return null;
+    public Boolean deleteApiDestination(String accountId, String apiDestinationName) {
+        return eventApiDestinationMapper.deleteByAccountIdAndName(accountId, apiDestinationName) == 1;
     }
 
     @Override
-    public String listApiDestinations() {
-        // TODO 修改SQL进行查询
-        eventApiDestinationMapper.selectByPrimaryKey(0);
-        return null;
+    public List<EventApiDestination> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+                                                         int maxResults) {
+        return eventApiDestinationMapper.listApiDestinations(accountId, apiDestinationName, Integer.parseInt(nextToken), maxResults);
+    }
+
+    @Override
+    public int getApiDestinationCount(String accountId, String apiDestinationName) {
+        return eventApiDestinationMapper.getApiDestinationCount(accountId, apiDestinationName);
     }
 }

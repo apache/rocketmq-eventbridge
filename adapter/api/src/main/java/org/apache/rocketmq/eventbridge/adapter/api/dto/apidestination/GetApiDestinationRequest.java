@@ -1,5 +1,6 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,4 +12,8 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 @Setter
 @ToString
 public class GetApiDestinationRequest extends BaseResponse {
+
+    @SerializedName("ApiDestinationName")
+    private String apiDestinationName;
+
 }

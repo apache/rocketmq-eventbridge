@@ -8,12 +8,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ApiKeyAuthParameters {
+public class BaseParameter {
 
-    @SerializedName("ApiKeyName")
-    private String apiKeyName;
+    @SerializedName("IsValueSecret")
+    private String isValueSecret;
 
-    @SerializedName("ApiKeyValue")
-    private String apiKeyValue;
+    @SerializedName("Key")
+    private String key;
+
+    @SerializedName("Value")
+    private String value;
 
 }

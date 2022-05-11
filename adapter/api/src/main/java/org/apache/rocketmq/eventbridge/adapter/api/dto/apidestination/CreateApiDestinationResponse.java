@@ -11,4 +11,6 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 @Setter
 @ToString
 public class CreateApiDestinationResponse extends BaseResponse {
+
+    private String apiDestinationName;
 }

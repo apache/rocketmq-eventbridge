@@ -5,6 +5,9 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWi
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
+
 
 @Repository
 public class MybatisConnectRepository implements ConnectionRepository {
@@ -16,38 +19,37 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public String createConnection() {
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
+    public String createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs) {
+        eventConnectionWithBLOBs.setGmtCreate(new Date());
+        eventConnectionWithBLOBs.setGmtModify(new Date());
         eventConnectionMapper.insertSelective(eventConnectionWithBLOBs);
-        return null;
+        return eventConnectionWithBLOBs.getName();
     }
 
     @Override
-    public String deleteConnection() {
-        // TODO 根据name进行删除
-        eventConnectionMapper.deleteByPrimaryKey(0);
-        return null;
+    public boolean deleteConnection(String accountId, String connectionName) {
+        return eventConnectionMapper.deleteByNameAndAccountId(accountId, connectionName) == 1;
     }
 
     @Override
-    public String updateConnection() {
-        // TODO 根据name进行更新
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
-        eventConnectionMapper.updateByPrimaryKeySelective(eventConnectionWithBLOBs);
-        return null;
+    public boolean updateConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs) {
+        eventConnectionWithBLOBs.setGmtModify(new Date());
+        return eventConnectionMapper.updateByAccountIdAndName(eventConnectionWithBLOBs) == 1;
     }
 
     @Override
-    public String getConnection() {
-        // TODO 查询单条数据
-        eventConnectionMapper.selectByPrimaryKey(0);
-        return null;
+    public EventConnectionWithBLOBs getConnection(String accountId, String connectionName) {
+        return eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
     }
 
     @Override
-    public String listConnections() {
-        // TODO 分页查询
-        eventConnectionMapper.selectByPrimaryKey(0);
-        return null;
+    public List<EventConnectionWithBLOBs> listConnections(String accountId, String connectionName, String nextToken,
+                                                          int maxResults) {
+        return eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults);
+    }
+
+    @Override
+    public int getConnectionCount(String accountId, String connectionName) {
+        return eventConnectionMapper.getConnectionCount(accountId, connectionName);
     }
 }

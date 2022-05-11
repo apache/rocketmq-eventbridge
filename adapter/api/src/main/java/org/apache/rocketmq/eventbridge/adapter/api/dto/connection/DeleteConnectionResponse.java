@@ -12,6 +12,4 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 @ToString
 public class DeleteConnectionResponse extends BaseResponse {
 
-    private String connectionName;
-
 }

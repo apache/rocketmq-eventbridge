@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class InvocationHttpParameters {
+public class OAuthHttpParameters {
 
     @SerializedName("BodyParameters")
     private List<BodyParameter> bodyParameters;
@@ -20,5 +20,4 @@ public class InvocationHttpParameters {
 
     @SerializedName("QueryStringParameters")
     private List<QueryStringParameter> queryStringParameters;
-
 }

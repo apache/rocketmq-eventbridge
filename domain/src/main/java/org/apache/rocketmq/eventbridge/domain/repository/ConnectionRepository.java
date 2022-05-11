@@ -1,15 +1,21 @@
 package org.apache.rocketmq.eventbridge.domain.repository;
 
+import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
+
+import java.util.List;
+
 public interface ConnectionRepository {
 
-    String createConnection();
+    String createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs);
 
-    String deleteConnection();
+    boolean deleteConnection(String accountId, String connectionName);
 
-    String updateConnection();
+    boolean updateConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs);
 
-    String getConnection();
+    EventConnectionWithBLOBs getConnection(String accountId, String connectionName);
 
-    String listConnections();
+    List<EventConnectionWithBLOBs> listConnections(String accountId, String connectionName, String nextToken,
+                                                   int maxResults);
 
+    int getConnectionCount(String accountId, String connectionName);
 }

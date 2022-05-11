@@ -11,7 +11,4 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 @Setter
 @ToString
 public class UpdateConnectionResponse extends BaseResponse {
-
-    private String connectionName;
-
 }

@@ -7,5 +7,5 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class BodyParameter extends BaseParameter{
+public class QueryStringParameter extends BaseParameter{
 }

@@ -4,12 +4,12 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
+@ToString
 @Setter
 @Getter
-@ToString
-public class UpdateConnectionRequest extends BaseRequest {
+public class ConnectionVO extends BaseDTO {
 
     @SerializedName("ConnectionName")
     private String connectionName;
@@ -18,8 +18,9 @@ public class UpdateConnectionRequest extends BaseRequest {
     private String description;
 
     @SerializedName("NetworkParameters")
-    private NetworkParameters networkParameters;
+    private String networkParameters;
 
     @SerializedName("AuthParameters")
-    private AuthParameters authParameters;
+    private String authParameters;
+
 }

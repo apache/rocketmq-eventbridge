@@ -4,13 +4,15 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 
-@Setter
 @Getter
+@Setter
 @ToString
-public class DeleteConnectionRequest extends BaseRequest {
+public class ClientParameters {
 
-    @SerializedName("ConnectionName")
-    private String connectionName;
+    @SerializedName("ClientID")
+    private String clientID;
+
+    @SerializedName("ClientSecret")
+    private String clientSecret;
 }
