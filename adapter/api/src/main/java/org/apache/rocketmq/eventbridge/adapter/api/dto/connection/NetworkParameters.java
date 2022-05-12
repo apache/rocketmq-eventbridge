@@ -13,11 +13,11 @@ public class NetworkParameters {
     @SerializedName("NetworkType")
     private String networkType;
 
-    @SerializedName("VPCId")
-    private String vPCId;
+    @SerializedName("VpcId")
+    private String vpcId;
 
-    @SerializedName("VSwitcheId")
-    private String vSwitcheId;
+    @SerializedName("VswitcheId")
+    private String vswitcheId;
 
     @SerializedName("SecurityGroupId")
     private String securityGroupId;

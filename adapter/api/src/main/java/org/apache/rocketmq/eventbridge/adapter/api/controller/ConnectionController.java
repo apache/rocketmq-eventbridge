@@ -15,7 +15,6 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListConnection
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.NetworkParameters;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionResponse;
-import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
@@ -47,16 +46,13 @@ public class ConnectionController {
         eventConnectionWithBLOBs.setDescription(createConnectionRequest.getDescription());
         eventConnectionWithBLOBs.setAccountId(accountAPI.getResourceOwnerAccountId());
         eventConnectionWithBLOBs.setAuthorizationType(createConnectionRequest.getAuthParameters().getAuthorizationType());
-        return new CreateConnectionResponse(connectionService.createConnection(eventConnectionWithBLOBs));
+        return new CreateConnectionResponse(connectionService.createConnection(eventConnectionWithBLOBs)).success();
     }
 
     @PostMapping("deleteConnection")
     public DeleteConnectionResponse deleteConnection(@RequestBody DeleteConnectionRequest deleteConnectionRequest) {
         connectionService.deleteConnection(accountAPI.getResourceOwnerAccountId(), deleteConnectionRequest.getConnectionName());
-        DeleteConnectionResponse deleteConnectionResponse = new DeleteConnectionResponse();
-        deleteConnectionResponse.setCode(EventBridgeErrorCode.Success.getCode());
-        deleteConnectionResponse.setMessage(EventBridgeErrorCode.Success.getMsg());
-        return deleteConnectionResponse;
+        return new DeleteConnectionResponse().success();
     }
 
     @PostMapping("updateConnection")
@@ -69,7 +65,7 @@ public class ConnectionController {
         eventConnectionWithBLOBs.setAccountId(accountAPI.getResourceOwnerAccountId());
         eventConnectionWithBLOBs.setAuthorizationType(updateConnectionRequest.getAuthParameters().getAuthorizationType());
         connectionService.updateConnection(eventConnectionWithBLOBs);
-        return new UpdateConnectionResponse();
+        return new UpdateConnectionResponse().success();
     }
 
     @PostMapping("getConnection")
@@ -77,7 +73,7 @@ public class ConnectionController {
         final EventConnectionWithBLOBs connection = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(), getConnectionRequest.getConnectionName());
         final NetworkParameters networkParameters = JSON.parseObject(connection.getNetworkParameters(), NetworkParameters.class);
         final AuthParameters authParameters = JSON.parseObject(connection.getAuthParameters(), AuthParameters.class);
-        return new GetConnectionResponse(connection.getName(), connection.getDescription(), networkParameters, authParameters);
+        return new GetConnectionResponse(connection.getName(), connection.getDescription(), networkParameters, authParameters).success();
     }
 
     @PostMapping("listConnections")
@@ -92,7 +88,7 @@ public class ConnectionController {
                     connectionVO.setConnectionName(eventConnectionWithBLOBs.getName());
                     connectionVOS.add(connectionVO);
                 });
-        return new ListConnectionResponse(connectionVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults());
+        return new ListConnectionResponse(connectionVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
     }
 
 }

@@ -19,11 +19,10 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public String createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs) {
+    public Boolean createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs) {
         eventConnectionWithBLOBs.setGmtCreate(new Date());
         eventConnectionWithBLOBs.setGmtModify(new Date());
-        eventConnectionMapper.insertSelective(eventConnectionWithBLOBs);
-        return eventConnectionWithBLOBs.getName();
+        return eventConnectionMapper.insertSelective(eventConnectionWithBLOBs) == 1;
     }
 
     @Override

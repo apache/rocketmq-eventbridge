@@ -55,8 +55,10 @@
     ,
     <include refid="Blob_Column_List" />
     from event_connection
-    where account_id = #{accountId}
-    AND name = #{name}
+    <where>
+      <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
+      <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
+    </where>
     LIMIT #{nextToken} , #{maxResults}
   </select>
   <select id="selectByNameAndAccountId" resultMap="ResultMapWithBLOBs">
@@ -109,7 +111,7 @@
       <if test="name != null" >
         name,
       </if>
-      <if test="authorization_type != null" >
+      <if test="authorizationType != null" >
         authorization_type,
       </if>
       <if test="networkType != null" >
@@ -240,7 +242,7 @@
     from event_connection
     <where>
       <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
-      <if test="name != null and name != ''">and name = #{name}</if>
+      <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
     </where>
   </select>
   <update id="updateByPrimaryKeyWithBLOBs" parameterType="org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs" >

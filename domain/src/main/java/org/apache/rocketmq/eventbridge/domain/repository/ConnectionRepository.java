@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ConnectionRepository {
 
-    String createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs);
+    Boolean createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs);
 
     boolean deleteConnection(String accountId, String connectionName);
 

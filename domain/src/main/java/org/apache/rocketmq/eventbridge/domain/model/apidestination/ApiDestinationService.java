@@ -36,8 +36,7 @@ public class ApiDestinationService extends AbstractResourceService {
     }
 
     public EventApiDestination getApiDestination(String accountId, String apiDestinationName) {
-        apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
-        return null;
+        return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

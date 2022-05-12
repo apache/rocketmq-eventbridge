@@ -16,5 +16,5 @@ public class OAuthParameters {
     @SerializedName("HttpMethod")
     private String httpMethod;
     @SerializedName("OAuthHttpParameters")
-    private OAuthHttpParameters oAuthHttpParameters;
+    private OAuthHttpParameters oauthHttpParameters;
 }

@@ -23,7 +23,10 @@ public class ConnectionService extends AbstractResourceService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public String createConnection(EventConnectionWithBLOBs eventConnectionWithBLOBs) {
-        return connectionRepository.createConnection(eventConnectionWithBLOBs);
+        if (connectionRepository.createConnection(eventConnectionWithBLOBs)) {
+            return eventConnectionWithBLOBs.getName();
+        }
+        return null;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

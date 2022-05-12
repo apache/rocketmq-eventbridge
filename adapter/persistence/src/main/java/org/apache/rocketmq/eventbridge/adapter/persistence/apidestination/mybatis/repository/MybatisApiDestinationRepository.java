@@ -27,6 +27,7 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
 
     @Override
     public Boolean updateApiDestination(EventApiDestination eventApiDestination) {
+        eventApiDestination.setGmtModify(new Date());
         return eventApiDestinationMapper.updateByNameAndAccountId(eventApiDestination) == 1;
     }
 

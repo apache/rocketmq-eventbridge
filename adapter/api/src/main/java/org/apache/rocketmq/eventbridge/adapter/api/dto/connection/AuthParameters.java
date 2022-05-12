@@ -23,6 +23,6 @@ public class AuthParameters {
     private InvocationHttpParameters invocationHttpParameters;
 
     @SerializedName("OAuthParameters")
-    private OAuthParameters oAuthParameters;
+    private OAuthParameters oauthParameters;
 
 }

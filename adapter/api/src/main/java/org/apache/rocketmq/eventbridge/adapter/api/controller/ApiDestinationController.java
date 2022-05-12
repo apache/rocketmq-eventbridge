@@ -43,7 +43,8 @@ public class ApiDestinationController {
         eventApiDestination.setConnectionName(createApiDestinationRequest.getConnectionName());
         eventApiDestination.setInvocationRateLimitPerSecond(createApiDestinationRequest.getInvocationRateLimitPerSecond());
         eventApiDestination.setName(createApiDestinationRequest.getApiDestinationName());
-        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(eventApiDestination));
+        eventApiDestination.setAccountId(accountAPI.getResourceOwnerAccountId());
+        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(eventApiDestination)).success();
     }
 
     @PostMapping("updateApiDestination")
@@ -56,19 +57,19 @@ public class ApiDestinationController {
         eventApiDestination.setName(updateApiDestinationRequest.getApiDestinationName());
         eventApiDestination.setAccountId(accountAPI.getResourceOwnerAccountId());
         apiDestinationService.updateApiDestination(eventApiDestination);
-        return new UpdateApiDestinationResponse();
+        return new UpdateApiDestinationResponse().success();
     }
 
     @PostMapping("getApiDestination")
     public GetApiDestinationResponse getApiDestination(@RequestBody GetApiDestinationRequest getApiDestinationRequest) {
         final EventApiDestination apiDestination = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
-        return new GetApiDestinationResponse(apiDestination.getName(),apiDestination.getConnectionName(), apiDestination.getDescription(), apiDestination.getApiParams(), apiDestination.getInvocationRateLimitPerSecond());
+        return new GetApiDestinationResponse(apiDestination.getName(),apiDestination.getConnectionName(), apiDestination.getDescription(), apiDestination.getApiParams(), apiDestination.getInvocationRateLimitPerSecond()).success();
     }
 
     @PostMapping("deleteApiDestination")
     public DeleteApiDestinationResponse deleteApiDestination(@RequestBody DeleteApiDestinationRequest deleteApiDestinationRequest) {
         apiDestinationService.deleteApiDestination(accountAPI.getResourceOwnerAccountId(), deleteApiDestinationRequest.getApiDestinationName());
-        return new DeleteApiDestinationResponse();
+        return new DeleteApiDestinationResponse().success();
     }
 
     @PostMapping("listApiDestinations")
@@ -81,8 +82,9 @@ public class ApiDestinationController {
                     ApiDestinationsVO apiDestinationsVO = new ApiDestinationsVO();
                     BeanUtils.copyProperties(eventApiDestination, apiDestinationsVO);
                     apiDestinationsVO.setApiDestinationName(eventApiDestination.getName());
+                    apiDestinationsVO.setHttpApiParameters(eventApiDestination.getApiParams());
                     apiDestinationsVOS.add(apiDestinationsVO);
                 });
-        return new ListApiDestinationsResponse(apiDestinationsVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults());
+        return new ListApiDestinationsResponse(apiDestinationsVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
     }
 }
