@@ -37,6 +37,9 @@ class UpdateEventSourceRequest extends BaseRequest {
     @SerializedName("ClassName")
     private String className;
 
+    @SerializedName("Status")
+    private Integer status;
+
     @SerializedName("Config")
     private Map<String, Object> config;
 }

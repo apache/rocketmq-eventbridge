@@ -38,7 +38,7 @@ public class PatternEvaluatorTest {
         GlobalConfig globalConfig = new GlobalConfig();
         Set<String> eventExtensionKeys = Sets.newHashSet("aliyunregionid");
         globalConfig.setEventExtensionKeys(eventExtensionKeys);
-        AppConfig.refresh(globalConfig);
+        AppConfig.refreshGlobalConfig(globalConfig);
     }
 
     @Test

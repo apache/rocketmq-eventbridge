@@ -76,9 +76,9 @@ public class ConnectEventSourceService extends EventSourceService {
     @Transactional
     @Override
     public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description,
-        String className, Map<String, Object> inputConfig) {
+        String className, Integer status, Map<String, Object> inputConfig) {
         boolean isSucceed = super.updateEventSource(accountId, eventBusName, eventSourceName, description, className,
-            inputConfig);
+            status, inputConfig);
         if (!Strings.isNullOrEmpty(className)) {
             return isSucceed && eventSourceRunnerService.updateEventSourceRunner(accountId, eventBusName,
                 eventSourceName, className, inputConfig, null);

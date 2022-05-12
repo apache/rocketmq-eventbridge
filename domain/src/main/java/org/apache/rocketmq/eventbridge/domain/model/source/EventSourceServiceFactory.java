@@ -49,7 +49,7 @@
              .stream()
              .filter(eventSourceService -> eventSourceService.match(type, className))
              .findFirst();
-         if (eventSourceServiceOptional.get() == null) {
+         if (!eventSourceServiceOptional.isPresent()) {
              throw new EventBridgeException(EventSourceTypeOrClassInvalid, type, className);
          }
          return eventSourceServiceOptional.get();

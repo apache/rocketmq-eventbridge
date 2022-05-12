@@ -72,7 +72,7 @@ public class EventSourceController {
         eventSourceService.updateEventSource(accountAPI.getResourceOwnerAccountId(),
             updateEventSourceRequest.getEventBusName(), updateEventSourceRequest.getEventSourceName(),
             updateEventSourceRequest.getDescription(), updateEventSourceRequest.getClassName(),
-            updateEventSourceRequest.getConfig());
+            updateEventSourceRequest.getStatus(), updateEventSourceRequest.getConfig());
         return new UpdateEventSourceResponse();
     }
 
