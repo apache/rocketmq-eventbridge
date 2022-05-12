@@ -34,4 +34,10 @@ public class GetApiDestinationResponse extends BaseResponse {
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }
+
+    public GetApiDestinationResponse parameterCheckFailRes(String errorMsg) {
+        setCode(Integer.toString(409));
+        setMessage(errorMsg);
+        return this;
+    }
 }

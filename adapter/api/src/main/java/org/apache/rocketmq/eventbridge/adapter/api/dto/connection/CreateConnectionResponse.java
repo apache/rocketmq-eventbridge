@@ -20,4 +20,10 @@ public class CreateConnectionResponse extends BaseResponse {
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }
+
+    public CreateConnectionResponse parameterCheckFailRes(String errorMsg) {
+        setCode(Integer.toString(409));
+        setMessage(errorMsg);
+        return this;
+    }
 }

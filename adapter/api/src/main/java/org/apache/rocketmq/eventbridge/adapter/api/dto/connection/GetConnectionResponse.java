@@ -31,4 +31,10 @@ public class GetConnectionResponse extends BaseResponse {
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }
+
+    public GetConnectionResponse parameterCheckFailRes(String errorMsg) {
+        setCode(Integer.toString(409));
+        setMessage(errorMsg);
+        return this;
+    }
 }

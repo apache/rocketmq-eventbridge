@@ -33,4 +33,10 @@ public class ListConnectionResponse extends BaseResponse {
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }
+
+    public ListConnectionResponse parameterCheckFailRes(String errorMsg) {
+        setCode(Integer.toString(409));
+        setMessage(errorMsg);
+        return this;
+    }
 }

@@ -6,11 +6,14 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
+import javax.validation.constraints.NotBlank;
+
 @Getter
 @Setter
 @ToString
 public class GetApiDestinationRequest extends BaseResponse {
 
+    @NotBlank(message = "ApiDestinationName is blank")
     @SerializedName("ApiDestinationName")
     private String apiDestinationName;
 
