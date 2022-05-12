@@ -17,7 +17,7 @@ public class CreateApiDestinationResponse extends BaseResponse {
     private String apiDestinationName;
 
     public CreateApiDestinationResponse success() {
-        setCode(Integer.toString(EventBridgeErrorCode.Success.getHttpCode()));
+        setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }

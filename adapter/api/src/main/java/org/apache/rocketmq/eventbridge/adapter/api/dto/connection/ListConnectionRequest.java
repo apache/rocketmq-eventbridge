@@ -17,11 +17,11 @@ public class ListConnectionRequest extends BaseRequest {
     @SerializedName("ConnectionNamePrefix")
     private String connectionNamePrefix;
 
-    @Min(value = 0, message = "maxResults <= 0")
+    @Min(value = 0, message = "The limit size of page is invalid, which must greater than 0 and less than [{0}].")
     @SerializedName("MaxResults")
     private int maxResults;
 
-    @NotBlank(message = "nextToken is blank")
+    @NotBlank(message = "The next token of page is invalid. which should be {[0]}.")
     @SerializedName("NextToken")
     private String nextToken;
 }

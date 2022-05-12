@@ -30,7 +30,7 @@ public class GetApiDestinationResponse extends BaseResponse {
     private Integer invocationRateLimitPerSecond;
 
     public GetApiDestinationResponse success() {
-        setCode(Integer.toString(EventBridgeErrorCode.Success.getHttpCode()));
+        setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }

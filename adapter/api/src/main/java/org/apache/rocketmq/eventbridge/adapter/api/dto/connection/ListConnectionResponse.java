@@ -29,7 +29,7 @@ public class ListConnectionResponse extends BaseResponse {
     private int maxResults;
 
     public ListConnectionResponse success() {
-        setCode(Integer.toString(EventBridgeErrorCode.Success.getHttpCode()));
+        setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }

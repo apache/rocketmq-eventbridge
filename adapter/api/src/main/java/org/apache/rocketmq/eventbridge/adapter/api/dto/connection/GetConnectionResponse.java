@@ -27,7 +27,7 @@ public class GetConnectionResponse extends BaseResponse {
     private AuthParameters authParameters;
 
     public GetConnectionResponse success() {
-        setCode(Integer.toString(EventBridgeErrorCode.Success.getHttpCode()));
+        setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }

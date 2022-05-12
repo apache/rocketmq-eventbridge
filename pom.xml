@@ -30,6 +30,7 @@
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.9</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
+        <fastjson.version>2.0.2</fastjson.version>
     </properties>
     <modules>
         <module>start</module>
@@ -128,6 +129,12 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>

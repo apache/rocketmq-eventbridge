@@ -14,7 +14,7 @@ import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorC
 public class DeleteConnectionResponse extends BaseResponse {
 
     public DeleteConnectionResponse success() {
-        setCode(Integer.toString(EventBridgeErrorCode.Success.getHttpCode()));
+        setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
         return this;
     }
