@@ -38,7 +38,7 @@ http://127.0.0.1:7001/bus/createEventBus
 
 * Create EventSource
 ```
-http://127.0.0.1:7001/bus/createEventSource
+http://127.0.0.1:7001/source/createEventSource
 ```
 ```json
 {
@@ -105,3 +105,82 @@ Header: Content-Type:"application/cloudevents+json; charset=UTF-8"
     "aliyuneventbusname":"demo"
 }
 ```
+* Use HttpSource to put events
+
+EventBridge HttpSource allows you to put events to eventbus in the form of webhook.
+
+Here is an example explaining how to put events using EventBridge HttpSource.
+
+1. Create an EventBridge HttpSource
+
+    - eventSourceName: Name of EventSource
+    - eventBusName: Name of EventBus
+    - description: Description
+    - className: HttpEvent. This parameter is a fixed value and cannot be modified.
+    - config: HttpSource Config
+    - Type: Request type. Available values are 'HTTP', 'HTTPS' and 'HTTP&HTTPS'.
+    - Method: Allowed HTTP request methods. The request will be filtered if the http request method type for accessing the webhook does not meet the configuration.
+    - SecurityConfig: Security configuration type. Available values are 'none', 'ip' and 'referer'.
+    - Ip: IP security configuration. Http requests whose source ip is not in the configured network segment will be filtered if the security configuration is selected as 'ip'.
+    - Referer: Referer security configuration. HTTP requests whose referer is not in this configuration will be filtered if the security configuration is selected as 'referer'.
+
+A webhook will be generated after the creation of HttpSource.
+```
+http://127.0.0.1:7001/source/createEventSource
+```
+```json
+{
+  "eventSourceName": "httpEventSourceDemo",
+  "eventBusName": "demo",
+  "description": "http source demo",
+  "className": "HttpEvent",
+  "config": {
+    "Type": "HTTP&HTTPS",
+    "Method": ["GET", "POST"],
+    "SecurityConfig": "ip",
+    "Ip": ["10.0.0.0/8"],
+    "Referer":[]
+  }
+}
+```
+2. Put event to EventBus
+
+Http request to access this webhook will be converted into a CloudEvent and delivered to eventbus.
+
+```
+http://127.0.0.1/webhook/putEvents?token=43146d108b2123
+Header: Content-Type:"application/json"
+```
+```json
+{
+  "username": "testUser",
+  "testData": "testData"
+}
+```
+generated CloudEvent demo
+```json
+{
+  "datacontenttype": "application/json",
+  "data": {
+    "headers": {
+      "Accecpt": "*/*",
+      "Host": "127.0.0.1:7001",
+      "Content-Type": "none"
+    },
+    "path": "/webhook/putEvents",
+    "body": {
+      "username": "testUser",
+      "testData": "testData"
+    },
+    "httpMethod": "GET",
+    "queryString": {}
+  },
+  "subject": "DemoBus/httpEventSourceDemo",
+  "source": "httpEventSourceDemo",
+  "type": "eventbridge:Events:HTTPEvent",
+  "specversion": "1.0",
+  "id": "75bc099b-130a-45a8-82e1-3f9a7f0d10f3",
+  "time": "2022-05-12T17:20:30.264+08:00"
+}
+```
+
