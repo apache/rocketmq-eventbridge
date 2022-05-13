@@ -82,6 +82,7 @@ public class ConnectionService extends AbstractResourceService {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
             connectionRepository.deleteConnection(accountId, connectionName);
+            kmsAPI.deleteSecretName(kmsAPI.getSecretName(accountId, connectionName));
         } catch (Exception e) {
             log.error("ConnectionService | deleteConnection | error", e);
             throw new EventBridgeException(e);
@@ -91,8 +92,8 @@ public class ConnectionService extends AbstractResourceService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void updateConnection(ConnectionDTO connectionDTO, String accountId) {
         try {
-            if (checkConnection(accountId, connectionDTO.getConnectionName()) != null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
+            if (checkConnection(accountId, connectionDTO.getConnectionName()) == null) {
+                throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
             }
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
@@ -184,29 +185,25 @@ public class ConnectionService extends AbstractResourceService {
         final List<BodyParameter> bodyParameters = oauthHttpParameters.getBodyParameters();
         final List<QueryStringParameter> queryStringParameters = oauthHttpParameters.getQueryStringParameters();
         final List<HeaderParameter> headerParameters = oauthHttpParameters.getHeaderParameters();
-        String key;
-        String value;
         if (!CollectionUtils.isEmpty(bodyParameters)) {
             for (BodyParameter bodyParameter : bodyParameters) {
                 if (Boolean.parseBoolean(bodyParameter.getIsValueSecret())) {
                     final String secretName = getString(accountId, connectionName, bodyParameter.getKey(), bodyParameter.getValue());
                     bodyParameter.setValue(secretName);
-                    break;
+                    oauthHttpParameters.setBodyParameters(bodyParameters);
+                    return oauthHttpParameters;
                 }
             }
-            oauthHttpParameters.setBodyParameters(bodyParameters);
-            return oauthHttpParameters;
         }
         if (!CollectionUtils.isEmpty(queryStringParameters)) {
             for (QueryStringParameter queryStringParameter : queryStringParameters) {
                 if (Boolean.parseBoolean(queryStringParameter.getIsValueSecret())) {
                     final String secretName = getString(accountId, connectionName, queryStringParameter.getKey(), queryStringParameter.getValue());
                     queryStringParameter.setValue(secretName);
-                    break;
+                    oauthHttpParameters.setQueryStringParameters(queryStringParameters);
+                    return oauthHttpParameters;
                 }
             }
-            oauthHttpParameters.setQueryStringParameters(queryStringParameters);
-            return oauthHttpParameters;
         }
         for (HeaderParameter headerParameter : headerParameters) {
             if (Boolean.parseBoolean(headerParameter.getIsValueSecret())) {

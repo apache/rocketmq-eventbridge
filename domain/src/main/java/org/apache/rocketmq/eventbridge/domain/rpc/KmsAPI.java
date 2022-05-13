@@ -4,5 +4,7 @@ public interface KmsAPI {
 
     String createSecretName(String accountId, String connectionName, String secretData) throws Exception;
 
-    void deleteSecretName(String secretName);
+    void deleteSecretName(String secretName) throws Exception;
+
+    String getSecretName(String accountId, String connectionName);
 }

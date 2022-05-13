@@ -45,19 +45,15 @@ public class KmsAPIImpl implements KmsAPI {
     }
 
     @Override
-    public void deleteSecretName(String secretName) {
-        try {
-            DeleteSecretRequest deleteSecretRequest = new DeleteSecretRequest();
-            deleteSecretRequest.setSecretName(secretName);
-            deleteSecretRequest.setForceDeleteWithoutRecovery("true");
-            client.deleteSecret(deleteSecretRequest);
-        } catch (Exception e) {
-            log.error("KmsAPIImpl | deleteSecretName | Exception | error => ", e);
-            throw new EventBridgeException(e);
-        }
+    public void deleteSecretName(String secretName) throws Exception {
+        DeleteSecretRequest deleteSecretRequest = new DeleteSecretRequest();
+        deleteSecretRequest.setSecretName(secretName);
+        deleteSecretRequest.setForceDeleteWithoutRecovery("true");
+        client.deleteSecret(deleteSecretRequest);
     }
 
-    private String getSecretName(String accountId, String connectionName) {
+    @Override
+    public String getSecretName(String accountId, String connectionName) {
         return accountId + "/eventbus/connection/" + connectionName + "/auth";
     }
 }

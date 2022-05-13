@@ -2,6 +2,7 @@ package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ConnectionVO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
@@ -12,8 +13,11 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.GetConnectionR
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.GetConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListConnectionResponse;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListEnumsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionResponse;
+import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
+import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +51,7 @@ public class ConnectionController {
     @Resource
     private Validator validator;
 
+    @WebLog
     @PostMapping("createConnection")
     public CreateConnectionResponse createConnection(@RequestBody  CreateConnectionRequest createConnectionRequest) {
         final Set<ConstraintViolation<CreateConnectionRequest>> validate = validator.validate(createConnectionRequest);
@@ -57,6 +63,7 @@ public class ConnectionController {
         return new CreateConnectionResponse(connectionService.createConnection(connectionDTO, accountAPI.getResourceOwnerAccountId())).success();
     }
 
+    @WebLog
     @PostMapping("deleteConnection")
     public DeleteConnectionResponse deleteConnection(@RequestBody DeleteConnectionRequest deleteConnectionRequest) {
         final Set<ConstraintViolation<DeleteConnectionRequest>> validate = validator.validate(deleteConnectionRequest);
@@ -68,6 +75,7 @@ public class ConnectionController {
         return new DeleteConnectionResponse().success();
     }
 
+    @WebLog
     @PostMapping("updateConnection")
     public UpdateConnectionResponse updateConnection(@RequestBody UpdateConnectionRequest updateConnectionRequest) {
         final Set<ConstraintViolation<UpdateConnectionRequest>> validate = validator.validate(updateConnectionRequest);
@@ -80,6 +88,7 @@ public class ConnectionController {
         return new UpdateConnectionResponse().success();
     }
 
+    @WebLog
     @PostMapping("getConnection")
     public GetConnectionResponse getConnection(@RequestBody GetConnectionRequest getConnectionRequest) {
         final Set<ConstraintViolation<GetConnectionRequest>> validate = validator.validate(getConnectionRequest);
@@ -93,6 +102,7 @@ public class ConnectionController {
         return new GetConnectionResponse(connection.getName(), connection.getDescription(), networkParameters, authParameters).success();
     }
 
+    @WebLog
     @PostMapping("listConnections")
     public ListConnectionResponse listConnections(@RequestBody ListConnectionRequest listConnectionRequest) {
         final Set<ConstraintViolation<ListConnectionRequest>> validate = validator.validate(listConnectionRequest);
@@ -111,6 +121,14 @@ public class ConnectionController {
                     connectionVOS.add(connectionVO);
                 });
         return new ListConnectionResponse(connectionVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
+    }
+
+    @PostMapping("listEnumsResponse")
+    public ListEnumsResponse listEnumsResponse() {
+        ListEnumsResponse listEnumsResponse = new ListEnumsResponse();
+        listEnumsResponse.setAuthorizationTypeEnums(Arrays.stream(AuthorizationTypeEnum.values()).collect(Collectors.toList()));
+        listEnumsResponse.setNetworkTypeEnums(Arrays.stream(NetworkTypeEnum.values()).collect(Collectors.toList()));
+        return listEnumsResponse;
     }
 
     private ConnectionDTO getEventConnectionWithBLOBs(BaseRequest baseRequest) {

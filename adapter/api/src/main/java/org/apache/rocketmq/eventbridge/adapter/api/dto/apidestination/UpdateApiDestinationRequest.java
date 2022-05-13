@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 @Getter
@@ -23,6 +24,7 @@ public class UpdateApiDestinationRequest extends BaseResponse {
     @SerializedName("Description")
     private String description;
 
+    @Valid
     @SerializedName("HttpApiParameters")
     private HttpApiParameters httpApiParameters;
 

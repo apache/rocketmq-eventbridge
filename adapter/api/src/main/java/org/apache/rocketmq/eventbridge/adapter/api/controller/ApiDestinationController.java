@@ -2,6 +2,7 @@ package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ApiDestinationsVO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationResponse;
@@ -43,6 +44,7 @@ public class ApiDestinationController {
     @Resource
     private Validator validator;
 
+    @WebLog
     @PostMapping("createApiDestination")
     public CreateApiDestinationResponse createApiDestination(@RequestBody CreateApiDestinationRequest createApiDestinationRequest) {
         final Set<ConstraintViolation<CreateApiDestinationRequest>> validate = validator.validate(createApiDestinationRequest);
@@ -54,6 +56,7 @@ public class ApiDestinationController {
         return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(eventApiDestination)).success();
     }
 
+    @WebLog
     @PostMapping("updateApiDestination")
     public UpdateApiDestinationResponse updateApiDestination(@RequestBody UpdateApiDestinationRequest updateApiDestinationRequest) {
         final Set<ConstraintViolation<UpdateApiDestinationRequest>> validate = validator.validate(updateApiDestinationRequest);
@@ -66,6 +69,7 @@ public class ApiDestinationController {
         return new UpdateApiDestinationResponse().success();
     }
 
+    @WebLog
     @PostMapping("getApiDestination")
     public GetApiDestinationResponse getApiDestination(@RequestBody GetApiDestinationRequest getApiDestinationRequest) {
         final Set<ConstraintViolation<GetApiDestinationRequest>> validate = validator.validate(getApiDestinationRequest);
@@ -77,6 +81,7 @@ public class ApiDestinationController {
         return new GetApiDestinationResponse(apiDestination.getName(), apiDestination.getConnectionName(), apiDestination.getDescription(), apiDestination.getApiParams(), apiDestination.getInvocationRateLimitPerSecond()).success();
     }
 
+    @WebLog
     @PostMapping("deleteApiDestination")
     public DeleteApiDestinationResponse deleteApiDestination(@RequestBody DeleteApiDestinationRequest deleteApiDestinationRequest) {
         final Set<ConstraintViolation<DeleteApiDestinationRequest>> validate = validator.validate(deleteApiDestinationRequest);
@@ -88,6 +93,7 @@ public class ApiDestinationController {
         return new DeleteApiDestinationResponse().success();
     }
 
+    @WebLog
     @PostMapping("listApiDestinations")
     public ListApiDestinationsResponse listApiDestinations(@RequestBody ListApiDestinationsRequest listApiDestinationsRequest) {
         final Set<ConstraintViolation<ListApiDestinationsRequest>> validate = validator.validate(listApiDestinationsRequest);
