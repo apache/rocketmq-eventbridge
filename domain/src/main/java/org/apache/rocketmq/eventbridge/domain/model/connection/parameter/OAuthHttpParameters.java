@@ -1,4 +1,4 @@
-package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
+package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class InvocationHttpParameters {
+public class OAuthHttpParameters {
 
     @SerializedName("BodyParameters")
     private List<BodyParameter> bodyParameters;
@@ -20,5 +20,4 @@ public class InvocationHttpParameters {
 
     @SerializedName("QueryStringParameters")
     private List<QueryStringParameter> queryStringParameters;
-
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Getter
@@ -12,9 +13,11 @@ import java.util.List;
 @ToString
 public class HttpApiParameters {
 
+    @NotBlank(message = "Endpoint is blank")
     @SerializedName("Endpoint")
     private String endpoint;
 
+    @NotBlank(message = "Method is blank")
     @SerializedName("Method")
     private String method;
 

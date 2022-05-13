@@ -47,5 +47,9 @@
             <artifactId>httpclient</artifactId>
             <version>${httpclient.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>kms20160120</artifactId>
+        </dependency>
     </dependencies>
 </project>

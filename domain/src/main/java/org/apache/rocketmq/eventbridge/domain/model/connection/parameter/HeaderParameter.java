@@ -1,4 +1,4 @@
-package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
+package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -2,7 +2,7 @@ package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.AuthParameters;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ConnectionVO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
@@ -12,12 +12,14 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.GetConnectionR
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.GetConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ListConnectionResponse;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.NetworkParameters;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionResponse;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -51,13 +53,8 @@ public class ConnectionController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new CreateConnectionResponse(null).parameterCheckFailRes(errMessage.toString());
         }
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(createConnectionRequest.getConnectionName(),
-                createConnectionRequest.getNetworkParameters().getNetworkType(),
-                createConnectionRequest.getAuthParameters(),
-                createConnectionRequest.getNetworkParameters(),
-                createConnectionRequest.getDescription(),
-                accountAPI);
-        return new CreateConnectionResponse(connectionService.createConnection(eventConnectionWithBLOBs)).success();
+        ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(createConnectionRequest);
+        return new CreateConnectionResponse(connectionService.createConnection(connectionDTO, accountAPI.getResourceOwnerAccountId())).success();
     }
 
     @PostMapping("deleteConnection")
@@ -78,13 +75,8 @@ public class ConnectionController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new UpdateConnectionResponse().parameterCheckFailRes(errMessage.toString());
         }
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(updateConnectionRequest.getConnectionName(),
-                updateConnectionRequest.getNetworkParameters().getNetworkType(),
-                updateConnectionRequest.getAuthParameters(),
-                updateConnectionRequest.getNetworkParameters(),
-                updateConnectionRequest.getDescription(),
-                accountAPI);
-        connectionService.updateConnection(eventConnectionWithBLOBs);
+        ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(updateConnectionRequest);
+        connectionService.updateConnection(connectionDTO, accountAPI.getResourceOwnerAccountId());
         return new UpdateConnectionResponse().success();
     }
 
@@ -121,16 +113,10 @@ public class ConnectionController {
         return new ListConnectionResponse(connectionVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
     }
 
-    private EventConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters AuthParameters, NetworkParameters networkParameters, String description, AccountAPI accountAPI) {
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
-        eventConnectionWithBLOBs.setName(name);
-        eventConnectionWithBLOBs.setAuthParameters(JSON.toJSONString(AuthParameters));
-        eventConnectionWithBLOBs.setNetworkParameters(JSON.toJSONString(networkParameters));
-        eventConnectionWithBLOBs.setDescription(description);
-        eventConnectionWithBLOBs.setAccountId(accountAPI.getResourceOwnerAccountId());
-        eventConnectionWithBLOBs.setAuthorizationType(AuthParameters.getAuthorizationType());
-        eventConnectionWithBLOBs.setNetworkType(networkType);
-        return eventConnectionWithBLOBs;
+    private ConnectionDTO getEventConnectionWithBLOBs(BaseRequest baseRequest) {
+        ConnectionDTO connectionDTO = new ConnectionDTO();
+        BeanUtils.copyProperties(baseRequest, connectionDTO);
+        return connectionDTO;
     }
 
 }
