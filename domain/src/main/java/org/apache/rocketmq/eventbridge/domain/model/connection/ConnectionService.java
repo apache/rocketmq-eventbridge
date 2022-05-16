@@ -20,6 +20,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.QuerySt
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.KmsAPI;
+import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -39,16 +39,17 @@ public class ConnectionService extends AbstractResourceService {
 
     protected final ConnectionRepository connectionRepository;
     protected final EventDataRepository eventDataRepository;
-
-    public ConnectionService(ConnectionRepository connectionRepository, EventDataRepository eventDataRepository) {
+    protected KmsAPI kmsAPI;
+    protected NetworkServiceAPI networkServiceAPI;
+    public ConnectionService(ConnectionRepository connectionRepository, EventDataRepository eventDataRepository, KmsAPI kmsAPI, NetworkServiceAPI networkServiceAPI) {
         this.connectionRepository = connectionRepository;
         this.eventDataRepository = eventDataRepository;
+        this.kmsAPI = kmsAPI;
+        this.networkServiceAPI = networkServiceAPI;
     }
 
     @Value("${connection.count.limit}")
     private String connectionCountLimit;
-    @Resource
-    private KmsAPI kmsAPI;
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public String createConnection(ConnectionDTO connectionDTO, String accountId) {
@@ -66,6 +67,9 @@ public class ConnectionService extends AbstractResourceService {
                     connectionDTO.getAuthParameters(),
                     connectionDTO.getNetworkParameters(), connectionDTO.getDescription(), accountId);
             if (connectionRepository.createConnection(eventConnectionWithBLOBs)) {
+                if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
+                    networkServiceAPI.createPrivateNetwork();
+                }
                 return eventConnectionWithBLOBs.getName();
             }
         } catch (Exception e) {
@@ -80,6 +84,10 @@ public class ConnectionService extends AbstractResourceService {
         try {
             if (checkConnection(accountId, connectionName) == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
+            }
+            final EventConnectionWithBLOBs connection = getConnection(accountId, connectionName);
+            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connection.getNetworkType())) {
+                networkServiceAPI.deletePrivateNetwork();
             }
             connectionRepository.deleteConnection(accountId, connectionName);
             kmsAPI.deleteSecretName(kmsAPI.getSecretName(accountId, connectionName));
@@ -236,14 +244,14 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private EventConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters AuthParameters, NetworkParameters networkParameters, String description, String accountId) {
+    private EventConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters authParameters, NetworkParameters networkParameters, String description, String accountId) {
         EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
         eventConnectionWithBLOBs.setName(name);
-        eventConnectionWithBLOBs.setAuthParameters(JSON.toJSONString(AuthParameters));
+        eventConnectionWithBLOBs.setAuthParameters(JSON.toJSONString(authParameters));
         eventConnectionWithBLOBs.setNetworkParameters(JSON.toJSONString(networkParameters));
         eventConnectionWithBLOBs.setDescription(description);
         eventConnectionWithBLOBs.setAccountId(accountId);
-        eventConnectionWithBLOBs.setAuthorizationType(AuthParameters.getAuthorizationType());
+        eventConnectionWithBLOBs.setAuthorizationType(authParameters.getAuthorizationType());
         eventConnectionWithBLOBs.setNetworkType(networkType);
         return eventConnectionWithBLOBs;
     }

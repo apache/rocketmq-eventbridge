@@ -6,4 +6,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NetworkServiceAPIImpl implements NetworkServiceAPI {
+    @Override
+    public Boolean createPrivateNetwork() {
+        return null;
+    }
+
+    @Override
+    public Boolean deletePrivateNetwork() {
+        return null;
+    }
 }
