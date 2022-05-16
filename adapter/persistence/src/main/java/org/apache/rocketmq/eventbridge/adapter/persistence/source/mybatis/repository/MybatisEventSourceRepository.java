@@ -74,8 +74,8 @@
 
      @Override
      public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description,
-         Map<String, Object> config) {
-         return eventSourceMapper.updateEventSource(accountId, eventBusName, eventSourceName, description, null, null)
+         Integer status, Map<String, Object> config) {
+         return eventSourceMapper.updateEventSource(accountId, eventBusName, eventSourceName, description, status, new Gson().toJson(config))
              == 1;
      }
  }

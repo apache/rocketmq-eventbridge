@@ -18,9 +18,13 @@
 package org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.converter;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.dataobject.EventSourceDO;
+import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
 
@@ -33,6 +37,9 @@ public class EventSourceConverter {
             .name(eventSourceDO.getName())
             .type(EventSourceTypeEnum.parseFromCode(eventSourceDO.getType()))
             .description(eventSourceDO.getDescription())
+            .status(EventSourceStatusEnum.parseFromCode(eventSourceDO.getStatus()))
+            .config(new Gson().fromJson(eventSourceDO.getConfig(), new TypeToken<Map<String, Object>>() {}.getType()))
+            .className(eventSourceDO.getClassName())
             .gmtCreate(eventSourceDO.getGmtCreate())
             .gmtModify(eventSourceDO.getGmtModify())
             .build();

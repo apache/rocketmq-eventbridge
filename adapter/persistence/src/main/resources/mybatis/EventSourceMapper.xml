@@ -78,13 +78,13 @@
         <set>
             gmt_modify = now(),
             <if test="description != null">
-                description= #{description}
+                description= #{description},
             </if>
             <if test="status != null">
-                status= #{status}
+                status= #{status},
             </if>
             <if test="config != null">
-                type= #{config}
+                config= #{config},
             </if>
         </set>
         WHERE account_id = #{accountId}

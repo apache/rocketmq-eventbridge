@@ -14,27 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.config;
 
-public abstract class AppConfig {
+package org.apache.rocketmq.eventbridge.tools;
 
-    protected static GlobalConfig globalConfig = new GlobalConfig();
-    protected static LocalConfig localConfig = new LocalConfig();
+import java.util.UUID;
 
-    public static GlobalConfig getGlobalConfig() {
-        return globalConfig;
+/**
+ * @Author changfeng
+ * @Date 2022/5/9 5:15 下午
+ */
+public class TokenUtil {
+    /**
+     * Generate the token of the http source.
+     * @return
+     */
+    public static String generateHttpSourceToken() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            builder.append(UUID.randomUUID().toString().replace("-", ""));
+        }
+        return builder.toString();
     }
-
-    public static LocalConfig getLocalConfig() {
-        return localConfig;
-    }
-
-    public static void refreshGlobalConfig(GlobalConfig globalConfig) {
-        AppConfig.globalConfig = globalConfig;
-    }
-
-    public static void refreshLocalConfig(LocalConfig localConfig) {
-        AppConfig.localConfig = localConfig;
-    }
-
 }

@@ -23,10 +23,15 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     //Default
     Success(200, "Success", "success"),
     InternalError(500, "InternalError", "InternalError"),
+    GenerateTokenError(500, "GenerateTokenError", "Generate token failed, {0}."),
 
     //Put Events
     PutEventsRequestMoreThanOneEventBus(409, "PutEventsRequestMoreThanOneEventBus",
         "The put events request has more than one  event bus [{0}] "),
+    PutEventsRequestSecurityCheckFailed(409, "PutEventsRequestSecurityCheckFailed",
+            "The putEvents request failed the webhook security check for {0}. " +
+                    "Event source configuration is {1}, the parameter in the request is {2}."),
+    JSON_ATTRIBUTE_INVALID(409, "JsonAttributeInvalid", "The Json attribute is invalid"),
 
     //Event Bus
     EventBusNotExist(409, "EventBusNotExist", "The event bus [{0}] not existed!"),
@@ -47,8 +52,15 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
         "The current count of event source is [{0}], which will exceed the limit quota [{1}]"),
     EventSourceNameInvalid(409, "EventSourceNameInvalid", "The event source name [{0}] is invalid!"),
     EventSourceTypeInvalid(409, "EventSourceTypeInvalid", "The event source type[{0}] is invalid!"),
+    EventSourceStatusInvalid(409, "EventSourceStatusInvalid", "The event source status[{0}] is invalid!"),
     EventSourceTypeOrClassInvalid(409, "EventSourceTypeOrClassInvalid",
         "The event source type[{0}] or class[{1}] is invalid!"),
+    HttpSourceParametersInvalid(409, "HttpSourceParametersInvalid",
+            "The parameters of http source is invalid. {0}"),
+    HttpSourceParametersEmpty(409, "HttpSourceParametersEmpty",
+            "The parameters of http source is empty or contains empty value. Invalid parameter name={0}"),
+    ExceedHttpSourceParametersCount(409, "ExceedHttpSourceParametersCount",
+            "Exceed http source parameters count limit. Limit count is {0}, and the value of {1} is {2}"),
 
     //Event Target
     EventTargetNotExist(409, "EventTargetNotExist",

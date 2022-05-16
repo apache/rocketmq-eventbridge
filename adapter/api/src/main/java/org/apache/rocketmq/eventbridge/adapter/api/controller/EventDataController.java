@@ -17,19 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.format.EventFormat;
-import io.cloudevents.core.message.MessageReader;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.http.HttpMessageFactory;
-import io.cloudevents.jackson.JsonFormat;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.rocketmq.eventbridge.adapter.api.converter.EventConverterAdapter;
+import org.apache.rocketmq.eventbridge.adapter.api.converter.HttpEventConverter;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.data.PutEventsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.handler.EventDataHandler;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
@@ -41,8 +32,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/")
@@ -57,9 +53,24 @@ public class EventDataController {
     @Autowired
     EventConverterAdapter eventConverterAdapter;
 
+    @Autowired
+    HttpEventConverter httpEventConverter;
+
     @PostMapping(value = {"putEvents"})
     public Mono<PutEventsResponse> putEvents(@RequestHeader Map<String, String> headers, @RequestBody byte[] body) {
         List<CloudEvent> cloudEvents = eventConverterAdapter.toEventsRequest(headers, body);
+        List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
+        return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(), eventList);
+    }
+
+    @RequestMapping(value = {"webhook/putEvents"})
+    public Mono<PutEventsResponse> putHttpEvents(ServerWebExchange serverWebExchange,
+                                                 @RequestHeader Map<String, String> headers,
+                                                 @RequestBody byte[] body,
+                                                 @RequestParam("token") String token) {
+        ServerHttpRequest request = serverWebExchange.getRequest();
+        List<CloudEvent> cloudEvents = httpEventConverter.toEventBridgeEvent(request, body,
+                headers, accountAPI.getResourceOwnerAccountId(), token);
         List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
         return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(), eventList);
     }
