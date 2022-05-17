@@ -59,7 +59,7 @@
       <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
       <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
     </where>
-    LIMIT #{nextToken} , #{maxResults}
+    order by gmt_modify desc LIMIT #{nextToken} , #{maxResults}
   </select>
   <select id="selectByNameAndAccountId" resultMap="ResultMapWithBLOBs">
     select
