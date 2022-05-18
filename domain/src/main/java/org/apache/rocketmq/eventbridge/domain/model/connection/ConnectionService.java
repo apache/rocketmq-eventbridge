@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
 import com.alibaba.fastjson.JSON;
@@ -18,8 +35,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHt
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.QueryStringParameter;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
-import org.apache.rocketmq.eventbridge.domain.rpc.KmsAPI;
+import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,13 +54,11 @@ import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridg
 public class ConnectionService extends AbstractResourceService {
 
     protected final ConnectionRepository connectionRepository;
-    protected final EventDataRepository eventDataRepository;
-    protected KmsAPI kmsAPI;
+    protected SecretManagerAPI secretManagerAPI;
     protected NetworkServiceAPI networkServiceAPI;
-    public ConnectionService(ConnectionRepository connectionRepository, EventDataRepository eventDataRepository, KmsAPI kmsAPI, NetworkServiceAPI networkServiceAPI) {
+    public ConnectionService(ConnectionRepository connectionRepository, SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI) {
         this.connectionRepository = connectionRepository;
-        this.eventDataRepository = eventDataRepository;
-        this.kmsAPI = kmsAPI;
+        this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
     }
 
@@ -62,7 +76,7 @@ public class ConnectionService extends AbstractResourceService {
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName()));
-            final EventConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
+            final ConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
                     connectionDTO.getNetworkParameters().getNetworkType(),
                     connectionDTO.getAuthParameters(),
                     connectionDTO.getNetworkParameters(), connectionDTO.getDescription(), accountId);
@@ -85,12 +99,12 @@ public class ConnectionService extends AbstractResourceService {
             if (checkConnection(accountId, connectionName) == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
-            final EventConnectionWithBLOBs connection = getConnection(accountId, connectionName);
+            final ConnectionWithBLOBs connection = getConnection(accountId, connectionName);
             if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connection.getNetworkType())) {
                 networkServiceAPI.deletePrivateNetwork();
             }
             connectionRepository.deleteConnection(accountId, connectionName);
-            kmsAPI.deleteSecretName(kmsAPI.getSecretName(accountId, connectionName));
+            secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
         } catch (Exception e) {
             log.error("ConnectionService | deleteConnection | error", e);
             throw new EventBridgeException(e);
@@ -106,7 +120,7 @@ public class ConnectionService extends AbstractResourceService {
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName()));
-            final EventConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
+            final ConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
                     connectionDTO.getNetworkParameters().getNetworkType(),
                     connectionDTO.getAuthParameters(),
                     connectionDTO.getNetworkParameters(), connectionDTO.getDescription(), accountId);
@@ -117,9 +131,9 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    public EventConnectionWithBLOBs getConnection(String accountId, String connectionName) {
+    public ConnectionWithBLOBs getConnection(String accountId, String connectionName) {
         try {
-            final EventConnectionWithBLOBs connection = connectionRepository.getConnection(accountId, connectionName);
+            final ConnectionWithBLOBs connection = connectionRepository.getConnection(accountId, connectionName);
             if (connection == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
@@ -130,15 +144,15 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    public EventConnectionWithBLOBs checkConnection(String accountId, String connectionName) {
+    public ConnectionWithBLOBs checkConnection(String accountId, String connectionName) {
         return connectionRepository.getConnection(accountId, connectionName);
     }
 
-    public PaginationResult<List<EventConnectionWithBLOBs>> listConnections(String accountId, String connectionName, String nextToken,
-                                                                            int maxResults) {
+    public PaginationResult<List<ConnectionWithBLOBs>> listConnections(String accountId, String connectionName, String nextToken,
+                                                                       int maxResults) {
         try {
-            List<EventConnectionWithBLOBs> eventConnectionWithBLOBs = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
-            PaginationResult<List<EventConnectionWithBLOBs>> result = new PaginationResult();
+            List<ConnectionWithBLOBs> eventConnectionWithBLOBs = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
+            PaginationResult<List<ConnectionWithBLOBs>> result = new PaginationResult();
             result.setData(eventConnectionWithBLOBs);
             result.setTotal(this.getConnectionCount(accountId, connectionName));
             result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
@@ -171,7 +185,7 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> basicAuthParametersMap = Maps.newHashMap();
             basicAuthParametersMap.put("username", basicAuthParameters.getUsername());
             basicAuthParametersMap.put("password", basicAuthParameters.getPassword());
-            final String secretName = kmsAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
             basicAuthParameters.setPassword(secretName);
             return authParameters;
         }
@@ -179,7 +193,7 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> apiKeyAuthParametersMap = Maps.newHashMap();
             apiKeyAuthParametersMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
             apiKeyAuthParametersMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-            final String secretName = kmsAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
         }
@@ -228,7 +242,7 @@ public class ConnectionService extends AbstractResourceService {
         Map<String, String> queryStringParameterMap = Maps.newHashMap();
         queryStringParameterMap.put("oauthHttpParameterKey", key);
         queryStringParameterMap.put("oauthHttpParameterValue", value);
-        return kmsAPI.createSecretName(accountId, connectionName, JSON.toJSONString(queryStringParameterMap));
+        return secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(queryStringParameterMap));
     }
 
     private void checkNetworkType(String type) {
@@ -244,8 +258,8 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private EventConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters authParameters, NetworkParameters networkParameters, String description, String accountId) {
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
+    private ConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters authParameters, NetworkParameters networkParameters, String description, String accountId) {
+        ConnectionWithBLOBs eventConnectionWithBLOBs = new ConnectionWithBLOBs();
         eventConnectionWithBLOBs.setName(name);
         eventConnectionWithBLOBs.setAuthParameters(JSON.toJSONString(authParameters));
         eventConnectionWithBLOBs.setNetworkParameters(JSON.toJSONString(networkParameters));

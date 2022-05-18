@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.google.common.collect.Lists;
@@ -16,7 +33,7 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnecti
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.EventApiDestination;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestination;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,7 +109,7 @@ public class ApiDestinationControllerTest {
     public void testGetApiDestination() {
         Set<ConstraintViolation<GetApiDestinationRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(GetApiDestinationRequest.class))).thenReturn(constraintViolations);
-        EventApiDestination eventApiDestination = new EventApiDestination();
+        ApiDestination eventApiDestination = new ApiDestination();
         eventApiDestination.setName(UUID.randomUUID().toString());
         Mockito.when(apiDestinationService.getApiDestination(any(), any())).thenReturn(eventApiDestination);
         GetApiDestinationRequest getApiDestinationRequest = new GetApiDestinationRequest();
@@ -116,12 +133,12 @@ public class ApiDestinationControllerTest {
     public void testListApiDestinations() {
         Set<ConstraintViolation<ListApiDestinationsRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(ListApiDestinationsRequest.class))).thenReturn(constraintViolations);
-        PaginationResult<List<EventApiDestination>> result = new PaginationResult();
-        List<EventApiDestination> eventApiDestinationList = Lists.newArrayList();
-        EventApiDestination eventApiDestination = new EventApiDestination();
-        eventApiDestination.setName(UUID.randomUUID().toString());
-        eventApiDestinationList.add(eventApiDestination);
-        result.setData(eventApiDestinationList);
+        PaginationResult<List<ApiDestination>> result = new PaginationResult();
+        List<ApiDestination> apiDestinationList = Lists.newArrayList();
+        ApiDestination apiDestination = new ApiDestination();
+        apiDestination.setName(UUID.randomUUID().toString());
+        apiDestinationList.add(apiDestination);
+        result.setData(apiDestinationList);
         result.setTotal(9);
         result.setNextToken("0");
         Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(result);

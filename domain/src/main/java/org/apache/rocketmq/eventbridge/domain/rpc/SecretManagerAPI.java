@@ -15,22 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
+package org.apache.rocketmq.eventbridge.domain.rpc;
 
-import com.google.gson.annotations.SerializedName;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
+public interface SecretManagerAPI {
 
-import javax.validation.constraints.NotBlank;
+    String createSecretName(String accountId, String connectionName, String secretData) throws Exception;
 
-@Getter
-@Setter
-@ToString
-public class DeleteApiDestinationRequest extends BaseResponse {
+    void deleteSecretName(String secretName) throws Exception;
 
-    @NotBlank(message = "ApiDestinationName is blank")
-    @SerializedName("ApiDestinationName")
-    private String apiDestinationName;
+    String getSecretName(String accountId, String connectionName);
 }

@@ -1,16 +1,33 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.eventbridge.domain.service;
 
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
-import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
-import org.apache.rocketmq.eventbridge.domain.rpc.KmsAPI;
+import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +53,7 @@ public class ConnectionServiceTest {
     @InjectMocks
     private ConnectionService connectionService;
     @Mock
-    private KmsAPI kmsAPI;
+    private SecretManagerAPI kmsAPI;
     @Mock
     private ConnectionRepository connectionRepository;
     @Mock
@@ -47,10 +64,10 @@ public class ConnectionServiceTest {
         ReflectionTestUtils.setField(connectionService, "connectionCountLimit", "9");
         Mockito.when(connectionRepository.createConnection(any())).thenReturn(Boolean.TRUE);
         Mockito.when(connectionRepository.deleteConnection(anyString(), anyString())).thenReturn(Boolean.TRUE);
-        Mockito.when(connectionRepository.updateConnection(any(EventConnectionWithBLOBs.class))).thenReturn(Boolean.TRUE);
+        Mockito.when(connectionRepository.updateConnection(any(ConnectionWithBLOBs.class))).thenReturn(Boolean.TRUE);
         Mockito.when(connectionRepository.listConnections(anyString(), anyString(), anyString(), anyInt())).thenReturn(new ArrayList<>());
         Mockito.when(connectionRepository.getConnectionCount(any(), any())).thenReturn(8);
-        EventConnectionWithBLOBs eventConnectionWithBLOBs = new EventConnectionWithBLOBs();
+        ConnectionWithBLOBs eventConnectionWithBLOBs = new ConnectionWithBLOBs();
         eventConnectionWithBLOBs.setName(UUID.randomUUID().toString());
         eventConnectionWithBLOBs.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
         Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(eventConnectionWithBLOBs);
@@ -114,13 +131,13 @@ public class ConnectionServiceTest {
 
     @Test
     public void testGetConnection() {
-        final EventConnectionWithBLOBs connection = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        final ConnectionWithBLOBs connection = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         Assert.assertNotNull(connection);
     }
 
     @Test
     public void testListConnections() {
-        final PaginationResult<List<EventConnectionWithBLOBs>> listPaginationResult = connectionService.listConnections(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
+        final PaginationResult<List<ConnectionWithBLOBs>> listPaginationResult = connectionService.listConnections(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
         Assert.assertNotNull(listPaginationResult.getData());
     }
 }

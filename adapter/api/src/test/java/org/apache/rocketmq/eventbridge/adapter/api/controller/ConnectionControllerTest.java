@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.alibaba.fastjson.JSON;
@@ -18,7 +35,7 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
-import org.apache.rocketmq.eventbridge.domain.model.connection.EventConnectionWithBLOBs;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
@@ -133,7 +150,7 @@ public class ConnectionControllerTest {
         validator = Mockito.mock(Validator.class);
         Set<ConstraintViolation<GetConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(GetConnectionRequest.class))).thenReturn(constraintViolations);
-        final EventConnectionWithBLOBs connection = new EventConnectionWithBLOBs();
+        final ConnectionWithBLOBs connection = new ConnectionWithBLOBs();
         connection.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
@@ -158,9 +175,9 @@ public class ConnectionControllerTest {
 
     @Test
     public void testListConnections() {
-        PaginationResult<List<EventConnectionWithBLOBs>> result = new PaginationResult();
-        List<EventConnectionWithBLOBs> eventConnectionWithBLOBs = Lists.newArrayList();
-        EventConnectionWithBLOBs  eventConnection = new EventConnectionWithBLOBs();
+        PaginationResult<List<ConnectionWithBLOBs>> result = new PaginationResult();
+        List<ConnectionWithBLOBs> eventConnectionWithBLOBs = Lists.newArrayList();
+        ConnectionWithBLOBs eventConnection = new ConnectionWithBLOBs();
         eventConnection.setName(UUID.randomUUID().toString());
         eventConnectionWithBLOBs.add(eventConnection);
         result.setData(eventConnectionWithBLOBs);

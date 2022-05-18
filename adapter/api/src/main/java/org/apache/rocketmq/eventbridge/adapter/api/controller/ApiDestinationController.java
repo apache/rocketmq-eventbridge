@@ -1,9 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ApiDestinationsVO;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ApiDestinationsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiDestinationRequest;
@@ -17,7 +34,7 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiD
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.EventApiDestination;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestination;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -52,8 +69,8 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new CreateApiDestinationResponse(null).parameterCheckFailRes(errMessage.toString());
         }
-        EventApiDestination eventApiDestination = getEventApiDestination(createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(), createApiDestinationRequest.getConnectionName(), createApiDestinationRequest.getInvocationRateLimitPerSecond(), createApiDestinationRequest.getApiDestinationName(), accountAPI);
-        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(eventApiDestination)).success();
+        ApiDestination apiDestination = getEventApiDestination(createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(), createApiDestinationRequest.getConnectionName(), createApiDestinationRequest.getInvocationRateLimitPerSecond(), createApiDestinationRequest.getApiDestinationName(), accountAPI);
+        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(apiDestination)).success();
     }
 
     @WebLog
@@ -64,8 +81,8 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new UpdateApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
         }
-        EventApiDestination eventApiDestination = getEventApiDestination(updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(), updateApiDestinationRequest.getConnectionName(), updateApiDestinationRequest.getInvocationRateLimitPerSecond(), updateApiDestinationRequest.getApiDestinationName(), accountAPI);
-        apiDestinationService.updateApiDestination(eventApiDestination);
+        ApiDestination apiDestination = getEventApiDestination(updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(), updateApiDestinationRequest.getConnectionName(), updateApiDestinationRequest.getInvocationRateLimitPerSecond(), updateApiDestinationRequest.getApiDestinationName(), accountAPI);
+        apiDestinationService.updateApiDestination(apiDestination);
         return new UpdateApiDestinationResponse().success();
     }
 
@@ -77,7 +94,7 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new GetApiDestinationResponse(null, null, null, null, null).parameterCheckFailRes(errMessage.toString());
         }
-        final EventApiDestination apiDestination = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
+        final ApiDestination apiDestination = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
         return new GetApiDestinationResponse(apiDestination.getName(), apiDestination.getConnectionName(), apiDestination.getDescription(), apiDestination.getApiParams(), apiDestination.getInvocationRateLimitPerSecond()).success();
     }
 
@@ -101,28 +118,28 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
         }
-        final PaginationResult<List<EventApiDestination>> listPaginationResult = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(),
+        final PaginationResult<List<ApiDestination>> listPaginationResult = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(),
                 listApiDestinationsRequest.getApiDestinationNamePrefix(), listApiDestinationsRequest.getNextToken(), listApiDestinationsRequest.getMaxResults());
-        List<ApiDestinationsVO> apiDestinationsVOS = Lists.newArrayList();
+        List<ApiDestinationsResponse> apiDestinationsResponses = Lists.newArrayList();
         listPaginationResult.getData()
                 .forEach(eventApiDestination -> {
-                    ApiDestinationsVO apiDestinationsVO = new ApiDestinationsVO();
-                    BeanUtils.copyProperties(eventApiDestination, apiDestinationsVO);
-                    apiDestinationsVO.setApiDestinationName(eventApiDestination.getName());
-                    apiDestinationsVO.setHttpApiParameters(eventApiDestination.getApiParams());
-                    apiDestinationsVOS.add(apiDestinationsVO);
+                    ApiDestinationsResponse apiDestinationsResponse = new ApiDestinationsResponse();
+                    BeanUtils.copyProperties(eventApiDestination, apiDestinationsResponse);
+                    apiDestinationsResponse.setApiDestinationName(eventApiDestination.getName());
+                    apiDestinationsResponse.setHttpApiParameters(eventApiDestination.getApiParams());
+                    apiDestinationsResponses.add(apiDestinationsResponse);
                 });
-        return new ListApiDestinationsResponse(apiDestinationsVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
+        return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
     }
 
-    private EventApiDestination getEventApiDestination(HttpApiParameters apiParams, String description, String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI) {
-        EventApiDestination eventApiDestination = new EventApiDestination();
-        eventApiDestination.setApiParams(JSON.toJSONString(apiParams));
-        eventApiDestination.setDescription(description);
-        eventApiDestination.setConnectionName(connectionName);
-        eventApiDestination.setInvocationRateLimitPerSecond(invocationRateLimitPerSecond);
-        eventApiDestination.setName(name);
-        eventApiDestination.setAccountId(accountAPI.getResourceOwnerAccountId());
-        return eventApiDestination;
+    private ApiDestination getEventApiDestination(HttpApiParameters apiParams, String description, String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI) {
+        ApiDestination apiDestination = new ApiDestination();
+        apiDestination.setApiParams(JSON.toJSONString(apiParams));
+        apiDestination.setDescription(description);
+        apiDestination.setConnectionName(connectionName);
+        apiDestination.setInvocationRateLimitPerSecond(invocationRateLimitPerSecond);
+        apiDestination.setName(name);
+        apiDestination.setAccountId(accountAPI.getResourceOwnerAccountId());
+        return apiDestination;
     }
 }
