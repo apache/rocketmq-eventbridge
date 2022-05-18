@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ConnectionVO;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.DeleteConnectionRequest;
@@ -37,10 +36,7 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -70,14 +66,14 @@ public class ConnectionController {
 
     @WebLog
     @PostMapping("createConnection")
-    public CreateConnectionResponse createConnection(@RequestBody  CreateConnectionRequest createConnectionRequest) {
+    public CreateConnectionResponse createConnection(@RequestBody CreateConnectionRequest createConnectionRequest) {
         final Set<ConstraintViolation<CreateConnectionRequest>> validate = validator.validate(createConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new CreateConnectionResponse(null).parameterCheckFailRes(errMessage.toString());
         }
         ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(createConnectionRequest);
-        return new CreateConnectionResponse(connectionService.createConnection(connectionDTO, accountAPI.getResourceOwnerAccountId())).success();
+        return new CreateConnectionResponse(connectionService.createConnection(connectionDTO)).success();
     }
 
     @WebLog
@@ -113,10 +109,8 @@ public class ConnectionController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new GetConnectionResponse(null, null, null, null).parameterCheckFailRes(errMessage.toString());
         }
-        final ConnectionWithBLOBs connection = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(), getConnectionRequest.getConnectionName());
-        final NetworkParameters networkParameters = JSON.parseObject(connection.getNetworkParameters(), NetworkParameters.class);
-        final AuthParameters authParameters = JSON.parseObject(connection.getAuthParameters(), AuthParameters.class);
-        return new GetConnectionResponse(connection.getName(), connection.getDescription(), networkParameters, authParameters).success();
+        final ConnectionDTO connectionDTO = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(), getConnectionRequest.getConnectionName());
+        return new GetConnectionResponse(connectionDTO.getConnectionName(), connectionDTO.getDescription(), connectionDTO.getNetworkParameters(), connectionDTO.getAuthParameters()).success();
     }
 
     @WebLog
@@ -127,17 +121,16 @@ public class ConnectionController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new ListConnectionResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
         }
-        final PaginationResult<List<ConnectionWithBLOBs>> listPaginationResult = connectionService.listConnections(accountAPI.getResourceOwnerAccountId(),
+        final PaginationResult<List<ConnectionDTO>> listPaginationResult = connectionService.listConnections(accountAPI.getResourceOwnerAccountId(),
                 listConnectionRequest.getConnectionNamePrefix(), listConnectionRequest.getNextToken(), listConnectionRequest.getMaxResults());
-        List<ConnectionVO> connectionVOS = Lists.newArrayList();
+        List<ConnectionResponse> connectionResponses = Lists.newArrayList();
         listPaginationResult.getData()
-                .forEach(eventConnectionWithBLOBs -> {
-                    ConnectionVO connectionVO = new ConnectionVO();
-                    BeanUtils.copyProperties(eventConnectionWithBLOBs, connectionVO);
-                    connectionVO.setConnectionName(eventConnectionWithBLOBs.getName());
-                    connectionVOS.add(connectionVO);
+                .forEach(connectionDTO -> {
+                    ConnectionResponse connectionResponse = new ConnectionResponse();
+                    BeanUtils.copyProperties(connectionDTO, connectionResponse);
+                    connectionResponses.add(connectionResponse);
                 });
-        return new ListConnectionResponse(connectionVOS, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
+        return new ListConnectionResponse(connectionResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
     }
 
     @PostMapping("listEnumsResponse")
@@ -151,6 +144,7 @@ public class ConnectionController {
     private ConnectionDTO getEventConnectionWithBLOBs(BaseRequest baseRequest) {
         ConnectionDTO connectionDTO = new ConnectionDTO();
         BeanUtils.copyProperties(baseRequest, connectionDTO);
+        connectionDTO.setAccountId(accountAPI.getResourceOwnerAccountId());
         return connectionDTO;
     }
 

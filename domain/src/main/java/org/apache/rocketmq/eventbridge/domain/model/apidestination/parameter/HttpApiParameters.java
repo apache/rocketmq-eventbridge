@@ -15,21 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
+package org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
-public class ClientParameters {
+public class HttpApiParameters {
 
-    @SerializedName("ClientID")
-    private String clientID;
+    @NotBlank(message = "Endpoint is blank")
+    @SerializedName("Endpoint")
+    private String endpoint;
 
-    @SerializedName("ClientSecret")
-    private String clientSecret;
+    @NotBlank(message = "Method is blank")
+    @SerializedName("Method")
+    private String method;
+
+    @SerializedName("ApiParameters")
+    private List<ApiParameter> apiParameters;
 }

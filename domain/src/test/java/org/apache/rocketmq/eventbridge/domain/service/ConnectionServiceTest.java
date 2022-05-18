@@ -20,15 +20,14 @@ package org.apache.rocketmq.eventbridge.domain.service;
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
-import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
+import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,34 +51,28 @@ public class ConnectionServiceTest {
     @InjectMocks
     private ConnectionService connectionService;
     @Mock
-    private SecretManagerAPI kmsAPI;
-    @Mock
     private ConnectionRepository connectionRepository;
+    @Mock
+    private SecretManagerAPI secretManagerAPI;
     @Mock
     private NetworkServiceAPI networkServiceAPI;
 
     @Before
     public void testBefore() throws Exception {
-        ReflectionTestUtils.setField(connectionService, "connectionCountLimit", "9");
         Mockito.when(connectionRepository.createConnection(any())).thenReturn(Boolean.TRUE);
-        Mockito.when(connectionRepository.deleteConnection(anyString(), anyString())).thenReturn(Boolean.TRUE);
-        Mockito.when(connectionRepository.updateConnection(any(ConnectionWithBLOBs.class))).thenReturn(Boolean.TRUE);
         Mockito.when(connectionRepository.listConnections(anyString(), anyString(), anyString(), anyInt())).thenReturn(new ArrayList<>());
         Mockito.when(connectionRepository.getConnectionCount(any(), any())).thenReturn(8);
-        ConnectionWithBLOBs eventConnectionWithBLOBs = new ConnectionWithBLOBs();
-        eventConnectionWithBLOBs.setName(UUID.randomUUID().toString());
-        eventConnectionWithBLOBs.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
-        Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(eventConnectionWithBLOBs);
-        Mockito.when(networkServiceAPI.createPrivateNetwork()).thenReturn(Boolean.TRUE);
-        Mockito.when(networkServiceAPI.deletePrivateNetwork()).thenReturn(Boolean.FALSE);
+        ConnectionDTO connectionDTO = new ConnectionDTO();
+        connectionDTO.setConnectionName(UUID.randomUUID().toString());
+        NetworkParameters networkParameters = new NetworkParameters();
+        networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
+        connectionDTO.setNetworkParameters(networkParameters);
+        Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(connectionDTO);
     }
 
     @Test
     public void testCreateConnection() throws Exception {
         Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(null);
-        Mockito.when(kmsAPI.createSecretName(anyString(), anyString(), anyString())).thenReturn(UUID.randomUUID().toString());
-        Mockito.doNothing().when(kmsAPI).deleteSecretName(anyString());
-        Mockito.when(kmsAPI.getSecretName(anyString(), anyString())).thenReturn(UUID.randomUUID().toString());
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         connectionDTO.setDescription(UUID.randomUUID().toString());
@@ -97,13 +89,12 @@ public class ConnectionServiceTest {
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
-        final String connection = connectionService.createConnection(connectionDTO, UUID.randomUUID().toString());
+        final String connection = connectionService.createConnection(connectionDTO);
         Assert.assertNotNull(connection);
     }
 
     @Test
     public void testDeleteConnection() throws Exception {
-        Mockito.doNothing().when(kmsAPI).deleteSecretName(anyString());
         Mockito.when(connectionRepository.deleteConnection(any(), any())).thenReturn(Boolean.TRUE);
         connectionService.deleteConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }
@@ -131,13 +122,13 @@ public class ConnectionServiceTest {
 
     @Test
     public void testGetConnection() {
-        final ConnectionWithBLOBs connection = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        Assert.assertNotNull(connection);
+        final ConnectionDTO connectionDTO = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        Assert.assertNotNull(connectionDTO);
     }
 
     @Test
     public void testListConnections() {
-        final PaginationResult<List<ConnectionWithBLOBs>> listPaginationResult = connectionService.listConnections(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
+        final PaginationResult<List<ConnectionDTO>> listPaginationResult = connectionService.listConnections(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
         Assert.assertNotNull(listPaginationResult.getData());
     }
 }

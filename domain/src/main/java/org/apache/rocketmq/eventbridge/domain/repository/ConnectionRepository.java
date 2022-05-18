@@ -17,22 +17,22 @@
 
 package org.apache.rocketmq.eventbridge.domain.repository;
 
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 
 import java.util.List;
 
 public interface ConnectionRepository {
 
-    Boolean createConnection(ConnectionWithBLOBs eventConnectionWithBLOBs);
+    Boolean createConnection(ConnectionDTO connectionDTO);
 
     boolean deleteConnection(String accountId, String connectionName);
 
-    boolean updateConnection(ConnectionWithBLOBs eventConnectionWithBLOBs);
+    boolean updateConnection(ConnectionDTO connectionDTO);
 
-    ConnectionWithBLOBs getConnection(String accountId, String connectionName);
+    ConnectionDTO getConnection(String accountId, String connectionName);
 
-    List<ConnectionWithBLOBs> listConnections(String accountId, String connectionName, String nextToken,
-                                              int maxResults);
+    List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
+                                        int maxResults);
 
     int getConnectionCount(String accountId, String connectionName);
 }

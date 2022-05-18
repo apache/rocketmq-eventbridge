@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
+package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 
-@Getter
-@Setter
 @ToString
-public class ApiParameter {
+@Setter
+@Getter
+public class ConnectionResponse extends BaseDTO {
 
-    @SerializedName("Name")
-    private String name;
+    @SerializedName("ConnectionName")
+    private String connectionName;
 
     @SerializedName("Description")
     private String description;
 
-    @SerializedName("Type")
-    private String type;
+    @SerializedName("NetworkParameters")
+    private NetworkParameters networkParameters;
 
-    @SerializedName("DefaultValue")
-    private String defaultValue;
+    @SerializedName("AuthParameters")
+    private AuthParameters authParameters;
 
-    @SerializedName("In")
-    private String in;
 }

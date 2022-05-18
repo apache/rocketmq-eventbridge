@@ -34,4 +34,15 @@ public class OAuthParameters {
     private String httpMethod;
     @SerializedName("OAuthHttpParameters")
     private OAuthHttpParameters oauthHttpParameters;
+
+    @Getter
+    @Setter
+    @ToString
+    static class ClientParameters {
+        @SerializedName("ClientID")
+        private String clientID;
+
+        @SerializedName("ClientSecret")
+        private String clientSecret;
+    }
 }

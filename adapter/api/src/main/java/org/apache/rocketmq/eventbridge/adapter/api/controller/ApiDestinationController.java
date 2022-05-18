@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ApiDestinationsResponse;
@@ -27,14 +26,14 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiD
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.GetApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.GetApiDestinationResponse;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDestinationsRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDestinationsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestination;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -69,8 +68,8 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new CreateApiDestinationResponse(null).parameterCheckFailRes(errMessage.toString());
         }
-        ApiDestination apiDestination = getEventApiDestination(createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(), createApiDestinationRequest.getConnectionName(), createApiDestinationRequest.getInvocationRateLimitPerSecond(), createApiDestinationRequest.getApiDestinationName(), accountAPI);
-        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(apiDestination)).success();
+        ApiDestinationDTO apiDestinationDTO = getEventApiDestination(createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(), createApiDestinationRequest.getConnectionName(), createApiDestinationRequest.getInvocationRateLimitPerSecond(), createApiDestinationRequest.getApiDestinationName(), accountAPI);
+        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(apiDestinationDTO)).success();
     }
 
     @WebLog
@@ -81,8 +80,8 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new UpdateApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
         }
-        ApiDestination apiDestination = getEventApiDestination(updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(), updateApiDestinationRequest.getConnectionName(), updateApiDestinationRequest.getInvocationRateLimitPerSecond(), updateApiDestinationRequest.getApiDestinationName(), accountAPI);
-        apiDestinationService.updateApiDestination(apiDestination);
+        ApiDestinationDTO apiDestinationDTO = getEventApiDestination(updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(), updateApiDestinationRequest.getConnectionName(), updateApiDestinationRequest.getInvocationRateLimitPerSecond(), updateApiDestinationRequest.getApiDestinationName(), accountAPI);
+        apiDestinationService.updateApiDestination(apiDestinationDTO);
         return new UpdateApiDestinationResponse().success();
     }
 
@@ -94,8 +93,8 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new GetApiDestinationResponse(null, null, null, null, null).parameterCheckFailRes(errMessage.toString());
         }
-        final ApiDestination apiDestination = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
-        return new GetApiDestinationResponse(apiDestination.getName(), apiDestination.getConnectionName(), apiDestination.getDescription(), apiDestination.getApiParams(), apiDestination.getInvocationRateLimitPerSecond()).success();
+        final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
+        return new GetApiDestinationResponse(apiDestinationDTO.getName(), apiDestinationDTO.getConnectionName(), apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(), apiDestinationDTO.getInvocationRateLimitPerSecond()).success();
     }
 
     @WebLog
@@ -118,7 +117,7 @@ public class ApiDestinationController {
         if (!CollectionUtils.isEmpty(errMessage)) {
             return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
         }
-        final PaginationResult<List<ApiDestination>> listPaginationResult = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(),
+        final PaginationResult<List<ApiDestinationDTO>> listPaginationResult = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(),
                 listApiDestinationsRequest.getApiDestinationNamePrefix(), listApiDestinationsRequest.getNextToken(), listApiDestinationsRequest.getMaxResults());
         List<ApiDestinationsResponse> apiDestinationsResponses = Lists.newArrayList();
         listPaginationResult.getData()
@@ -132,14 +131,14 @@ public class ApiDestinationController {
         return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
     }
 
-    private ApiDestination getEventApiDestination(HttpApiParameters apiParams, String description, String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI) {
-        ApiDestination apiDestination = new ApiDestination();
-        apiDestination.setApiParams(JSON.toJSONString(apiParams));
-        apiDestination.setDescription(description);
-        apiDestination.setConnectionName(connectionName);
-        apiDestination.setInvocationRateLimitPerSecond(invocationRateLimitPerSecond);
-        apiDestination.setName(name);
-        apiDestination.setAccountId(accountAPI.getResourceOwnerAccountId());
-        return apiDestination;
+    private ApiDestinationDTO getEventApiDestination(HttpApiParameters apiParams, String description, String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI) {
+        ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
+        apiDestinationDTO.setApiParams(apiParams);
+        apiDestinationDTO.setDescription(description);
+        apiDestinationDTO.setConnectionName(connectionName);
+        apiDestinationDTO.setInvocationRateLimitPerSecond(invocationRateLimitPerSecond);
+        apiDestinationDTO.setName(name);
+        apiDestinationDTO.setAccountId(accountAPI.getResourceOwnerAccountId());
+        return apiDestinationDTO;
     }
 }

@@ -17,8 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.repository;
 
+import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.converter.ApiDestinationConverter;
+import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.dataobject.ApiDestinationDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.mapper.EventApiDestinationMapper;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestination;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.springframework.stereotype.Repository;
 
@@ -35,22 +37,24 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
     }
 
     @Override
-    public Boolean createApiDestination(ApiDestination apiDestination) {
-        apiDestination.setGmtCreate(new Date());
-        apiDestination.setGmtModify(new Date());
-        apiDestination.setProtocol("Http");
-        return eventApiDestinationMapper.insertSelective(apiDestination) == 1;
+    public Boolean createApiDestination(ApiDestinationDTO apiDestinationDTO) {
+        final ApiDestinationDO apiDestinationDO = ApiDestinationConverter.dtoConverterDo(apiDestinationDTO);
+        apiDestinationDO.setGmtCreate(new Date());
+        apiDestinationDO.setGmtModify(new Date());
+        apiDestinationDO.setProtocol("Http");
+        return eventApiDestinationMapper.insertSelective(apiDestinationDO) == 1;
     }
 
     @Override
-    public Boolean updateApiDestination(ApiDestination apiDestination) {
-        apiDestination.setGmtModify(new Date());
-        return eventApiDestinationMapper.updateByNameAndAccountId(apiDestination) == 1;
+    public Boolean updateApiDestination(ApiDestinationDTO apiDestinationDTO) {
+        final ApiDestinationDO apiDestinationDO = ApiDestinationConverter.dtoConverterDo(apiDestinationDTO);
+        apiDestinationDO.setGmtModify(new Date());
+        return eventApiDestinationMapper.updateByNameAndAccountId(apiDestinationDO) == 1;
     }
 
     @Override
-    public ApiDestination getApiDestination(String accountId, String apiDestinationName) {
-        return eventApiDestinationMapper.selectByAccountIdAndName(accountId, apiDestinationName);
+    public ApiDestinationDTO getApiDestination(String accountId, String apiDestinationName) {
+        return ApiDestinationConverter.doConverterDto(eventApiDestinationMapper.selectByAccountIdAndName(accountId, apiDestinationName));
     }
 
     @Override
@@ -59,9 +63,9 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
     }
 
     @Override
-    public List<ApiDestination> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                    int maxResults) {
-        return eventApiDestinationMapper.listApiDestinations(accountId, apiDestinationName, Integer.parseInt(nextToken), maxResults);
+    public List<ApiDestinationDTO> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+                                                       int maxResults) {
+        return ApiDestinationConverter.doListCoverterDtoList(eventApiDestinationMapper.listApiDestinations(accountId, apiDestinationName, Integer.parseInt(nextToken), maxResults));
     }
 
     @Override

@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
@@ -35,10 +34,9 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.junit.Assert;
@@ -76,17 +74,12 @@ public class ConnectionControllerTest {
 
     @Before
     public void testBefore() throws Exception {
-        Mockito.doNothing().when(connectionService).deleteConnection(anyString(), anyString());
-        Mockito.doNothing().when(connectionService).updateConnection(any(ConnectionDTO.class), anyString());
-        Mockito.when(connectionService.getConnectionCount(any(), any())).thenReturn(9);
-        accountAPI = Mockito.mock(AccountAPI.class);
         Mockito.when(accountAPI.getResourceOwnerAccountId()).thenReturn(UUID.randomUUID().toString());
     }
 
     @Test
     public void testCreateConnection() {
-        Mockito.when(connectionService.createConnection(any(ConnectionDTO.class), anyString())).thenReturn(UUID.randomUUID().toString());
-        validator = Mockito.mock(Validator.class);
+        Mockito.when(connectionService.createConnection(any(ConnectionDTO.class))).thenReturn(UUID.randomUUID().toString());
         Set<ConstraintViolation<CreateConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(CreateConnectionRequest.class))).thenReturn(constraintViolations);
         CreateConnectionRequest createConnectionRequest = new CreateConnectionRequest();
@@ -111,7 +104,7 @@ public class ConnectionControllerTest {
 
     @Test
     public void testDeleteConnection() {
-        validator = Mockito.mock(Validator.class);
+        Mockito.doNothing().when(connectionService).deleteConnection(anyString(), anyString());
         Set<ConstraintViolation<DeleteConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(DeleteConnectionRequest.class))).thenReturn(constraintViolations);
         DeleteConnectionRequest deleteConnectionRequest = new DeleteConnectionRequest();
@@ -122,7 +115,7 @@ public class ConnectionControllerTest {
 
     @Test
     public void testUpdateConnection() {
-        validator = Mockito.mock(Validator.class);
+        Mockito.doNothing().when(connectionService).updateConnection(any(ConnectionDTO.class), anyString());
         Set<ConstraintViolation<UpdateConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(UpdateConnectionRequest.class))).thenReturn(constraintViolations);
         UpdateConnectionRequest updateConnectionRequest = new UpdateConnectionRequest();
@@ -147,26 +140,23 @@ public class ConnectionControllerTest {
 
     @Test
     public void testGetConnection() {
-        validator = Mockito.mock(Validator.class);
         Set<ConstraintViolation<GetConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(GetConnectionRequest.class))).thenReturn(constraintViolations);
-        final ConnectionWithBLOBs connection = new ConnectionWithBLOBs();
-        connection.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
+        final ConnectionDTO connectionDTO = new ConnectionDTO();
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
         networkParameters.setSecurityGroupId(UUID.randomUUID().toString());
         networkParameters.setVpcId(UUID.randomUUID().toString());
         networkParameters.setVswitcheId(UUID.randomUUID().toString());
-        connection.setNetworkParameters(JSON.toJSONString(networkParameters));
+        connectionDTO.setNetworkParameters(networkParameters);
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
         basicAuthParameters.setPassword(UUID.randomUUID().toString());
         basicAuthParameters.setUsername(UUID.randomUUID().toString());
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
-        connection.setAuthParameters(JSON.toJSONString(authParameters));
-        connection.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
-        BDDMockito.given(connectionService.getConnection(any(), any())).willReturn(connection);
+        connectionDTO.setAuthParameters(authParameters);
+        BDDMockito.given(connectionService.getConnection(any(), any())).willReturn(connectionDTO);
         GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
         getConnectionRequest.setConnectionName(UUID.randomUUID().toString());
         final GetConnectionResponse getConnectionResponse = connectionController.getConnection(getConnectionRequest);
@@ -175,16 +165,15 @@ public class ConnectionControllerTest {
 
     @Test
     public void testListConnections() {
-        PaginationResult<List<ConnectionWithBLOBs>> result = new PaginationResult();
-        List<ConnectionWithBLOBs> eventConnectionWithBLOBs = Lists.newArrayList();
-        ConnectionWithBLOBs eventConnection = new ConnectionWithBLOBs();
-        eventConnection.setName(UUID.randomUUID().toString());
+        PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
+        List<ConnectionDTO> eventConnectionWithBLOBs = Lists.newArrayList();
+        ConnectionDTO eventConnection = new ConnectionDTO();
+        eventConnection.setConnectionName(UUID.randomUUID().toString());
         eventConnectionWithBLOBs.add(eventConnection);
         result.setData(eventConnectionWithBLOBs);
         result.setTotal(9);
         result.setNextToken("0");
         Mockito.when(connectionService.listConnections(any(), any(), any(), anyInt())).thenReturn(result);
-        validator = Mockito.mock(Validator.class);
         Set<ConstraintViolation<ListConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(ListConnectionRequest.class))).thenReturn(constraintViolations);
         ListConnectionRequest listConnectionRequest = new ListConnectionRequest();

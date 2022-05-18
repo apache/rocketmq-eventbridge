@@ -20,6 +20,7 @@ package org.apache.rocketmq.eventbridge.domain.model.connection;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
@@ -28,17 +29,14 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyA
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BodyParameter;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.HeaderParameter;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.QueryStringParameter;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
-import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
+import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,35 +54,28 @@ public class ConnectionService extends AbstractResourceService {
     protected final ConnectionRepository connectionRepository;
     protected SecretManagerAPI secretManagerAPI;
     protected NetworkServiceAPI networkServiceAPI;
+
     public ConnectionService(ConnectionRepository connectionRepository, SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
     }
 
-    @Value("${connection.count.limit}")
-    private String connectionCountLimit;
-
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public String createConnection(ConnectionDTO connectionDTO, String accountId) {
+    public String createConnection(ConnectionDTO connectionDTO) {
         try {
-            if (checkConnection(accountId, connectionDTO.getConnectionName()) != null) {
+            if (checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()) != null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
             }
-            super.checkQuota(this.getConnectionCount(accountId, connectionDTO.getConnectionName()), Integer.parseInt(connectionCountLimit),
-                    ConnectionCountExceedLimit);
+            super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId(), connectionDTO.getConnectionName()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
-            connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName()));
-            final ConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
-                    connectionDTO.getNetworkParameters().getNetworkType(),
-                    connectionDTO.getAuthParameters(),
-                    connectionDTO.getNetworkParameters(), connectionDTO.getDescription(), accountId);
-            if (connectionRepository.createConnection(eventConnectionWithBLOBs)) {
+            connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
+            if (connectionRepository.createConnection(connectionDTO)) {
                 if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
                     networkServiceAPI.createPrivateNetwork();
                 }
-                return eventConnectionWithBLOBs.getName();
+                return connectionDTO.getConnectionName();
             }
         } catch (Exception e) {
             log.error("ConnectionService | createConnection | error", e);
@@ -99,8 +90,8 @@ public class ConnectionService extends AbstractResourceService {
             if (checkConnection(accountId, connectionName) == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
-            final ConnectionWithBLOBs connection = getConnection(accountId, connectionName);
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connection.getNetworkType())) {
+            final ConnectionDTO connection = getConnection(accountId, connectionName);
+            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connection.getNetworkParameters().getNetworkType())) {
                 networkServiceAPI.deletePrivateNetwork();
             }
             connectionRepository.deleteConnection(accountId, connectionName);
@@ -120,40 +111,35 @@ public class ConnectionService extends AbstractResourceService {
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName()));
-            final ConnectionWithBLOBs eventConnectionWithBLOBs = getEventConnectionWithBLOBs(connectionDTO.getConnectionName(),
-                    connectionDTO.getNetworkParameters().getNetworkType(),
-                    connectionDTO.getAuthParameters(),
-                    connectionDTO.getNetworkParameters(), connectionDTO.getDescription(), accountId);
-            connectionRepository.updateConnection(eventConnectionWithBLOBs);
+            connectionRepository.updateConnection(connectionDTO);
         } catch (Exception e) {
             log.error("ConnectionService | updateConnection | error", e);
             throw new EventBridgeException(e);
         }
     }
 
-    public ConnectionWithBLOBs getConnection(String accountId, String connectionName) {
+    public ConnectionDTO getConnection(String accountId, String connectionName) {
         try {
-            final ConnectionWithBLOBs connection = connectionRepository.getConnection(accountId, connectionName);
-            if (connection == null) {
+            final ConnectionDTO connectionDTO = connectionRepository.getConnection(accountId, connectionName);
+            if (connectionDTO == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
-            return connection;
+            return connectionDTO;
         } catch (Exception e) {
             log.error("ConnectionService | getConnection | error", e);
             throw new EventBridgeException(e);
         }
     }
 
-    public ConnectionWithBLOBs checkConnection(String accountId, String connectionName) {
+    public ConnectionDTO checkConnection(String accountId, String connectionName) {
         return connectionRepository.getConnection(accountId, connectionName);
     }
 
-    public PaginationResult<List<ConnectionWithBLOBs>> listConnections(String accountId, String connectionName, String nextToken,
-                                                                       int maxResults) {
+    public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, int maxResults) {
         try {
-            List<ConnectionWithBLOBs> eventConnectionWithBLOBs = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
-            PaginationResult<List<ConnectionWithBLOBs>> result = new PaginationResult();
-            result.setData(eventConnectionWithBLOBs);
+            List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
+            PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
+            result.setData(connectionDTOS);
             result.setTotal(this.getConnectionCount(accountId, connectionName));
             result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
             return result;
@@ -247,7 +233,7 @@ public class ConnectionService extends AbstractResourceService {
 
     private void checkNetworkType(String type) {
         boolean check = true;
-        for (NetworkTypeEnum  networkTypeEnum:NetworkTypeEnum.values()) {
+        for (NetworkTypeEnum networkTypeEnum : NetworkTypeEnum.values()) {
             if (networkTypeEnum.getNetworkType().equals(type)) {
                 check = false;
                 break;
@@ -256,17 +242,5 @@ public class ConnectionService extends AbstractResourceService {
         if (check) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNetworkParametersInvalid);
         }
-    }
-
-    private ConnectionWithBLOBs getEventConnectionWithBLOBs(String name, String networkType, AuthParameters authParameters, NetworkParameters networkParameters, String description, String accountId) {
-        ConnectionWithBLOBs eventConnectionWithBLOBs = new ConnectionWithBLOBs();
-        eventConnectionWithBLOBs.setName(name);
-        eventConnectionWithBLOBs.setAuthParameters(JSON.toJSONString(authParameters));
-        eventConnectionWithBLOBs.setNetworkParameters(JSON.toJSONString(networkParameters));
-        eventConnectionWithBLOBs.setDescription(description);
-        eventConnectionWithBLOBs.setAccountId(accountId);
-        eventConnectionWithBLOBs.setAuthorizationType(authParameters.getAuthorizationType());
-        eventConnectionWithBLOBs.setNetworkType(networkType);
-        return eventConnectionWithBLOBs;
     }
 }

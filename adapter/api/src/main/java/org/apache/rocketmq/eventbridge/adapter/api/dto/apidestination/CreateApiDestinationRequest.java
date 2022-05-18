@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;

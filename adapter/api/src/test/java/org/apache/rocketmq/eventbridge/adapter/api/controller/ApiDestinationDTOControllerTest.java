@@ -24,16 +24,15 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiD
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.GetApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.GetApiDestinationResponse;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.HttpApiParameters;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDestinationsRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDestinationsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationResponse;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestination;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +54,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ApiDestinationControllerTest {
+public class ApiDestinationDTOControllerTest {
 
     @InjectMocks
     private ApiDestinationController apiDestinationController;
@@ -73,8 +72,6 @@ public class ApiDestinationControllerTest {
 
     @Test
     public void testCreateApiDestination() {
-        Set<ConstraintViolation<CreateConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(CreateConnectionRequest.class))).thenReturn(constraintViolations);
         Mockito.when(apiDestinationService.createApiDestination(any())).thenReturn(UUID.randomUUID().toString());
         CreateApiDestinationRequest createApiDestinationRequest = new CreateApiDestinationRequest();
         createApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
@@ -109,9 +106,9 @@ public class ApiDestinationControllerTest {
     public void testGetApiDestination() {
         Set<ConstraintViolation<GetApiDestinationRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(GetApiDestinationRequest.class))).thenReturn(constraintViolations);
-        ApiDestination eventApiDestination = new ApiDestination();
-        eventApiDestination.setName(UUID.randomUUID().toString());
-        Mockito.when(apiDestinationService.getApiDestination(any(), any())).thenReturn(eventApiDestination);
+        ApiDestinationDTO eventApiDestinationDTO = new ApiDestinationDTO();
+        eventApiDestinationDTO.setName(UUID.randomUUID().toString());
+        Mockito.when(apiDestinationService.getApiDestination(any(), any())).thenReturn(eventApiDestinationDTO);
         GetApiDestinationRequest getApiDestinationRequest = new GetApiDestinationRequest();
         getApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
         final GetApiDestinationResponse apiDestination = apiDestinationController.getApiDestination(getApiDestinationRequest);
@@ -133,12 +130,12 @@ public class ApiDestinationControllerTest {
     public void testListApiDestinations() {
         Set<ConstraintViolation<ListApiDestinationsRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(ListApiDestinationsRequest.class))).thenReturn(constraintViolations);
-        PaginationResult<List<ApiDestination>> result = new PaginationResult();
-        List<ApiDestination> apiDestinationList = Lists.newArrayList();
-        ApiDestination apiDestination = new ApiDestination();
-        apiDestination.setName(UUID.randomUUID().toString());
-        apiDestinationList.add(apiDestination);
-        result.setData(apiDestinationList);
+        PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
+        List<ApiDestinationDTO> apiDestinationDTOList = Lists.newArrayList();
+        ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
+        apiDestinationDTO.setName(UUID.randomUUID().toString());
+        apiDestinationDTOList.add(apiDestinationDTO);
+        result.setData(apiDestinationDTOList);
         result.setTotal(9);
         result.setNextToken("0");
         Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(result);

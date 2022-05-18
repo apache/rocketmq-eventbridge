@@ -24,6 +24,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 
 @AllArgsConstructor
 @Getter
@@ -41,7 +42,7 @@ public class GetApiDestinationResponse extends BaseResponse {
     private String description;
 
     @SerializedName("HttpApiParameters")
-    private String httpApiParameters;
+    private HttpApiParameters httpApiParameters;
 
     @SerializedName("InvocationRateLimitPerSecond")
     private Integer invocationRateLimitPerSecond;

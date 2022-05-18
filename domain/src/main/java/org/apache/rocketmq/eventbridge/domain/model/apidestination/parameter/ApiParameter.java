@@ -15,29 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
+package org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.validation.constraints.NotBlank;
-import java.util.List;
-
 @Getter
 @Setter
 @ToString
-public class HttpApiParameters {
+public class ApiParameter {
 
-    @NotBlank(message = "Endpoint is blank")
-    @SerializedName("Endpoint")
-    private String endpoint;
+    @SerializedName("Name")
+    private String name;
 
-    @NotBlank(message = "Method is blank")
-    @SerializedName("Method")
-    private String method;
+    @SerializedName("Description")
+    private String description;
 
-    @SerializedName("Parameters")
-    private List<ApiParameter> apiParameters;
+    @SerializedName("Type")
+    private String type;
+
+    @SerializedName("DefaultValue")
+    private String defaultValue;
+
+    @SerializedName("In")
+    private String in;
 }

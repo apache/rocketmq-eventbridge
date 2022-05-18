@@ -17,8 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.repository;
 
+import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.converter.ConnectConverter;
+import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.mapper.EventConnectionMapper;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionWithBLOBs;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.springframework.stereotype.Repository;
 
@@ -36,10 +38,11 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public Boolean createConnection(ConnectionWithBLOBs eventConnectionWithBLOBs) {
-        eventConnectionWithBLOBs.setGmtCreate(new Date());
-        eventConnectionWithBLOBs.setGmtModify(new Date());
-        return eventConnectionMapper.insertSelective(eventConnectionWithBLOBs) == 1;
+    public Boolean createConnection(ConnectionDTO connectionDTO) {
+        final ConnectionDO connectionDO = ConnectConverter.dtoConvertDo(connectionDTO);
+        connectionDO.setGmtCreate(new Date());
+        connectionDO.setGmtModify(new Date());
+        return eventConnectionMapper.insertSelective(connectionDO) == 1;
     }
 
     @Override
@@ -48,20 +51,22 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public boolean updateConnection(ConnectionWithBLOBs eventConnectionWithBLOBs) {
-        eventConnectionWithBLOBs.setGmtModify(new Date());
-        return eventConnectionMapper.updateByAccountIdAndName(eventConnectionWithBLOBs) == 1;
+    public boolean updateConnection(ConnectionDTO connectionDTO) {
+        final ConnectionDO connectionDO = ConnectConverter.dtoConvertDo(connectionDTO);
+        connectionDO.setGmtModify(new Date());
+        return eventConnectionMapper.updateByAccountIdAndName(connectionDO) == 1;
     }
 
     @Override
-    public ConnectionWithBLOBs getConnection(String accountId, String connectionName) {
-        return eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
+    public ConnectionDTO getConnection(String accountId, String connectionName) {
+        final ConnectionDO connectionDO = eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
+        return ConnectConverter.doConvertDto(connectionDO);
     }
 
     @Override
-    public List<ConnectionWithBLOBs> listConnections(String accountId, String connectionName, String nextToken,
-                                                     int maxResults) {
-        return eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults);
+    public List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
+                                               int maxResults) {
+        return ConnectConverter.doListConvertDtoList(eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults));
     }
 
     @Override

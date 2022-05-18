@@ -15,18 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
+package org.apache.rocketmq.eventbridge.domain.model.connection;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 
-@ToString
-@Setter
 @Getter
-public class ConnectionVO extends BaseDTO {
+@Setter
+@ToString
+public class ConnectionDTO {
+
+    private String accountId;
 
     @SerializedName("ConnectionName")
     private String connectionName;
@@ -35,9 +38,8 @@ public class ConnectionVO extends BaseDTO {
     private String description;
 
     @SerializedName("NetworkParameters")
-    private String networkParameters;
+    private NetworkParameters networkParameters;
 
     @SerializedName("AuthParameters")
-    private String authParameters;
-
+    private AuthParameters authParameters;
 }

@@ -18,12 +18,12 @@
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,20 +42,17 @@ public class ApiDestinationService extends AbstractResourceService {
         this.apiDestinationRepository = apiDestinationRepository;
     }
 
-    @Value("${api.destination.limit}")
-    private String apiDestinationLimit;
-
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public String createApiDestination(ApiDestination eventApiDestination) {
+    public String createApiDestination(ApiDestinationDTO eventApiDestinationDTO) {
         try {
-            if (checkApiDestination(eventApiDestination.getAccountId(), eventApiDestination.getName()) != null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestination.getName());
+            if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
+                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
             }
-            super.checkQuota(this.getApiDestinationCount(eventApiDestination.getAccountId(), eventApiDestination.getName()), Integer.parseInt(apiDestinationLimit),
+            super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
                     ApiDestinationCountExceedLimit);
-            final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestination);
+            final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
             if (apiDestination) {
-                return eventApiDestination.getName();
+                return eventApiDestinationDTO.getName();
             }
             return null;
         } catch (Exception e) {
@@ -65,21 +62,21 @@ public class ApiDestinationService extends AbstractResourceService {
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public Boolean updateApiDestination(ApiDestination apiDestination) {
+    public Boolean updateApiDestination(ApiDestinationDTO apiDestinationDTO) {
         try {
-            if (checkApiDestination(apiDestination.getAccountId(), apiDestination.getName()) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestination.getName());
+            if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
+                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
             }
-            return apiDestinationRepository.updateApiDestination(apiDestination);
+            return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
         } catch (Exception e) {
             log.error("ApiDestinationService | updateApiDestination | error", e);
             throw new EventBridgeException(e);
         }
     }
 
-    public ApiDestination getApiDestination(String accountId, String apiDestinationName) {
+    public ApiDestinationDTO getApiDestination(String accountId, String apiDestinationName) {
         try {
-            if (checkApiDestination(accountId, accountId) == null) {
+            if (checkApiDestination(accountId, apiDestinationName) == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, accountId);
             }
             return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
@@ -89,14 +86,14 @@ public class ApiDestinationService extends AbstractResourceService {
         }
     }
 
-    public ApiDestination checkApiDestination(String accountId, String apiDestinationName) {
+    public ApiDestinationDTO checkApiDestination(String accountId, String apiDestinationName) {
         return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean deleteApiDestination(String accountId, String apiDestinationName) {
         try {
-            if (checkApiDestination(accountId, accountId) == null) {
+            if (checkApiDestination(accountId, apiDestinationName) == null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, accountId);
             }
             return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
@@ -106,12 +103,12 @@ public class ApiDestinationService extends AbstractResourceService {
         }
     }
 
-    public PaginationResult<List<ApiDestination>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                                      int maxResults) {
+    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+                                                                         int maxResults) {
         try {
-            final List<ApiDestination> apiDestinations = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
-            PaginationResult<List<ApiDestination>> result = new PaginationResult();
-            result.setData(apiDestinations);
+            final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
+            PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
+            result.setData(apiDestinationDTOS);
             result.setTotal(this.getApiDestinationCount(accountId, apiDestinationName));
             result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
             return result;

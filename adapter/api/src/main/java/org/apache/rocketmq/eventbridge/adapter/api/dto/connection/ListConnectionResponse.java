@@ -34,7 +34,7 @@ import java.util.List;
 public class ListConnectionResponse extends BaseResponse {
 
     @SerializedName("Connections")
-    private List<ConnectionVO> connections;
+    private List<ConnectionResponse> connections;
 
     @SerializedName("NextToken")
     private String nextToken;
