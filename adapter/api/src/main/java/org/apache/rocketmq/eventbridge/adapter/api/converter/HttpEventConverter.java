@@ -237,7 +237,7 @@ public class HttpEventConverter {
         httpEventData.setBody(bodyContent);
         httpEventData.setHeaders(dataHeaders);
         httpEventData.setHttpMethod(request.getMethod().toString());
-        httpEventData.setPath(request.getPath().toString());
+        httpEventData.setPath(request.getPath().pathWithinApplication().value());
 
         HashMap<String, String> queryParam = new HashMap<>();
         request.getQueryParams().forEach((k, v) -> {
