@@ -148,31 +148,28 @@ http://127.0.0.1:7001/source/createEventSource
 Http request to access this webhook will be converted into a CloudEvent and delivered to eventbus.
 
 ```
-http://127.0.0.1/webhook/putEvents?token=43146d108b2123
-Header: Content-Type:"application/json"
+curl -d '{"username": "testUser", "testData": "testData"}' -H 'Content-Type: application/json' -H 'Accept-Language: en-US' http://127.0.0.1:7001/webhook/putEvents?token=43146d108b224eb2adc581aedd28f272007320d14b9d
 ```
-```json
-{
-  "username": "testUser",
-  "testData": "testData"
-}
-```
+
 generated CloudEvent demo
 ```json
 {
   "datacontenttype": "application/json",
   "data": {
-    "headers": {
-      "Accecpt": "*/*",
-      "Host": "127.0.0.1:7001",
-      "Content-Type": "none"
-    },
-    "path": "/webhook/putEvents",
     "body": {
       "username": "testUser",
       "testData": "testData"
     },
-    "httpMethod": "GET",
+    "headers": {
+      "Accept": "*/*",
+      "User-Agent": "curl/7.64.1",
+      "Host": "127.0.0.1:7001",
+      "Accept-Language": "en-US",
+      "Content-Length": "48",
+      "Content-Type": "application/json"
+    },
+    "httpMethod": "POST",
+    "path": "/webhook/putEvents",
     "queryString": {}
   },
   "subject": "DemoBus/httpEventSourceDemo",
