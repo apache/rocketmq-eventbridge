@@ -67,7 +67,7 @@ public class ConnectionService extends AbstractResourceService {
             if (checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()) != null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
             }
-            super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId(), connectionDTO.getConnectionName()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
+            super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
             checkAuth(connectionDTO.getAuthParameters());
             checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
@@ -140,7 +140,7 @@ public class ConnectionService extends AbstractResourceService {
             List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
             PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
             result.setData(connectionDTOS);
-            result.setTotal(this.getConnectionCount(accountId, connectionName));
+            result.setTotal(this.getConnectionCount(accountId));
             result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
             return result;
         } catch (Exception e) {
@@ -149,8 +149,8 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    public int getConnectionCount(String accountId, String connectionName) {
-        return connectionRepository.getConnectionCount(accountId, connectionName);
+    public int getConnectionCount(String accountId) {
+        return connectionRepository.getConnectionCount(accountId);
     }
 
     private void checkAuth(AuthParameters authParameters) {

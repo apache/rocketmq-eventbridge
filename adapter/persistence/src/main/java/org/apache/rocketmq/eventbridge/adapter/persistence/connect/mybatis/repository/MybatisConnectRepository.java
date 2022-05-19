@@ -70,7 +70,7 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public int getConnectionCount(String accountId, String connectionName) {
-        return eventConnectionMapper.getConnectionCount(accountId, connectionName);
+    public int getConnectionCount(String accountId) {
+        return eventConnectionMapper.getConnectionCount(accountId);
     }
 }

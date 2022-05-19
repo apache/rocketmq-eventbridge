@@ -34,5 +34,5 @@ public interface ConnectionRepository {
     List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
                                         int maxResults);
 
-    int getConnectionCount(String accountId, String connectionName);
+    int getConnectionCount(String accountId);
 }

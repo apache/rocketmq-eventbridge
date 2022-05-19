@@ -58,7 +58,7 @@ public class ApiDestinationDTOServiceTest {
         Mockito.when(apiDestinationRepository.updateApiDestination(any())).thenReturn(Boolean.TRUE);
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         apiDestinationDTO.setName(UUID.randomUUID().toString());
-        Mockito.when(apiDestinationRepository.getApiDestinationCount(any(), any())).thenReturn(8);
+        Mockito.when(apiDestinationRepository.getApiDestinationCount(any())).thenReturn(8);
         Mockito.when(apiDestinationRepository.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(new ArrayList<>());
     }
 

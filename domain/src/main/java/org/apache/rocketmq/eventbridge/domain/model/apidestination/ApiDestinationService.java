@@ -48,7 +48,7 @@ public class ApiDestinationService extends AbstractResourceService {
             if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
                 throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
             }
-            super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
+            super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
                     ApiDestinationCountExceedLimit);
             final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
             if (apiDestination) {
@@ -109,7 +109,7 @@ public class ApiDestinationService extends AbstractResourceService {
             final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
             PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
             result.setData(apiDestinationDTOS);
-            result.setTotal(this.getApiDestinationCount(accountId, apiDestinationName));
+            result.setTotal(this.getApiDestinationCount(accountId));
             result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
             return result;
         } catch (Exception e) {
@@ -118,7 +118,7 @@ public class ApiDestinationService extends AbstractResourceService {
         }
     }
 
-    private int getApiDestinationCount(String accountId, String apiDestinationName) {
-        return apiDestinationRepository.getApiDestinationCount(accountId, apiDestinationName);
+    private int getApiDestinationCount(String accountId) {
+        return apiDestinationRepository.getApiDestinationCount(accountId);
     }
 }

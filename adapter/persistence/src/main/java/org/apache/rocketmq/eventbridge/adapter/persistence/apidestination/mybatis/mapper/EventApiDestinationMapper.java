@@ -116,8 +116,7 @@ public interface EventApiDestinationMapper {
     /**
      *
      * @param accountId
-     * @param name
      * @return
      */
-    int getApiDestinationCount(@Param("accountId") String accountId, @Param("name") String name);
+    int getApiDestinationCount(@Param("accountId") String accountId);
 }

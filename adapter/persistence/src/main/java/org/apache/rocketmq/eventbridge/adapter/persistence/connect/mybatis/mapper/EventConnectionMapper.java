@@ -119,8 +119,7 @@ public interface EventConnectionMapper {
      * 通过用户id和name获取总数
      *
      * @param accountId
-     * @param name
      * @return
      */
-    int getConnectionCount(@Param("accountId") String accountId, @Param("name") String name);
+    int getConnectionCount(@Param("accountId") String accountId);
 }

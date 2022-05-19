@@ -277,7 +277,6 @@
     from event_api_destination
     <where>
       <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
-      <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
     </where>
   </select>
 </mapper>

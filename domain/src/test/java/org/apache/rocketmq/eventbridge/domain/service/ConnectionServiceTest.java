@@ -61,7 +61,7 @@ public class ConnectionServiceTest {
     public void testBefore() throws Exception {
         Mockito.when(connectionRepository.createConnection(any())).thenReturn(Boolean.TRUE);
         Mockito.when(connectionRepository.listConnections(anyString(), anyString(), anyString(), anyInt())).thenReturn(new ArrayList<>());
-        Mockito.when(connectionRepository.getConnectionCount(any(), any())).thenReturn(8);
+        Mockito.when(connectionRepository.getConnectionCount(any())).thenReturn(8);
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         NetworkParameters networkParameters = new NetworkParameters();

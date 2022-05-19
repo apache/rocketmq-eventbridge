@@ -69,7 +69,7 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
     }
 
     @Override
-    public int getApiDestinationCount(String accountId, String apiDestinationName) {
-        return eventApiDestinationMapper.getApiDestinationCount(accountId, apiDestinationName);
+    public int getApiDestinationCount(String accountId) {
+        return eventApiDestinationMapper.getApiDestinationCount(accountId);
     }
 }
