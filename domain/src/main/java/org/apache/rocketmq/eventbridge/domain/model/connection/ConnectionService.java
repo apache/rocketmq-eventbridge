@@ -171,16 +171,14 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> basicAuthParametersMap = Maps.newHashMap();
             basicAuthParametersMap.put("username", basicAuthParameters.getUsername());
             basicAuthParametersMap.put("password", basicAuthParameters.getPassword());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
-            basicAuthParameters.setPassword(secretName);
+            secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
             return authParameters;
         }
         if (apiKeyAuthParameters != null) {
             Map<String, String> apiKeyAuthParametersMap = Maps.newHashMap();
             apiKeyAuthParametersMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
             apiKeyAuthParametersMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
-            apiKeyAuthParameters.setApiKeyValue(secretName);
+            secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
             return authParameters;
         }
         final OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
@@ -196,8 +194,7 @@ public class ConnectionService extends AbstractResourceService {
         if (!CollectionUtils.isEmpty(bodyParameters)) {
             for (BodyParameter bodyParameter : bodyParameters) {
                 if (Boolean.parseBoolean(bodyParameter.getIsValueSecret())) {
-                    final String secretName = getString(accountId, connectionName, bodyParameter.getKey(), bodyParameter.getValue());
-                    bodyParameter.setValue(secretName);
+                    getString(accountId, connectionName, bodyParameter.getKey(), bodyParameter.getValue());
                     oauthHttpParameters.setBodyParameters(bodyParameters);
                     return oauthHttpParameters;
                 }

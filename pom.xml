@@ -32,7 +32,6 @@
         <mockito.version>2.13.0</mockito.version>
         <caffeine.version>2.9.3</caffeine.version>
         <fastjson.version>2.0.2</fastjson.version>
-        <kms20160120.version>1.0.0</kms20160120.version>
     </properties>
     <modules>
         <module>start</module>
@@ -186,11 +185,6 @@
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.aliyun</groupId>
-                <artifactId>kms20160120</artifactId>
-                <version>${kms20160120.version}</version>
             </dependency>
 
             <!-- Log -->
