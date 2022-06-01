@@ -38,7 +38,7 @@ http://127.0.0.1:7001/bus/createEventBus
 
 * Create EventSource
 ```
-http://127.0.0.1:7001/bus/createEventSource
+http://127.0.0.1:7001/source/createEventSource
 ```
 ```json
 {
