@@ -51,12 +51,12 @@ rocketmq.connect.endpoint=xxxxxx:8082
 ```
 After that ,you should register the targets which you want to create, into the 'event_target_class' table.
 
-| key                                             | description | default value | 
-| ----------------------------------------------- | -------- | ------- | 
-| name | the target class name     |   | 
-|api_params  | the required params when create target.     |    | 
-|target_transform   |the default transform with target data.     |   |
-|required_params |the required params of connect.  ||
+| key                                             | description | 
+| ----------------------------------------------- | -------- | 
+| name | the target class name     |  
+|api_params  | the required params when create target.     |  
+|target_transform   |the default transform with target data.     |  
+|required_params |the required params of connect.  |
 
 
 * register the "acs.eventbridge" target.
