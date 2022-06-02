@@ -14,7 +14,7 @@
 
     <properties>
         <mysql-connector-java.version>8.0.16</mysql-connector-java.version>
-        <rocketmq.version>4.9.3</rocketmq.version>
+        <rocketmq.version>4.9.2</rocketmq.version>
         <flyway.version>8.5.7</flyway.version>
     </properties>
     <dependencies>
