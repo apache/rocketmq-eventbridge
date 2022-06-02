@@ -36,7 +36,6 @@
         <module>start</module>
         <module>adapter</module>
         <module>domain</module>
-        <module>application</module>
         <module>common</module>
     </modules>
 

@@ -38,7 +38,7 @@ public class AccountAPIImpl implements AccountAPI {
 
     @Override
     public String getResourceOwnerAccountId() {
-        return "1439989007797786";
+        return "Admin";
     }
 
     @Override

@@ -31,8 +31,6 @@ import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
-import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -44,39 +42,32 @@ public class RocketMQEventDataRepository implements EventDataRepository {
     private final EventDataOnRocketMQConnectAPI eventDataOnRocketMQConnectAPI;
     private final EventTopicMapper eventTopicMapper;
     private final DefaultMQProducer producer;
-    private final DefaultMQAdminExt defaultMQAdminExt;
+    private final RocketMQMetaService rocketMQMetaService;
 
     @Value("${rocketmq.cluster.name:}")
     private String clusterName;
 
     public RocketMQEventDataRepository(EventDataOnRocketMQConnectAPI eventDataOnRocketMQConnectAPI,
-        EventTopicMapper eventTopicMapper, DefaultMQProducer producer, DefaultMQAdminExt defaultMQAdminExt) {
+        EventTopicMapper eventTopicMapper, DefaultMQProducer producer, RocketMQMetaService rocketMQMetaService) {
         this.eventDataOnRocketMQConnectAPI = eventDataOnRocketMQConnectAPI;
         this.eventTopicMapper = eventTopicMapper;
         this.producer = producer;
-        this.defaultMQAdminExt = defaultMQAdminExt;
+        this.rocketMQMetaService = rocketMQMetaService;
     }
 
     @Override
     public boolean createEventBusPersistence(String accountId, String eventBusName) {
         String topicName = eventDataOnRocketMQConnectAPI.buildTopicName(accountId, eventBusName);
-        try {
-            eventTopicMapper.createTopic(accountId, eventBusName, topicName, clusterName);
-            defaultMQAdminExt.createTopic(clusterName, topicName, 1);
-        } catch (Throwable e) {
-            log.error("Create event bus persistence failed.", e);
-            throw new EventBridgeException(DefaultErrorCode.InternalError, e);
-        }
-        return true;
+        eventTopicMapper.createTopic(accountId, eventBusName, topicName, clusterName);
+        return rocketMQMetaService.createTopic(clusterName, topicName);
     }
 
     @SneakyThrows
     @Override
     public boolean deleteEventBusPersistence(String accountId, String eventBusName) {
         EventTopicDO eventTopicDO = eventTopicMapper.getTopic(accountId, eventBusName);
-        defaultMQAdminExt.deleteTopic(eventTopicDO.getName(), eventTopicDO.getCluster());
         eventTopicMapper.deleteTopic(accountId, eventBusName);
-        return true;
+        return rocketMQMetaService.deleteTopic(eventTopicDO.getCluster(), eventTopicDO.getName());
     }
 
     @Override
