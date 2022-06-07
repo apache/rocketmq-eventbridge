@@ -59,7 +59,10 @@ After that ,you should register the targets which you want to create, into the '
 |required_params |the required params of connect.  |
 
 
+
 * register the "acs.eventbridge" target.
+
+name: "acs.eventbridge"
 
 api_params:
 ```json
@@ -100,9 +103,11 @@ target_transform:
   "class":"org.apache.rocketmq.connect.eventbridge.sink.EventBridgeSinkConnector"
 }
 ```
+:warning: `accessKeyId`,`accessKeySecret`,`accountEndpoint` should be replaced with the real information of your account on the [Alibaba Cloud EventBridge](https://www.aliyun.com/product/aliware/eventbridge?spm=5176.19720258.J_3207526240.45.e9392c4aSSEnIE).
 
 * register the "acs.dingtalk" target.
 
+name: "acs.dingtalk"
 
 api_params:
 ```json
@@ -192,18 +197,18 @@ POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
 {
-"eventBusName":"demo-bus",
-"eventRuleName":"demo-rule",
-"eventTargets":[
-        {
-        "eventTargetName":"eventbridge-target",
-        "className":"acs.eventbridge",
-            "config":{
-            "RegionId":"cn-hangzhou",
-            "AliyunEventBus":"rocketmq-eventbridge"
+    "eventBusName":"demo-bus",
+    "eventRuleName":"demo-rule",
+    "eventTargets":[
+            {
+            "eventTargetName":"eventbridge-target",
+            "className":"acs.eventbridge",
+                "config":{
+                "RegionId":"cn-hangzhou",
+                "AliyunEventBus":"rocketmq-eventbridge"
+                }
             }
-        }
-    ]
+        ]
 }
 ```
 
@@ -215,7 +220,7 @@ Content-Type: application/json; charset=utf-8
 {
     "eventBusName":"demo-bus",
     "eventRuleName":"demo-rule",
-    "eventTargetRunners":[
+    "eventTargets":[
         {
             "eventTargetName":"dingtalk-target",
             "className":"acs.dingtalk",
