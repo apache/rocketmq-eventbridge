@@ -62,7 +62,7 @@ public class EventRuleController {
     @Autowired
     AccountAPI accountAPI;
 
-    @PostMapping(value = {"createRule"})
+    @PostMapping(value = {"createEventRule"})
     public CreateRuleResponse createRule(@RequestBody CreateRuleRequest createRuleRequest) {
         eventRuleService.createEventRule(accountAPI.getResourceOwnerAccountId(), createRuleRequest.getEventBusName(),
             createRuleRequest.getEventRuleName(), createRuleRequest.getDescription(),
@@ -70,7 +70,7 @@ public class EventRuleController {
         return new CreateRuleResponse(createRuleRequest.getEventRuleName());
     }
 
-    @PostMapping(value = {"getRule"})
+    @PostMapping(value = {"getEventRule"})
     public GetRuleResponse getRule(@RequestBody GetRuleRequest getRuleRequest) {
         EventRuleDetail eventRuleDetail = eventRuleDomainService.getEventRuleDetail(
             accountAPI.getResourceOwnerAccountId(), getRuleRequest.getEventBusName(),
@@ -90,14 +90,14 @@ public class EventRuleController {
         return getRuleResponse;
     }
 
-    @PostMapping(value = {"deleteRule"})
+    @PostMapping(value = {"deleteEventRule"})
     public DeleteRuleResponse deleteRule(@RequestBody DeleteRuleRequest deleteRuleRequest) {
         eventRuleDomainService.deleteEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
             deleteRuleRequest.getEventBusName(), deleteRuleRequest.getEventRuleName());
         return new DeleteRuleResponse();
     }
 
-    @PostMapping(value = {"updateRule"})
+    @PostMapping(value = {"updateEventRule"})
     public UpdateRuleResponse updateRule(@RequestBody UpdateRuleRequest updateRuleRequest) {
         eventRuleDomainService.updateEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
             updateRuleRequest.getEventBusName(), updateRuleRequest.getEventRuleName(),
@@ -105,7 +105,7 @@ public class EventRuleController {
         return new UpdateRuleResponse();
     }
 
-    @PostMapping(value = {"listRules"})
+    @PostMapping(value = {"listEventRules"})
     public ListRulesResponse listRules(@RequestBody ListRulesRequest listRulesRequest) {
         PaginationResult<List<EventRule>> paginationResult = eventRuleService.listEventRules(
             accountAPI.getResourceOwnerAccountId(), listRulesRequest.getEventBusName(), listRulesRequest.getNextToken(),
@@ -128,14 +128,14 @@ public class EventRuleController {
             listRulesRequest.getMaxResults());
     }
 
-    @PostMapping(value = {"enableRule"})
+    @PostMapping(value = {"enableEventRule"})
     public EnableRuleResponse enableRule(@RequestBody EnableRuleRequest enableRuleRequest) {
         eventRuleDomainService.enableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
             enableRuleRequest.getEventBusName(), enableRuleRequest.getEventRuleName());
         return new EnableRuleResponse();
     }
 
-    @PostMapping(value = {"disableRule"})
+    @PostMapping(value = {"disableEventRule"})
     public DisableRuleResponse disableRule(@RequestBody DisableRuleRequest disableRuleRequest) {
         eventRuleDomainService.disableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
             disableRuleRequest.getEventBusName(), disableRuleRequest.getEventRuleName());
