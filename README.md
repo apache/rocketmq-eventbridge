@@ -93,7 +93,7 @@ target_transform:
 ```
 
 
-target_transform:
+required_params:
 ```json
 {
   "aliyuneventbusname":"${AliyunEventBus}",
@@ -136,8 +136,7 @@ target_transform:
 }
 ```
 
-
-target_transform:
+required_params:
 ```json
 {
   "webHook":"${WebHook}",
@@ -151,7 +150,7 @@ target_transform:
 ####
 * Create EventBus
 
-```json
+```text
 POST /bus/createEventBus HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -164,7 +163,7 @@ Content-Type: application/json; charset=utf-8
 
 * Create EventSource
 
-```json
+```text
 POST /source/createEventSource HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -177,7 +176,7 @@ Content-Type: application/json; charset=utf-8
 
 
 * Create EventRule
-```json
+```text
 POST /rule/createEventRule HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -192,7 +191,7 @@ Content-Type: application/json; charset=utf-8
 * Create Target
 
 This is a sample with EventBridge target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -213,7 +212,7 @@ Content-Type: application/json; charset=utf-8
 ```
 
 This is a sample with DingTalk target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -236,7 +235,7 @@ Content-Type: application/json; charset=utf-8
 
 * Put Events to EventBus
 
-```json
+```text
 POST /putEvents HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type:"application/cloudevents+json; charset=UTF-8"
@@ -274,10 +273,11 @@ Here is an example explaining how to put events using EventBridge HttpSource.
     - Referer: Referer security configuration. HTTP requests whose referer is not in this configuration will be filtered if the security configuration is selected as 'referer'.
 
 A webhook will be generated after the creation of HttpSource.
-```
-http://127.0.0.1:7001/source/createEventSource
-```
-```json
+
+```text
+POST /source/createEventSource HTTP/1.1
+Host: demo.eventbridge.com
+Content-Type: application/json; charset=utf-8
 {
   "eventSourceName": "httpEventSourceDemo",
   "eventBusName": "demo",
