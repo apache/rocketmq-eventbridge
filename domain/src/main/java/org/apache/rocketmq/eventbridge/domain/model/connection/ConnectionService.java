@@ -181,9 +181,6 @@ public class ConnectionService extends AbstractResourceService {
             secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
             return authParameters;
         }
-        final OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
-        final OAuthHttpParameters valueSecret = getValueSecret(oauthHttpParameters, accountId, connectionName);
-        authParameters.getOauthParameters().setOauthHttpParameters(valueSecret);
         return authParameters;
     }
 
