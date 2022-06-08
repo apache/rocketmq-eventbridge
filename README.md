@@ -90,7 +90,7 @@ target_transform:
 ```
 
 
-target_transform:
+required_params:
 ```json
 {
   "aliyuneventbusname":"${AliyunEventBus}",
@@ -215,7 +215,7 @@ Content-Type: application/json; charset=utf-8
 {
     "eventBusName":"demo-bus",
     "eventRuleName":"demo-rule",
-    "eventTargetRunners":[
+    "eventTargets":[
         {
             "eventTargetName":"dingtalk-target",
             "className":"acs.dingtalk",
