@@ -16,6 +16,7 @@
         <jakarta.version>2.1.6</jakarta.version>
         <jersey.version>2.34</jersey.version>
         <reactor.version>3.4.14</reactor.version>
+        <httpcore.version>4.4.9</httpcore.version>
     </properties>
 
     <dependencies>
@@ -23,10 +24,6 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-eventbridge-adapter-rpc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
@@ -71,6 +68,11 @@
             <groupId>io.cloudevents</groupId>
             <artifactId>cloudevents-http-restful-ws</artifactId>
             <version>${cloudevents.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>
