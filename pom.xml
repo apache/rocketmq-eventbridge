@@ -31,6 +31,7 @@
         <apache.commons-text.version>1.9</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
         <caffeine.version>2.9.3</caffeine.version>
+        <fastjson.version>2.0.2</fastjson.version>
     </properties>
     <modules>
         <module>start</module>
@@ -119,6 +120,11 @@
 
             <!-- Tools -->
             <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
@@ -128,6 +134,12 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>

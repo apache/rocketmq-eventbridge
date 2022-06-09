@@ -19,9 +19,8 @@ package org.apache.rocketmq.eventbridge;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "org.apache.rocketmq.eventbridge.*")
 @EnableCaching
 public class Main {
     public static void main(String[] args) {

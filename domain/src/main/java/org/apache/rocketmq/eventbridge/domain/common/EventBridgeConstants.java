@@ -46,6 +46,12 @@ public class EventBridgeConstants {
     public static final int EVENT_SOURCE_COUNT_LIMIT = 10;
     public static final String RESERVED_EVENT_SOURCE_PREFIX = "eventbridge-reserved-";
 
+    //api destination
+    public static final int API_DESTINATION_COUNT_LIMIT = 10;
+
+    //connection
+    public static final int CONNECTION_COUNT_LIMIT = 10;
+
     public static final String SYSTEM_ENVIRONMENT_ACCOUNT_ID = "AccountId";
 
 }
