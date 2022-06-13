@@ -138,7 +138,7 @@ public class ConnectionController {
         ListEnumsResponse listEnumsResponse = new ListEnumsResponse();
         listEnumsResponse.setAuthorizationTypeEnums(Arrays.stream(AuthorizationTypeEnum.values()).collect(Collectors.toList()));
         listEnumsResponse.setNetworkTypeEnums(Arrays.stream(NetworkTypeEnum.values()).collect(Collectors.toList()));
-        return listEnumsResponse;
+        return listEnumsResponse.success();
     }
 
     private ConnectionDTO getEventConnectionWithBLOBs(BaseRequest baseRequest) {
