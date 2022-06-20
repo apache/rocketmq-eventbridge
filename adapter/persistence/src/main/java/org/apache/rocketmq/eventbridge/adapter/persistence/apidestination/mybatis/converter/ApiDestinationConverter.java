@@ -49,7 +49,7 @@ public class ApiDestinationConverter {
         return apiDestinationDTO;
     }
 
-    public static List<ApiDestinationDTO> doListCoverterDtoList(List<ApiDestinationDO> apiDestinationDOS) {
+    public static List<ApiDestinationDTO> doListConverterDtoList(List<ApiDestinationDO> apiDestinationDOS) {
         return apiDestinationDOS.stream().map(ApiDestinationConverter::doConverterDto).collect(Collectors.toList());
     }
 

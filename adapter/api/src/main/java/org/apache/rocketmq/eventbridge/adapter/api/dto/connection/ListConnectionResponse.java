@@ -22,8 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
-import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class ListConnectionResponse extends BaseResponse {
+public class ListConnectionResponse extends BaseDTO {
 
     @SerializedName("Connections")
     private List<ConnectionResponse> connections;
@@ -44,16 +43,4 @@ public class ListConnectionResponse extends BaseResponse {
 
     @SerializedName("MaxResults")
     private int maxResults;
-
-    public ListConnectionResponse success() {
-        setCode(EventBridgeErrorCode.Success.getCode());
-        setMessage(EventBridgeErrorCode.Success.getMsg());
-        return this;
-    }
-
-    public ListConnectionResponse parameterCheckFailRes(String errorMsg) {
-        setCode(Integer.toString(409));
-        setMessage(errorMsg);
-        return this;
-    }
 }

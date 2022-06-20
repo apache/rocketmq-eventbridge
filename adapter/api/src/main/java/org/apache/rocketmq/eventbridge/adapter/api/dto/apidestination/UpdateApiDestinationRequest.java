@@ -21,7 +21,7 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 
 import javax.validation.Valid;
@@ -30,7 +30,7 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @Setter
 @ToString
-public class UpdateApiDestinationRequest extends BaseResponse {
+public class UpdateApiDestinationRequest extends BaseRequest {
 
     @NotBlank(message = "ApiDestinationName is blank")
     @SerializedName("ApiDestinationName")

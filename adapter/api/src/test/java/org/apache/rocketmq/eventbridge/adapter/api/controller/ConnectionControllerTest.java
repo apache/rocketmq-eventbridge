@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.google.common.collect.Lists;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.ResponseResult;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.DeleteConnectionRequest;
@@ -98,7 +99,7 @@ public class ConnectionControllerTest {
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         createConnectionRequest.setAuthParameters(authParameters);
-        final CreateConnectionResponse connection = connectionController.createConnection(createConnectionRequest);
+        final ResponseResult<CreateConnectionResponse> connection = connectionController.createConnection(createConnectionRequest);
         Assert.assertEquals(connection.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
@@ -109,8 +110,8 @@ public class ConnectionControllerTest {
         Mockito.when(validator.validate(any(DeleteConnectionRequest.class))).thenReturn(constraintViolations);
         DeleteConnectionRequest deleteConnectionRequest = new DeleteConnectionRequest();
         deleteConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        final DeleteConnectionResponse deleteConnectionResponse = connectionController.deleteConnection(deleteConnectionRequest);
-        Assert.assertEquals(deleteConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<DeleteConnectionResponse> deleteConnectionResponseResponseResult = connectionController.deleteConnection(deleteConnectionRequest);
+        Assert.assertEquals(deleteConnectionResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
@@ -134,8 +135,8 @@ public class ConnectionControllerTest {
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         updateConnectionRequest.setAuthParameters(authParameters);
-        final UpdateConnectionResponse updateConnectionResponse = connectionController.updateConnection(updateConnectionRequest);
-        Assert.assertEquals(updateConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<UpdateConnectionResponse> updateConnectionResponseResponseResult = connectionController.updateConnection(updateConnectionRequest);
+        Assert.assertEquals(updateConnectionResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
@@ -159,8 +160,8 @@ public class ConnectionControllerTest {
         BDDMockito.given(connectionService.getConnection(any(), any())).willReturn(connectionDTO);
         GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
         getConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        final GetConnectionResponse getConnectionResponse = connectionController.getConnection(getConnectionRequest);
-        Assert.assertEquals(getConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<GetConnectionResponse> connection = connectionController.getConnection(getConnectionRequest);
+        Assert.assertEquals(connection.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
@@ -180,13 +181,13 @@ public class ConnectionControllerTest {
         listConnectionRequest.setConnectionNamePrefix(UUID.randomUUID().toString());
         listConnectionRequest.setNextToken("0");
         listConnectionRequest.setMaxResults(10);
-        final ListConnectionResponse listConnectionResponse = connectionController.listConnections(listConnectionRequest);
-        Assert.assertEquals(listConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<ListConnectionResponse> listConnectionResponseResponseResult = connectionController.listConnections(listConnectionRequest);
+        Assert.assertEquals(listConnectionResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testListEnumsResponse() {
-        final ListEnumsResponse listEnumsResponse = connectionController.listEnumsResponse();
-        Assert.assertEquals(listEnumsResponse.getNetworkTypeEnums().size(), NetworkTypeEnum.values().length);
+        final ResponseResult<ListEnumsResponse> listEnumsResponseResponseResult = connectionController.listEnumsResponse();
+        Assert.assertEquals(listEnumsResponseResponseResult.getData().getNetworkTypeEnums().size(), NetworkTypeEnum.values().length);
     }
 }

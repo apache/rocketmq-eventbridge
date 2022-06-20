@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.rpc.impl.kms;
+package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;

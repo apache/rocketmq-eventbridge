@@ -22,8 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
-import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 
@@ -31,7 +30,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.Network
 @Getter
 @Setter
 @ToString
-public class GetConnectionResponse extends BaseResponse {
+public class GetConnectionResponse extends BaseDTO {
 
     @SerializedName("ConnectionName")
     private String connectionName;
@@ -44,16 +43,4 @@ public class GetConnectionResponse extends BaseResponse {
 
     @SerializedName("AuthParameters")
     private AuthParameters authParameters;
-
-    public GetConnectionResponse success() {
-        setCode(EventBridgeErrorCode.Success.getCode());
-        setMessage(EventBridgeErrorCode.Success.getMsg());
-        return this;
-    }
-
-    public GetConnectionResponse parameterCheckFailRes(String errorMsg) {
-        setCode(Integer.toString(409));
-        setMessage(errorMsg);
-        return this;
-    }
 }

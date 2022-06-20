@@ -22,7 +22,13 @@ import lombok.Getter;
 @Getter
 public enum NetworkTypeEnum {
 
+    /**
+     * PublicNetwork
+     */
     PUBLIC_NETWORK("PublicNetwork"),
+    /**
+     * PrivateNetwork
+     */
     PRIVATE_NETWORK("PrivateNetwork");
 
     private final String networkType;
