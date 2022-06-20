@@ -21,14 +21,14 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @ToString
-public class DeleteApiDestinationRequest extends BaseResponse {
+public class DeleteApiDestinationRequest extends BaseRequest {
 
     @NotBlank(message = "ApiDestinationName is blank")
     @SerializedName("ApiDestinationName")

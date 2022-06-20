@@ -20,6 +20,7 @@ package org.apache.rocketmq.eventbridge.adapter.api.controller;
 import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.ResponseResult;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.ConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
@@ -66,60 +67,60 @@ public class ConnectionController {
 
     @WebLog
     @PostMapping("createConnection")
-    public CreateConnectionResponse createConnection(@RequestBody CreateConnectionRequest createConnectionRequest) {
+    public ResponseResult<CreateConnectionResponse> createConnection(@RequestBody CreateConnectionRequest createConnectionRequest) {
         final Set<ConstraintViolation<CreateConnectionRequest>> validate = validator.validate(createConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
-            return new CreateConnectionResponse(null).parameterCheckFailRes(errMessage.toString());
+            return ResponseResult.fail(errMessage.toString());
         }
         ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(createConnectionRequest);
-        return new CreateConnectionResponse(connectionService.createConnection(connectionDTO)).success();
+        return ResponseResult.success(new CreateConnectionResponse(connectionService.createConnection(connectionDTO)));
     }
 
     @WebLog
     @PostMapping("deleteConnection")
-    public DeleteConnectionResponse deleteConnection(@RequestBody DeleteConnectionRequest deleteConnectionRequest) {
+    public ResponseResult<DeleteConnectionResponse> deleteConnection(@RequestBody DeleteConnectionRequest deleteConnectionRequest) {
         final Set<ConstraintViolation<DeleteConnectionRequest>> validate = validator.validate(deleteConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
-            return new DeleteConnectionResponse().parameterCheckFailRes(errMessage.toString());
+            return ResponseResult.fail(errMessage.toString());
         }
         connectionService.deleteConnection(accountAPI.getResourceOwnerAccountId(), deleteConnectionRequest.getConnectionName());
-        return new DeleteConnectionResponse().success();
+        return ResponseResult.success();
     }
 
     @WebLog
     @PostMapping("updateConnection")
-    public UpdateConnectionResponse updateConnection(@RequestBody UpdateConnectionRequest updateConnectionRequest) {
+    public ResponseResult<UpdateConnectionResponse> updateConnection(@RequestBody UpdateConnectionRequest updateConnectionRequest) {
         final Set<ConstraintViolation<UpdateConnectionRequest>> validate = validator.validate(updateConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
-            return new UpdateConnectionResponse().parameterCheckFailRes(errMessage.toString());
+            return ResponseResult.fail(errMessage.toString());
         }
         ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(updateConnectionRequest);
         connectionService.updateConnection(connectionDTO, accountAPI.getResourceOwnerAccountId());
-        return new UpdateConnectionResponse().success();
+        return ResponseResult.success();
     }
 
     @WebLog
     @PostMapping("getConnection")
-    public GetConnectionResponse getConnection(@RequestBody GetConnectionRequest getConnectionRequest) {
+    public ResponseResult<GetConnectionResponse> getConnection(@RequestBody GetConnectionRequest getConnectionRequest) {
         final Set<ConstraintViolation<GetConnectionRequest>> validate = validator.validate(getConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
-            return new GetConnectionResponse(null, null, null, null).parameterCheckFailRes(errMessage.toString());
+            return ResponseResult.fail(errMessage.toString());
         }
         final ConnectionDTO connectionDTO = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(), getConnectionRequest.getConnectionName());
-        return new GetConnectionResponse(connectionDTO.getConnectionName(), connectionDTO.getDescription(), connectionDTO.getNetworkParameters(), connectionDTO.getAuthParameters()).success();
+        return ResponseResult.success(new GetConnectionResponse(connectionDTO.getConnectionName(), connectionDTO.getDescription(), connectionDTO.getNetworkParameters(), connectionDTO.getAuthParameters()));
     }
 
     @WebLog
     @PostMapping("listConnections")
-    public ListConnectionResponse listConnections(@RequestBody ListConnectionRequest listConnectionRequest) {
+    public ResponseResult<ListConnectionResponse> listConnections(@RequestBody ListConnectionRequest listConnectionRequest) {
         final Set<ConstraintViolation<ListConnectionRequest>> validate = validator.validate(listConnectionRequest);
         List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(errMessage)) {
-            return new ListConnectionResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
+            return ResponseResult.fail(errMessage.toString());
         }
         final PaginationResult<List<ConnectionDTO>> listPaginationResult = connectionService.listConnections(accountAPI.getResourceOwnerAccountId(),
                 listConnectionRequest.getConnectionNamePrefix(), listConnectionRequest.getNextToken(), listConnectionRequest.getMaxResults());
@@ -130,15 +131,15 @@ public class ConnectionController {
                     BeanUtils.copyProperties(connectionDTO, connectionResponse);
                     connectionResponses.add(connectionResponse);
                 });
-        return new ListConnectionResponse(connectionResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();
+        return ResponseResult.success(new ListConnectionResponse(connectionResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()));
     }
 
     @PostMapping("listEnumsResponse")
-    public ListEnumsResponse listEnumsResponse() {
+    public ResponseResult<ListEnumsResponse> listEnumsResponse() {
         ListEnumsResponse listEnumsResponse = new ListEnumsResponse();
         listEnumsResponse.setAuthorizationTypeEnums(Arrays.stream(AuthorizationTypeEnum.values()).collect(Collectors.toList()));
         listEnumsResponse.setNetworkTypeEnums(Arrays.stream(NetworkTypeEnum.values()).collect(Collectors.toList()));
-        return listEnumsResponse.success();
+        return ResponseResult.success(listEnumsResponse);
     }
 
     private ConnectionDTO getEventConnectionWithBLOBs(BaseRequest baseRequest) {

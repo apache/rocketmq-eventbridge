@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.google.common.collect.Lists;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.ResponseResult;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.DeleteApiDestinationRequest;
@@ -81,7 +82,7 @@ public class ApiDestinationDTOControllerTest {
         httpApiParameters.setMethod(UUID.randomUUID().toString());
         createApiDestinationRequest.setHttpApiParameters(httpApiParameters);
         createApiDestinationRequest.setInvocationRateLimitPerSecond(11);
-        final CreateApiDestinationResponse apiDestination = apiDestinationController.createApiDestination(createApiDestinationRequest);
+        final ResponseResult<CreateApiDestinationResponse> apiDestination = apiDestinationController.createApiDestination(createApiDestinationRequest);
         Assert.assertEquals(apiDestination.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
@@ -98,8 +99,8 @@ public class ApiDestinationDTOControllerTest {
         httpApiParameters.setMethod(UUID.randomUUID().toString());
         updateApiDestinationRequest.setHttpApiParameters(httpApiParameters);
         updateApiDestinationRequest.setInvocationRateLimitPerSecond(11);
-        final UpdateApiDestinationResponse updateApiDestinationResponse = apiDestinationController.updateApiDestination(updateApiDestinationRequest);
-        Assert.assertEquals(updateApiDestinationResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<UpdateApiDestinationResponse> updateApiDestinationResponseResponseResult = apiDestinationController.updateApiDestination(updateApiDestinationRequest);
+        Assert.assertEquals(updateApiDestinationResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
@@ -111,7 +112,7 @@ public class ApiDestinationDTOControllerTest {
         Mockito.when(apiDestinationService.getApiDestination(any(), any())).thenReturn(eventApiDestinationDTO);
         GetApiDestinationRequest getApiDestinationRequest = new GetApiDestinationRequest();
         getApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        final GetApiDestinationResponse apiDestination = apiDestinationController.getApiDestination(getApiDestinationRequest);
+        final ResponseResult<GetApiDestinationResponse> apiDestination = apiDestinationController.getApiDestination(getApiDestinationRequest);
         Assert.assertEquals(apiDestination.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
@@ -122,8 +123,8 @@ public class ApiDestinationDTOControllerTest {
         Mockito.when(apiDestinationService.deleteApiDestination(any(), any())).thenReturn(Boolean.TRUE);
         DeleteApiDestinationRequest deleteApiDestinationRequest = new DeleteApiDestinationRequest();
         deleteApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        final DeleteApiDestinationResponse deleteApiDestinationResponse = apiDestinationController.deleteApiDestination(deleteApiDestinationRequest);
-        Assert.assertEquals(deleteApiDestinationResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<DeleteApiDestinationResponse> deleteApiDestinationResponseResponseResult = apiDestinationController.deleteApiDestination(deleteApiDestinationRequest);
+        Assert.assertEquals(deleteApiDestinationResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
@@ -143,7 +144,7 @@ public class ApiDestinationDTOControllerTest {
         listApiDestinationsRequest.setApiDestinationNamePrefix(UUID.randomUUID().toString());
         listApiDestinationsRequest.setNextToken("0");
         listApiDestinationsRequest.setMaxResults(10);
-        final ListApiDestinationsResponse listApiDestinationsResponse = apiDestinationController.listApiDestinations(listApiDestinationsRequest);
-        Assert.assertEquals(listApiDestinationsResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final ResponseResult<ListApiDestinationsResponse> listApiDestinationsResponseResponseResult = apiDestinationController.listApiDestinations(listApiDestinationsRequest);
+        Assert.assertEquals(listApiDestinationsResponseResponseResult.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 }

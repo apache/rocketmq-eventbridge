@@ -20,25 +20,18 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
-import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 
 import java.util.List;
 
 @Getter
 @Setter
 @ToString
-public class ListEnumsResponse extends BaseResponse {
+public class ListEnumsResponse extends BaseDTO {
 
     private List<AuthorizationTypeEnum> authorizationTypeEnums;
 
     private List<NetworkTypeEnum> networkTypeEnums;
-
-    public ListEnumsResponse success() {
-        setCode(EventBridgeErrorCode.Success.getCode());
-        setMessage(EventBridgeErrorCode.Success.getMsg());
-        return this;
-    }
 }
