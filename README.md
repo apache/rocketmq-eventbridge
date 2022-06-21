@@ -187,7 +187,7 @@ Content-Type: application/json; charset=utf-8
 * Create Target
 
 This is a sample with EventBridge target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
