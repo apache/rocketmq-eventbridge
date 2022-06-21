@@ -146,7 +146,7 @@ target_transform:
 ####
 * Create EventBus
 
-```json
+```text
 POST /bus/createEventBus HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -159,7 +159,7 @@ Content-Type: application/json; charset=utf-8
 
 * Create EventSource
 
-```json
+```text
 POST /source/createEventSource HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -172,7 +172,7 @@ Content-Type: application/json; charset=utf-8
 
 
 * Create EventRule
-```json
+```text
 POST /rule/createEventRule HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
