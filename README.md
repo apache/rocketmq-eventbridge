@@ -231,7 +231,7 @@ Content-Type: application/json; charset=utf-8
 
 * Put Events to EventBus
 
-```json
+```textgit subtree push --prefix=rocketmq-eventbridge  
 POST /putEvents HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type:"application/cloudevents+json; charset=UTF-8"
