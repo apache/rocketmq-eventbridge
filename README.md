@@ -208,7 +208,7 @@ Content-Type: application/json; charset=utf-8
 ```
 
 This is a sample with DingTalk target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
