@@ -49,104 +49,13 @@ rocketmq.cluster.name=DefaultCluster
 rocketmq.connect.endpoint=xxxxxx:8082
 
 ```
-After that ,you should register the targets which you want to create, into the 'event_target_class' table.
-
-| key                                             | description | 
-| ----------------------------------------------- | -------- | 
-| name | the target class name     |  
-|api_params  | the required params when create target.     |  
-|target_transform   |the default transform with target data.     |  
-|required_params |the required params of connect.  |
-
-
-* register the "acs.eventbridge" target.
-
-api_params:
-```json
-{
-    "RegionId":{
-        "type":"String",
-        "desc":"the region of aliyun eventbridge.",
-        "required":true
-    },
-    "AliyunEventBus":{
-        "type":"String",
-        "desc":"the bus of aliyun eventbridge.",
-        "required":true
-    }
-}
-```
-
-target_transform:
-```json
-{
-  "data":"{\"form\":\"JSONPATH\",\"value\":\"$.data\"}",
-  "id":"{\"form\":\"JSONPATH\",\"value\":\"$.id\"}",
-  "type":"{\"form\":\"JSONPATH\",\"value\":\"$.type\"}",
-  "specversion":"{\"form\":\"JSONPATH\",\"value\":\"$. specversion\"}",
-  "subject":"{\"form\":\"JSONPATH\",\"value\":\"$.subject\"}",
-  "source":"{\"form\":\"JSONPATH\",\"value\":\"$.source\"}"
-}
-```
-
-
-required_params:
-```json
-{
-  "aliyuneventbusname":"${AliyunEventBus}",
-  "accessKeyId":"the accessKeyId of aliyun accountId",
-  "accessKeySecret":"the accessKeySecret of aliyun accountId",
-  "accountEndpoint":"xxxx.eventbridge.${RegionId}.aliyuncs.com",
-  "class":"org.apache.rocketmq.connect.eventbridge.sink.EventBridgeSinkConnector"
-}
-```
-
-* register the "acs.dingtalk" target.
-
-
-api_params:
-```json
-{
-  "WebHook":{
-    "type":"String",
-    "desc":"the webhook endpoint of dingtalk.",
-    "required":true
-  },
-  "SecretKey":{
-    "type":"String",
-    "desc":"the secret key of dingtalk webhookd.",
-    "required":true
-  },
-  "Body":{
-    "type":"boolean",
-    "desc":"the content which push to dingtalk."
-  }
-}
-```
-
-target_transform:
-```json
-{
-  "data":"${Body}"
-}
-```
-
-
-target_transform:
-```json
-{
-  "webHook":"${WebHook}",
-  "secretKey":"${SecretKey}",
-  "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector"
-}
-```
 
 
 ## Demo
 ####
 * Create EventBus
 
-```json
+```text
 POST /bus/createEventBus HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -159,7 +68,7 @@ Content-Type: application/json; charset=utf-8
 
 * Create EventSource
 
-```json
+```text
 POST /source/createEventSource HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -172,7 +81,7 @@ Content-Type: application/json; charset=utf-8
 
 
 * Create EventRule
-```json
+```text
 POST /rule/createEventRule HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -187,28 +96,28 @@ Content-Type: application/json; charset=utf-8
 * Create Target
 
 This is a sample with EventBridge target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
 {
-"eventBusName":"demo-bus",
-"eventRuleName":"demo-rule",
-"eventTargets":[
-        {
-        "eventTargetName":"eventbridge-target",
-        "className":"acs.eventbridge",
-            "config":{
-            "RegionId":"cn-hangzhou",
-            "AliyunEventBus":"rocketmq-eventbridge"
+    "eventBusName":"demo-bus",
+    "eventRuleName":"demo-rule",
+    "eventTargets":[
+            {
+            "eventTargetName":"eventbridge-target",
+            "className":"acs.eventbridge",
+                "config":{
+                "RegionId":"cn-hangzhou",
+                "AliyunEventBus":"rocketmq-eventbridge"
+                }
             }
-        }
-    ]
+        ]
 }
 ```
 
 This is a sample with DingTalk target:
-```json
+```text
 POST /target/createEventTargets HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type: application/json; charset=utf-8
@@ -231,7 +140,7 @@ Content-Type: application/json; charset=utf-8
 
 * Put Events to EventBus
 
-```json
+```text
 POST /putEvents HTTP/1.1
 Host: demo.eventbridge.com
 Content-Type:"application/cloudevents+json; charset=UTF-8"
@@ -269,10 +178,11 @@ Here is an example explaining how to put events using EventBridge HttpSource.
     - Referer: Referer security configuration. HTTP requests whose referer is not in this configuration will be filtered if the security configuration is selected as 'referer'.
 
 A webhook will be generated after the creation of HttpSource.
-```
-http://127.0.0.1:7001/source/createEventSource
-```
-```json
+
+```text
+POST /source/createEventSource HTTP/1.1
+Host: demo.eventbridge.com
+Content-Type: application/json; charset=utf-8
 {
   "eventSourceName": "httpEventSourceDemo",
   "eventBusName": "demo",
