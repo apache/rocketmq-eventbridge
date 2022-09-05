@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/source/")
@@ -54,69 +55,88 @@ public class EventSourceController {
     EventSourceServiceFactory eventSourceServiceFactory;
 
     @PostMapping(value = {"createEventSource"})
-    public CreateEventSourceResponse createEventSource(@RequestBody CreateEventSourceRequest createEventSourceRequest) {
-        EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
-            EventSourceTypeEnum.USER_DEFINED.name(), createEventSourceRequest.getClassName());
-        eventSourceService.createEventSource(accountAPI.getResourceOwnerAccountId(),
-            createEventSourceRequest.getEventBusName(), createEventSourceRequest.getEventSourceName(),
-            createEventSourceRequest.getDescription(), createEventSourceRequest.getClassName(),
-            createEventSourceRequest.getConfig());
-        return new CreateEventSourceResponse(createEventSourceRequest.getEventSourceName());
+    public Mono<CreateEventSourceResponse> createEventSource(
+        @RequestBody CreateEventSourceRequest createEventSourceRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
+                    EventSourceTypeEnum.USER_DEFINED.name(), createEventSourceRequest.getClassName());
+                eventSourceService.createEventSource(accountAPI.getResourceOwnerAccountId(ctx),
+                    createEventSourceRequest.getEventBusName(), createEventSourceRequest.getEventSourceName(),
+                    createEventSourceRequest.getDescription(), createEventSourceRequest.getClassName(),
+                    createEventSourceRequest.getConfig());
+                return new CreateEventSourceResponse(createEventSourceRequest.getEventSourceName());
+            });
     }
 
     @PostMapping(value = {"updateEventSource"})
-    public UpdateEventSourceResponse updateEventSource(@RequestBody UpdateEventSourceRequest updateEventSourceRequest) {
-        EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
-            accountAPI.getResourceOwnerAccountId(), updateEventSourceRequest.getEventBusName(),
-            updateEventSourceRequest.getEventSourceName());
-        eventSourceService.updateEventSource(accountAPI.getResourceOwnerAccountId(),
-            updateEventSourceRequest.getEventBusName(), updateEventSourceRequest.getEventSourceName(),
-            updateEventSourceRequest.getDescription(), updateEventSourceRequest.getClassName(),
-            updateEventSourceRequest.getStatus(), updateEventSourceRequest.getConfig());
-        return new UpdateEventSourceResponse();
+    public Mono<UpdateEventSourceResponse> updateEventSource(
+        @RequestBody UpdateEventSourceRequest updateEventSourceRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
+                    accountAPI.getResourceOwnerAccountId(ctx), updateEventSourceRequest.getEventBusName(),
+                    updateEventSourceRequest.getEventSourceName());
+                eventSourceService.updateEventSource(accountAPI.getResourceOwnerAccountId(ctx),
+                    updateEventSourceRequest.getEventBusName(), updateEventSourceRequest.getEventSourceName(),
+                    updateEventSourceRequest.getDescription(), updateEventSourceRequest.getClassName(),
+                    updateEventSourceRequest.getStatus(), updateEventSourceRequest.getConfig());
+                return new UpdateEventSourceResponse();
+            });
     }
 
     @PostMapping(value = {"deleteEventSource"})
-    public DeleteEventSourceResponse deleteEventSource(@RequestBody DeleteEventSourceRequest deleteEventSourceRequest) {
-        EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
-            accountAPI.getResourceOwnerAccountId(), deleteEventSourceRequest.getEventBusName(),
-            deleteEventSourceRequest.getEventSourceName());
-        eventSourceService.deleteEventSource(accountAPI.getResourceOwnerAccountId(),
-            deleteEventSourceRequest.getEventBusName(), deleteEventSourceRequest.getEventSourceName());
-        return new DeleteEventSourceResponse();
+    public Mono<DeleteEventSourceResponse> deleteEventSource(
+        @RequestBody DeleteEventSourceRequest deleteEventSourceRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
+                    accountAPI.getResourceOwnerAccountId(ctx), deleteEventSourceRequest.getEventBusName(),
+                    deleteEventSourceRequest.getEventSourceName());
+                eventSourceService.deleteEventSource(accountAPI.getResourceOwnerAccountId(ctx),
+                    deleteEventSourceRequest.getEventBusName(), deleteEventSourceRequest.getEventSourceName());
+                return new DeleteEventSourceResponse();
+            });
     }
 
     @PostMapping(value = {"getEventSource"})
-    public GetEventSourceResponse getEventSource(@RequestBody GetEventSourceRequest getEventSourceRequest) {
-        EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
-            accountAPI.getResourceOwnerAccountId(), getEventSourceRequest.getEventBusName(),
-            getEventSourceRequest.getEventSourceName());
-        EventSource eventSource = eventSourceService.getEventSource(accountAPI.getResourceOwnerAccountId(),
-            getEventSourceRequest.getEventBusName(), getEventSourceRequest.getEventSourceName());
-        return new GetEventSourceResponse(eventSource.getEventBusName(), eventSource.getName(),
-            eventSource.getDescription(), eventSource.getClassName(), eventSource.getConfig());
+    public Mono<GetEventSourceResponse> getEventSource(@RequestBody GetEventSourceRequest getEventSourceRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventSourceService eventSourceService = eventSourceServiceFactory.getEventSourceService(
+                    accountAPI.getResourceOwnerAccountId(ctx), getEventSourceRequest.getEventBusName(),
+                    getEventSourceRequest.getEventSourceName());
+                EventSource eventSource = eventSourceService.getEventSource(accountAPI.getResourceOwnerAccountId(ctx),
+                    getEventSourceRequest.getEventBusName(), getEventSourceRequest.getEventSourceName());
+                return new GetEventSourceResponse(eventSource.getEventBusName(), eventSource.getName(),
+                    eventSource.getDescription(), eventSource.getClassName(), eventSource.getConfig());
+            });
     }
 
     @PostMapping(value = {"listEventSources"})
-    public ListEventSourcesResponse listEventSources(@RequestBody ListEventSourcesRequest listEventSourcesRequest) {
-        EventSourceService eventSourceService = eventSourceServiceFactory.getDefaultEventSourceService();
-        PaginationResult<List<EventSource>> paginationResult = eventSourceService.listEventSources(
-            accountAPI.getResourceOwnerAccountId(), listEventSourcesRequest.getEventBusName(),
-            listEventSourcesRequest.getNextToken(), listEventSourcesRequest.getMaxResults());
-        List<EventSourceDTO> eventSourceDTOS = Lists.newArrayList();
-        paginationResult.getData()
-            .forEach(eventSource -> {
-                EventSourceDTO eventSourceDTO = EventSourceDTO.builder()
-                    .eventBusName(eventSource.getEventBusName())
-                    .eventSourceName(eventSource.getName())
-                    .description(eventSource.getDescription())
-                    .gmtCreate(eventSource.getGmtCreate())
-                    .gmtModify(eventSource.getGmtModify())
-                    .build();
-                eventSourceDTOS.add(eventSourceDTO);
+    public Mono<ListEventSourcesResponse> listEventSources(
+        @RequestBody ListEventSourcesRequest listEventSourcesRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventSourceService eventSourceService = eventSourceServiceFactory.getDefaultEventSourceService();
+                PaginationResult<List<EventSource>> paginationResult = eventSourceService.listEventSources(
+                    accountAPI.getResourceOwnerAccountId(ctx), listEventSourcesRequest.getEventBusName(),
+                    listEventSourcesRequest.getNextToken(), listEventSourcesRequest.getMaxResults());
+                List<EventSourceDTO> eventSourceDTOS = Lists.newArrayList();
+                paginationResult.getData()
+                    .forEach(eventSource -> {
+                        EventSourceDTO eventSourceDTO = EventSourceDTO.builder()
+                            .eventBusName(eventSource.getEventBusName())
+                            .eventSourceName(eventSource.getName())
+                            .description(eventSource.getDescription())
+                            .gmtCreate(eventSource.getGmtCreate())
+                            .gmtModify(eventSource.getGmtModify())
+                            .build();
+                        eventSourceDTOS.add(eventSourceDTO);
+                    });
+                return new ListEventSourcesResponse(eventSourceDTOS, paginationResult.getNextToken(),
+                    paginationResult.getTotal(), listEventSourcesRequest.getMaxResults());
             });
-        return new ListEventSourcesResponse(eventSourceDTOS, paginationResult.getNextToken(),
-            paginationResult.getTotal(), listEventSourcesRequest.getMaxResults());
     }
 
 }

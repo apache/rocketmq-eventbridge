@@ -42,6 +42,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -67,83 +68,118 @@ public class ApiDestinationDTOControllerTest {
 
     @Before
     public void testBefore() {
-        Mockito.when(accountAPI.getResourceOwnerAccountId()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(accountAPI.getResourceOwnerAccountId(any()))
+            .thenReturn(UUID.randomUUID()
+                .toString());
     }
 
     @Test
     public void testCreateApiDestination() {
-        Mockito.when(apiDestinationService.createApiDestination(any())).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(apiDestinationService.createApiDestination(any()))
+            .thenReturn(UUID.randomUUID()
+                .toString());
         CreateApiDestinationRequest createApiDestinationRequest = new CreateApiDestinationRequest();
-        createApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        createApiDestinationRequest.setDescription(UUID.randomUUID().toString());
+        createApiDestinationRequest.setApiDestinationName(UUID.randomUUID()
+            .toString());
+        createApiDestinationRequest.setDescription(UUID.randomUUID()
+            .toString());
         HttpApiParameters httpApiParameters = new HttpApiParameters();
-        httpApiParameters.setEndpoint(UUID.randomUUID().toString());
-        httpApiParameters.setMethod(UUID.randomUUID().toString());
+        httpApiParameters.setEndpoint(UUID.randomUUID()
+            .toString());
+        httpApiParameters.setMethod(UUID.randomUUID()
+            .toString());
         createApiDestinationRequest.setHttpApiParameters(httpApiParameters);
         createApiDestinationRequest.setInvocationRateLimitPerSecond(11);
-        final CreateApiDestinationResponse apiDestination = apiDestinationController.createApiDestination(createApiDestinationRequest);
-        Assert.assertEquals(apiDestination.getCode(), EventBridgeErrorCode.Success.getCode());
+        final Mono<CreateApiDestinationResponse> apiDestination = apiDestinationController.createApiDestination(
+            createApiDestinationRequest);
+        Assert.assertEquals(apiDestination.block()
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testUpdateApiDestination() {
         Set<ConstraintViolation<UpdateApiDestinationRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(UpdateApiDestinationRequest.class))).thenReturn(constraintViolations);
-        Mockito.when(apiDestinationService.updateApiDestination(any())).thenReturn(Boolean.TRUE);
+        Mockito.when(validator.validate(any(UpdateApiDestinationRequest.class)))
+            .thenReturn(constraintViolations);
+        Mockito.when(apiDestinationService.updateApiDestination(any()))
+            .thenReturn(Boolean.TRUE);
         UpdateApiDestinationRequest updateApiDestinationRequest = new UpdateApiDestinationRequest();
-        updateApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        updateApiDestinationRequest.setDescription(UUID.randomUUID().toString());
+        updateApiDestinationRequest.setApiDestinationName(UUID.randomUUID()
+            .toString());
+        updateApiDestinationRequest.setDescription(UUID.randomUUID()
+            .toString());
         HttpApiParameters httpApiParameters = new HttpApiParameters();
-        httpApiParameters.setEndpoint(UUID.randomUUID().toString());
-        httpApiParameters.setMethod(UUID.randomUUID().toString());
+        httpApiParameters.setEndpoint(UUID.randomUUID()
+            .toString());
+        httpApiParameters.setMethod(UUID.randomUUID()
+            .toString());
         updateApiDestinationRequest.setHttpApiParameters(httpApiParameters);
         updateApiDestinationRequest.setInvocationRateLimitPerSecond(11);
-        final UpdateApiDestinationResponse updateApiDestinationResponse = apiDestinationController.updateApiDestination(updateApiDestinationRequest);
-        Assert.assertEquals(updateApiDestinationResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final Mono<UpdateApiDestinationResponse> updateApiDestinationResponse
+            = apiDestinationController.updateApiDestination(updateApiDestinationRequest);
+        Assert.assertEquals(updateApiDestinationResponse.block()
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testGetApiDestination() {
         Set<ConstraintViolation<GetApiDestinationRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(GetApiDestinationRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(GetApiDestinationRequest.class)))
+            .thenReturn(constraintViolations);
         ApiDestinationDTO eventApiDestinationDTO = new ApiDestinationDTO();
-        eventApiDestinationDTO.setName(UUID.randomUUID().toString());
-        Mockito.when(apiDestinationService.getApiDestination(any(), any())).thenReturn(eventApiDestinationDTO);
+        eventApiDestinationDTO.setName(UUID.randomUUID()
+            .toString());
+        Mockito.when(apiDestinationService.getApiDestination(any(), any()))
+            .thenReturn(eventApiDestinationDTO);
         GetApiDestinationRequest getApiDestinationRequest = new GetApiDestinationRequest();
-        getApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        final GetApiDestinationResponse apiDestination = apiDestinationController.getApiDestination(getApiDestinationRequest);
-        Assert.assertEquals(apiDestination.getCode(), EventBridgeErrorCode.Success.getCode());
+        getApiDestinationRequest.setApiDestinationName(UUID.randomUUID()
+            .toString());
+        final Mono<GetApiDestinationResponse> apiDestination = apiDestinationController.getApiDestination(
+            getApiDestinationRequest);
+        Assert.assertEquals(apiDestination.block()
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testDeleteApiDestination() {
         Set<ConstraintViolation<DeleteApiDestinationRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(DeleteApiDestinationRequest.class))).thenReturn(constraintViolations);
-        Mockito.when(apiDestinationService.deleteApiDestination(any(), any())).thenReturn(Boolean.TRUE);
+        Mockito.when(validator.validate(any(DeleteApiDestinationRequest.class)))
+            .thenReturn(constraintViolations);
+        Mockito.when(apiDestinationService.deleteApiDestination(any(), any()))
+            .thenReturn(Boolean.TRUE);
         DeleteApiDestinationRequest deleteApiDestinationRequest = new DeleteApiDestinationRequest();
-        deleteApiDestinationRequest.setApiDestinationName(UUID.randomUUID().toString());
-        final DeleteApiDestinationResponse deleteApiDestinationResponse = apiDestinationController.deleteApiDestination(deleteApiDestinationRequest);
-        Assert.assertEquals(deleteApiDestinationResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        deleteApiDestinationRequest.setApiDestinationName(UUID.randomUUID()
+            .toString());
+        final Mono<DeleteApiDestinationResponse> deleteApiDestinationResponse
+            = apiDestinationController.deleteApiDestination(deleteApiDestinationRequest);
+        Assert.assertEquals(deleteApiDestinationResponse.block()
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testListApiDestinations() {
         Set<ConstraintViolation<ListApiDestinationsRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(ListApiDestinationsRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(ListApiDestinationsRequest.class)))
+            .thenReturn(constraintViolations);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
         List<ApiDestinationDTO> apiDestinationDTOList = Lists.newArrayList();
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
-        apiDestinationDTO.setName(UUID.randomUUID().toString());
+        apiDestinationDTO.setName(UUID.randomUUID()
+            .toString());
         apiDestinationDTOList.add(apiDestinationDTO);
         result.setData(apiDestinationDTOList);
         result.setTotal(9);
         result.setNextToken("0");
-        Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(result);
+        Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(), anyInt()))
+            .thenReturn(result);
         ListApiDestinationsRequest listApiDestinationsRequest = new ListApiDestinationsRequest();
-        listApiDestinationsRequest.setApiDestinationNamePrefix(UUID.randomUUID().toString());
+        listApiDestinationsRequest.setApiDestinationNamePrefix(UUID.randomUUID()
+            .toString());
         listApiDestinationsRequest.setNextToken("0");
         listApiDestinationsRequest.setMaxResults(10);
-        final ListApiDestinationsResponse listApiDestinationsResponse = apiDestinationController.listApiDestinations(listApiDestinationsRequest);
-        Assert.assertEquals(listApiDestinationsResponse.getCode(), EventBridgeErrorCode.Success.getCode());
+        final Mono<ListApiDestinationsResponse> listApiDestinationsResponse
+            = apiDestinationController.listApiDestinations(listApiDestinationsRequest);
+        Assert.assertEquals(listApiDestinationsResponse.block()
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 }

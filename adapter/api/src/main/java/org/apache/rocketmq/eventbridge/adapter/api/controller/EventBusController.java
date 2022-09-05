@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/bus/")
@@ -54,42 +55,54 @@ public class EventBusController {
     AccountAPI accountAPI;
 
     @PostMapping(value = {"createEventBus"})
-    public CreateEventBusResponse createEventBus(@RequestBody CreateEventBusRequest createEventBusRequest) {
-        eventBusService.createEventBus(accountAPI.getResourceOwnerAccountId(), createEventBusRequest.getEventBusName(),
-            createEventBusRequest.getDescription());
-        return new CreateEventBusResponse(createEventBusRequest.getEventBusName());
+    public Mono<CreateEventBusResponse> createEventBus(@RequestBody CreateEventBusRequest createEventBusRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventBusService.createEventBus(accountAPI.getResourceOwnerAccountId(ctx),
+                    createEventBusRequest.getEventBusName(), createEventBusRequest.getDescription());
+                return new CreateEventBusResponse(createEventBusRequest.getEventBusName());
+            });
     }
 
     @PostMapping(value = {"getEventBus"})
-    public GetEventBusResponse getEventBus(@RequestBody GetEventBusRequest getEventBusRequest) {
-        EventBus eventbus = eventBusService.getEventBus(accountAPI.getResourceOwnerAccountId(),
-            getEventBusRequest.getEventBusName());
-        return new GetEventBusResponse(eventbus.getName(), eventbus.getDescription(), eventbus.getGmtCreate()
-            .getTime());
+    public Mono<GetEventBusResponse> getEventBus(@RequestBody GetEventBusRequest getEventBusRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventBus eventbus = eventBusService.getEventBus(accountAPI.getResourceOwnerAccountId(ctx),
+                    getEventBusRequest.getEventBusName());
+                return new GetEventBusResponse(eventbus.getName(), eventbus.getDescription(), eventbus.getGmtCreate()
+                    .getTime());
+            });
     }
 
     @PostMapping(value = {"deleteEventBus"})
-    public DeleteEventBusResponse deleteEventBus(@RequestBody DeleteEventBusRequest deleteEventBusRequest) {
-        eventBusDomainService.deleteEventBusCheckDependencies(accountAPI.getResourceOwnerAccountId(),
-            deleteEventBusRequest.getEventBusName());
-        return new DeleteEventBusResponse();
+    public Mono<DeleteEventBusResponse> deleteEventBus(@RequestBody DeleteEventBusRequest deleteEventBusRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventBusDomainService.deleteEventBusCheckDependencies(accountAPI.getResourceOwnerAccountId(ctx),
+                    deleteEventBusRequest.getEventBusName());
+                return new DeleteEventBusResponse();
+            });
     }
 
     @PostMapping(value = {"listEventBuses"})
-    public ListEventBusesResponse listEventBuses(@RequestBody ListEventBusesRequest listEventBusesRequest) {
-        PaginationResult<List<EventBus>> paginationResult = eventBusService.listEventBuses(
-            accountAPI.getResourceOwnerAccountId(), listEventBusesRequest.getNextToken(),
-            listEventBusesRequest.getMaxResults());
-        List<EventBusDTO> eventBuses = Lists.newArrayList();
-        paginationResult.getData()
-            .forEach(eventBus -> {
-                EventBusDTO eventBusDTO = new EventBusDTO();
-                eventBusDTO.setEventBusName(eventBusDTO.getEventBusName());
-                eventBusDTO.setDescription(eventBus.getDescription());
-                eventBuses.add(eventBusDTO);
+    public Mono<ListEventBusesResponse> listEventBuses(@RequestBody ListEventBusesRequest listEventBusesRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                PaginationResult<List<EventBus>> paginationResult = eventBusService.listEventBuses(
+                    accountAPI.getResourceOwnerAccountId(ctx), listEventBusesRequest.getNextToken(),
+                    listEventBusesRequest.getMaxResults());
+                List<EventBusDTO> eventBuses = Lists.newArrayList();
+                paginationResult.getData()
+                    .forEach(eventBus -> {
+                        EventBusDTO eventBusDTO = new EventBusDTO();
+                        eventBusDTO.setEventBusName(eventBusDTO.getEventBusName());
+                        eventBusDTO.setDescription(eventBus.getDescription());
+                        eventBuses.add(eventBusDTO);
+                    });
+                return new ListEventBusesResponse(eventBuses, paginationResult.getNextToken(),
+                    paginationResult.getTotal(), listEventBusesRequest.getMaxResults());
             });
-        return new ListEventBusesResponse(eventBuses, paginationResult.getNextToken(), paginationResult.getTotal(),
-            listEventBusesRequest.getMaxResults());
     }
 
 }

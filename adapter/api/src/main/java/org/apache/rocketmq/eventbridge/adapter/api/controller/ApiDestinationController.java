@@ -41,6 +41,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import javax.annotation.Resource;
 import javax.validation.ConstraintViolation;
@@ -62,83 +64,137 @@ public class ApiDestinationController {
 
     @WebLog
     @PostMapping("createApiDestination")
-    public CreateApiDestinationResponse createApiDestination(@RequestBody CreateApiDestinationRequest createApiDestinationRequest) {
-        final Set<ConstraintViolation<CreateApiDestinationRequest>> validate = validator.validate(createApiDestinationRequest);
-        List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(errMessage)) {
-            return new CreateApiDestinationResponse(null).parameterCheckFailRes(errMessage.toString());
-        }
-        ApiDestinationDTO apiDestinationDTO = getEventApiDestination(createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(), createApiDestinationRequest.getConnectionName(), createApiDestinationRequest.getInvocationRateLimitPerSecond(), createApiDestinationRequest.getApiDestinationName(), accountAPI);
-        return new CreateApiDestinationResponse(apiDestinationService.createApiDestination(apiDestinationDTO)).success();
+    public Mono<CreateApiDestinationResponse> createApiDestination(
+        @RequestBody CreateApiDestinationRequest createApiDestinationRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                final Set<ConstraintViolation<CreateApiDestinationRequest>> validate = validator.validate(
+                    createApiDestinationRequest);
+                List<String> errMessage = validate.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(errMessage)) {
+                    return new CreateApiDestinationResponse(null).parameterCheckFailRes(errMessage.toString());
+                }
+                ApiDestinationDTO apiDestinationDTO = getEventApiDestination(
+                    createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(),
+                    createApiDestinationRequest.getConnectionName(),
+                    createApiDestinationRequest.getInvocationRateLimitPerSecond(),
+                    createApiDestinationRequest.getApiDestinationName(), accountAPI, ctx);
+                return new CreateApiDestinationResponse(
+                    apiDestinationService.createApiDestination(apiDestinationDTO)).success();
+            });
     }
 
     @WebLog
     @PostMapping("updateApiDestination")
-    public UpdateApiDestinationResponse updateApiDestination(@RequestBody UpdateApiDestinationRequest updateApiDestinationRequest) {
-        final Set<ConstraintViolation<UpdateApiDestinationRequest>> validate = validator.validate(updateApiDestinationRequest);
-        List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(errMessage)) {
-            return new UpdateApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
-        }
-        ApiDestinationDTO apiDestinationDTO = getEventApiDestination(updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(), updateApiDestinationRequest.getConnectionName(), updateApiDestinationRequest.getInvocationRateLimitPerSecond(), updateApiDestinationRequest.getApiDestinationName(), accountAPI);
-        apiDestinationService.updateApiDestination(apiDestinationDTO);
-        return new UpdateApiDestinationResponse().success();
+    public Mono<UpdateApiDestinationResponse> updateApiDestination(
+        @RequestBody UpdateApiDestinationRequest updateApiDestinationRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                final Set<ConstraintViolation<UpdateApiDestinationRequest>> validate = validator.validate(
+                    updateApiDestinationRequest);
+                List<String> errMessage = validate.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(errMessage)) {
+                    return new UpdateApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
+                }
+                ApiDestinationDTO apiDestinationDTO = getEventApiDestination(
+                    updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(),
+                    updateApiDestinationRequest.getConnectionName(),
+                    updateApiDestinationRequest.getInvocationRateLimitPerSecond(),
+                    updateApiDestinationRequest.getApiDestinationName(), accountAPI, ctx);
+                apiDestinationService.updateApiDestination(apiDestinationDTO);
+                return new UpdateApiDestinationResponse().success();
+            });
     }
 
     @WebLog
     @PostMapping("getApiDestination")
-    public GetApiDestinationResponse getApiDestination(@RequestBody GetApiDestinationRequest getApiDestinationRequest) {
-        final Set<ConstraintViolation<GetApiDestinationRequest>> validate = validator.validate(getApiDestinationRequest);
-        List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(errMessage)) {
-            return new GetApiDestinationResponse(null, null, null, null, null).parameterCheckFailRes(errMessage.toString());
-        }
-        final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(accountAPI.getResourceOwnerAccountId(), getApiDestinationRequest.getApiDestinationName());
-        return new GetApiDestinationResponse(apiDestinationDTO.getName(), apiDestinationDTO.getConnectionName(), apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(), apiDestinationDTO.getInvocationRateLimitPerSecond()).success();
+    public Mono<GetApiDestinationResponse> getApiDestination(
+        @RequestBody GetApiDestinationRequest getApiDestinationRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                final Set<ConstraintViolation<GetApiDestinationRequest>> validate = validator.validate(
+                    getApiDestinationRequest);
+                List<String> errMessage = validate.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(errMessage)) {
+                    return new GetApiDestinationResponse(null, null, null, null, null).parameterCheckFailRes(
+                        errMessage.toString());
+                }
+                final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(
+                    accountAPI.getResourceOwnerAccountId(ctx), getApiDestinationRequest.getApiDestinationName());
+                return new GetApiDestinationResponse(apiDestinationDTO.getName(), apiDestinationDTO.getConnectionName(),
+                    apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(),
+                    apiDestinationDTO.getInvocationRateLimitPerSecond()).success();
+            });
     }
 
     @WebLog
     @PostMapping("deleteApiDestination")
-    public DeleteApiDestinationResponse deleteApiDestination(@RequestBody DeleteApiDestinationRequest deleteApiDestinationRequest) {
-        final Set<ConstraintViolation<DeleteApiDestinationRequest>> validate = validator.validate(deleteApiDestinationRequest);
-        List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(errMessage)) {
-            return new DeleteApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
-        }
-        apiDestinationService.deleteApiDestination(accountAPI.getResourceOwnerAccountId(), deleteApiDestinationRequest.getApiDestinationName());
-        return new DeleteApiDestinationResponse().success();
+    public Mono<DeleteApiDestinationResponse> deleteApiDestination(
+        @RequestBody DeleteApiDestinationRequest deleteApiDestinationRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                final Set<ConstraintViolation<DeleteApiDestinationRequest>> validate = validator.validate(
+                    deleteApiDestinationRequest);
+                List<String> errMessage = validate.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(errMessage)) {
+                    return new DeleteApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
+                }
+                apiDestinationService.deleteApiDestination(accountAPI.getResourceOwnerAccountId(ctx),
+                    deleteApiDestinationRequest.getApiDestinationName());
+                return new DeleteApiDestinationResponse().success();
+            });
     }
 
     @WebLog
     @PostMapping("listApiDestinations")
-    public ListApiDestinationsResponse listApiDestinations(@RequestBody ListApiDestinationsRequest listApiDestinationsRequest) {
-        final Set<ConstraintViolation<ListApiDestinationsRequest>> validate = validator.validate(listApiDestinationsRequest);
-        List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(errMessage)) {
-            return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
-        }
-        final PaginationResult<List<ApiDestinationDTO>> listPaginationResult = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(),
-                listApiDestinationsRequest.getApiDestinationNamePrefix(), listApiDestinationsRequest.getNextToken(), listApiDestinationsRequest.getMaxResults());
-        List<ApiDestinationsResponse> apiDestinationsResponses = Lists.newArrayList();
-        listPaginationResult.getData()
-                .forEach(eventApiDestination -> {
-                    ApiDestinationsResponse apiDestinationsResponse = new ApiDestinationsResponse();
-                    BeanUtils.copyProperties(eventApiDestination, apiDestinationsResponse);
-                    apiDestinationsResponse.setApiDestinationName(eventApiDestination.getName());
-                    apiDestinationsResponse.setHttpApiParameters(eventApiDestination.getApiParams());
-                    apiDestinationsResponses.add(apiDestinationsResponse);
-                });
-        return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(), listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
+    public Mono<ListApiDestinationsResponse> listApiDestinations(
+        @RequestBody ListApiDestinationsRequest listApiDestinationsRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                final Set<ConstraintViolation<ListApiDestinationsRequest>> validate = validator.validate(
+                    listApiDestinationsRequest);
+                List<String> errMessage = validate.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(errMessage)) {
+                    return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(
+                        errMessage.toString());
+                }
+                final PaginationResult<List<ApiDestinationDTO>> listPaginationResult
+                    = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(ctx),
+                    listApiDestinationsRequest.getApiDestinationNamePrefix(), listApiDestinationsRequest.getNextToken(),
+                    listApiDestinationsRequest.getMaxResults());
+                List<ApiDestinationsResponse> apiDestinationsResponses = Lists.newArrayList();
+                listPaginationResult.getData()
+                    .forEach(eventApiDestination -> {
+                        ApiDestinationsResponse apiDestinationsResponse = new ApiDestinationsResponse();
+                        BeanUtils.copyProperties(eventApiDestination, apiDestinationsResponse);
+                        apiDestinationsResponse.setApiDestinationName(eventApiDestination.getName());
+                        apiDestinationsResponse.setHttpApiParameters(eventApiDestination.getApiParams());
+                        apiDestinationsResponses.add(apiDestinationsResponse);
+                    });
+                return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(),
+                    listPaginationResult.getTotal(), listApiDestinationsRequest.getMaxResults()).success();
+            });
     }
 
-    private ApiDestinationDTO getEventApiDestination(HttpApiParameters apiParams, String description, String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI) {
+    private ApiDestinationDTO getEventApiDestination(HttpApiParameters apiParams, String description,
+        String connectionName, Integer invocationRateLimitPerSecond, String name, AccountAPI accountAPI, Context ctx) {
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         apiDestinationDTO.setApiParams(apiParams);
         apiDestinationDTO.setDescription(description);
         apiDestinationDTO.setConnectionName(connectionName);
         apiDestinationDTO.setInvocationRateLimitPerSecond(invocationRateLimitPerSecond);
         apiDestinationDTO.setName(name);
-        apiDestinationDTO.setAccountId(accountAPI.getResourceOwnerAccountId());
+        apiDestinationDTO.setAccountId(accountAPI.getResourceOwnerAccountId(ctx));
         return apiDestinationDTO;
     }
 }

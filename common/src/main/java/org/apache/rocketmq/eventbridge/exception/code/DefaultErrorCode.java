@@ -21,6 +21,7 @@ public enum DefaultErrorCode implements BaseErrorCode {
     //Default
     Success(200, "Success", "success"),
     InternalError(500, "InternalError", "InternalError"),
+    LoginFailed(409, "LoginFailed", "Login failed."),
     ;
 
     private final int httpCode;
