@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.repository;
 
+import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.converter.ConnectConverter;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.mapper.EventConnectionMapper;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 
-
+@Slf4j
 @Repository
 public class MybatisConnectRepository implements ConnectionRepository {
 
@@ -58,19 +60,32 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
-    public ConnectionDTO getConnection(String accountId, String connectionName) {
-        final ConnectionDO connectionDO = eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
-        return ConnectConverter.doConvertDto(connectionDO);
+    public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
+        final List<ConnectionDO> connectionDO = eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
+        log.info("MybatisConnectRepository ｜ connectionDO ：{}", new Gson().toJson(connectionDO));
+        return ConnectConverter.doListConvertDtoList(connectionDO);
     }
 
     @Override
     public List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
                                                int maxResults) {
-        return ConnectConverter.doListConvertDtoList(eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults));
+        List<ConnectionDO> connectionDOS = eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults);
+        return ConnectConverter.doListConvertDtoList(connectionDOS);
     }
 
     @Override
     public int getConnectionCount(String accountId) {
         return eventConnectionMapper.getConnectionCount(accountId);
+    }
+
+    @Override
+    public ConnectionDTO getConnectionById(Integer id) {
+        ConnectionDO connectionDO = eventConnectionMapper.selectByPrimaryKey(id);
+        return ConnectConverter.doConvertDto(connectionDO);
+    }
+
+    @Override
+    public ConnectionDTO getConnectionByName(String name) {
+        return ConnectConverter.doConvertDto(eventConnectionMapper.selectByName(name));
     }
 }

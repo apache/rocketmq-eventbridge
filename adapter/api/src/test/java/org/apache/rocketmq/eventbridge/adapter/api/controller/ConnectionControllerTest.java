@@ -74,92 +74,132 @@ public class ConnectionControllerTest {
 
     @Before
     public void testBefore() throws Exception {
-        Mockito.when(accountAPI.getResourceOwnerAccountId()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(accountAPI.getResourceOwnerAccountId())
+                .thenReturn(UUID.randomUUID()
+                        .toString());
     }
 
     @Test
     public void testCreateConnection() {
-        Mockito.when(connectionService.createConnection(any(ConnectionDTO.class))).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(connectionService.createConnection(any(ConnectionDTO.class)))
+                .thenReturn(UUID.randomUUID()
+                        .toString());
         Set<ConstraintViolation<CreateConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(CreateConnectionRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(CreateConnectionRequest.class)))
+                .thenReturn(constraintViolations);
         CreateConnectionRequest createConnectionRequest = new CreateConnectionRequest();
-        createConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        createConnectionRequest.setDescription(UUID.randomUUID().toString());
+        createConnectionRequest.setConnectionName(UUID.randomUUID()
+                .toString());
+        createConnectionRequest.setDescription(UUID.randomUUID()
+                .toString());
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
-        networkParameters.setSecurityGroupId(UUID.randomUUID().toString());
-        networkParameters.setVpcId(UUID.randomUUID().toString());
-        networkParameters.setVswitcheId(UUID.randomUUID().toString());
+        networkParameters.setSecurityGroupId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVpcId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVswitcheId(UUID.randomUUID()
+                .toString());
         createConnectionRequest.setNetworkParameters(networkParameters);
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
-        basicAuthParameters.setPassword(UUID.randomUUID().toString());
-        basicAuthParameters.setUsername(UUID.randomUUID().toString());
+        basicAuthParameters.setPassword(UUID.randomUUID()
+                .toString());
+        basicAuthParameters.setUsername(UUID.randomUUID()
+                .toString());
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         createConnectionRequest.setAuthParameters(authParameters);
-        final CreateConnectionResponse connection = connectionController.createConnection(createConnectionRequest);
+        final CreateConnectionResponse connection = connectionController.createConnection(createConnectionRequest,
+                null);
         Assert.assertEquals(connection.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testDeleteConnection() {
-        Mockito.doNothing().when(connectionService).deleteConnection(anyString(), anyString());
+        Mockito.doNothing()
+                .when(connectionService)
+                .deleteConnection(anyString(), anyString());
         Set<ConstraintViolation<DeleteConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(DeleteConnectionRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(DeleteConnectionRequest.class)))
+                .thenReturn(constraintViolations);
         DeleteConnectionRequest deleteConnectionRequest = new DeleteConnectionRequest();
-        deleteConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        final DeleteConnectionResponse deleteConnectionResponse = connectionController.deleteConnection(deleteConnectionRequest);
+        deleteConnectionRequest.setConnectionName(UUID.randomUUID()
+                .toString());
+        final DeleteConnectionResponse deleteConnectionResponse = connectionController.deleteConnection(
+                deleteConnectionRequest, null);
         Assert.assertEquals(deleteConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testUpdateConnection() {
-        Mockito.doNothing().when(connectionService).updateConnection(any(ConnectionDTO.class), anyString());
+        Mockito.doNothing()
+                .when(connectionService)
+                .updateConnection(any(ConnectionDTO.class), anyString());
         Set<ConstraintViolation<UpdateConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(UpdateConnectionRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(UpdateConnectionRequest.class)))
+                .thenReturn(constraintViolations);
         UpdateConnectionRequest updateConnectionRequest = new UpdateConnectionRequest();
-        updateConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        updateConnectionRequest.setDescription(UUID.randomUUID().toString());
+        updateConnectionRequest.setConnectionName(UUID.randomUUID()
+                .toString());
+        updateConnectionRequest.setDescription(UUID.randomUUID()
+                .toString());
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
-        networkParameters.setSecurityGroupId(UUID.randomUUID().toString());
-        networkParameters.setVpcId(UUID.randomUUID().toString());
-        networkParameters.setVswitcheId(UUID.randomUUID().toString());
+        networkParameters.setSecurityGroupId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVpcId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVswitcheId(UUID.randomUUID()
+                .toString());
         updateConnectionRequest.setNetworkParameters(networkParameters);
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
-        basicAuthParameters.setPassword(UUID.randomUUID().toString());
-        basicAuthParameters.setUsername(UUID.randomUUID().toString());
+        basicAuthParameters.setPassword(UUID.randomUUID()
+                .toString());
+        basicAuthParameters.setUsername(UUID.randomUUID()
+                .toString());
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         updateConnectionRequest.setAuthParameters(authParameters);
-        final UpdateConnectionResponse updateConnectionResponse = connectionController.updateConnection(updateConnectionRequest);
+        final UpdateConnectionResponse updateConnectionResponse = connectionController.updateConnection(
+                updateConnectionRequest, null);
         Assert.assertEquals(updateConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testGetConnection() {
         Set<ConstraintViolation<GetConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(GetConnectionRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(GetConnectionRequest.class)))
+                .thenReturn(constraintViolations);
         final ConnectionDTO connectionDTO = new ConnectionDTO();
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
-        networkParameters.setSecurityGroupId(UUID.randomUUID().toString());
-        networkParameters.setVpcId(UUID.randomUUID().toString());
-        networkParameters.setVswitcheId(UUID.randomUUID().toString());
+        networkParameters.setSecurityGroupId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVpcId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVswitcheId(UUID.randomUUID()
+                .toString());
         connectionDTO.setNetworkParameters(networkParameters);
+        List<ConnectionDTO> list = Lists.newArrayList();
+        list.add(connectionDTO);
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
-        basicAuthParameters.setPassword(UUID.randomUUID().toString());
-        basicAuthParameters.setUsername(UUID.randomUUID().toString());
+        basicAuthParameters.setPassword(UUID.randomUUID()
+                .toString());
+        basicAuthParameters.setUsername(UUID.randomUUID()
+                .toString());
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
-        BDDMockito.given(connectionService.getConnection(any(), any())).willReturn(connectionDTO);
+        BDDMockito.given(connectionService.getConnection(any(), any()))
+                .willReturn(list);
         GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
-        getConnectionRequest.setConnectionName(UUID.randomUUID().toString());
-        final GetConnectionResponse getConnectionResponse = connectionController.getConnection(getConnectionRequest);
+        getConnectionRequest.setConnectionName(UUID.randomUUID()
+                .toString());
+        final GetConnectionResponse getConnectionResponse = connectionController.getConnection(getConnectionRequest,
+                null);
         Assert.assertEquals(getConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
@@ -168,25 +208,31 @@ public class ConnectionControllerTest {
         PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
         List<ConnectionDTO> eventConnectionWithBLOBs = Lists.newArrayList();
         ConnectionDTO eventConnection = new ConnectionDTO();
-        eventConnection.setConnectionName(UUID.randomUUID().toString());
+        eventConnection.setConnectionName(UUID.randomUUID()
+                .toString());
         eventConnectionWithBLOBs.add(eventConnection);
         result.setData(eventConnectionWithBLOBs);
         result.setTotal(9);
         result.setNextToken("0");
-        Mockito.when(connectionService.listConnections(any(), any(), any(), anyInt())).thenReturn(result);
+        Mockito.when(connectionService.listConnections(any(), any(), any(), anyInt()))
+                .thenReturn(result);
         Set<ConstraintViolation<ListConnectionRequest>> constraintViolations = new HashSet<>();
-        Mockito.when(validator.validate(any(ListConnectionRequest.class))).thenReturn(constraintViolations);
+        Mockito.when(validator.validate(any(ListConnectionRequest.class)))
+                .thenReturn(constraintViolations);
         ListConnectionRequest listConnectionRequest = new ListConnectionRequest();
-        listConnectionRequest.setConnectionNamePrefix(UUID.randomUUID().toString());
+        listConnectionRequest.setConnectionNamePrefix(UUID.randomUUID()
+                .toString());
         listConnectionRequest.setNextToken("0");
         listConnectionRequest.setMaxResults(10);
-        final ListConnectionResponse listConnectionResponse = connectionController.listConnections(listConnectionRequest);
+        final ListConnectionResponse listConnectionResponse = connectionController.listConnections(
+                listConnectionRequest, null);
         Assert.assertEquals(listConnectionResponse.getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test
     public void testListEnumsResponse() {
-        final ListEnumsResponse listEnumsResponse = connectionController.listEnumsResponse();
-        Assert.assertEquals(listEnumsResponse.getNetworkTypeEnums().size(), NetworkTypeEnum.values().length);
+        final ListEnumsResponse listEnumsResponse = connectionController.listEnumsResponse(null);
+        Assert.assertEquals(listEnumsResponse.getNetworkTypeEnums()
+                .size(), NetworkTypeEnum.values().length);
     }
 }

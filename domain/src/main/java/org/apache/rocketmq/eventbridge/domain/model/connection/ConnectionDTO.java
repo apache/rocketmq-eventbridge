@@ -17,29 +17,33 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
-import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 
+import java.io.Serializable;
+import java.util.Date;
+
 @Getter
 @Setter
 @ToString
-public class ConnectionDTO {
+public class ConnectionDTO implements Serializable {
 
+    private static final long serialVersionUID = 7351924623576926203L;
+    private Integer id;
     private String accountId;
 
-    @SerializedName("ConnectionName")
     private String connectionName;
 
-    @SerializedName("Description")
     private String description;
 
-    @SerializedName("NetworkParameters")
     private NetworkParameters networkParameters;
 
-    @SerializedName("AuthParameters")
     private AuthParameters authParameters;
+
+    private Date gmtCreate;
+
+    private String apiDestinationName;
 }

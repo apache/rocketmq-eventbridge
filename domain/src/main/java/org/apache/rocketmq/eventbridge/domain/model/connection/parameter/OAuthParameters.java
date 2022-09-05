@@ -38,7 +38,7 @@ public class OAuthParameters {
     @Getter
     @Setter
     @ToString
-    static class ClientParameters {
+    public static class ClientParameters {
         @SerializedName("ClientID")
         private String clientID;
 

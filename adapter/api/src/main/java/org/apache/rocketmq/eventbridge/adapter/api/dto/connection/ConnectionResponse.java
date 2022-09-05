@@ -42,4 +42,13 @@ public class ConnectionResponse extends BaseDTO {
     @SerializedName("AuthParameters")
     private AuthParameters authParameters;
 
+    @SerializedName("GmtCreate")
+    private Long gmtCreate;
+
+    @SerializedName("ApiDestinationName")
+    private String apiDestinationName;
+
+    @SerializedName("Id")
+    private Integer id;
+
 }

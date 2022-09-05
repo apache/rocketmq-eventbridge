@@ -36,8 +36,13 @@ public class ConnectConverter {
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(connectionDO.getName());
         connectionDTO.setDescription(connectionDO.getDescription());
-        connectionDTO.setAuthParameters(JSONObject.parseObject(connectionDO.getAuthParameters(), AuthParameters.class));
+        if (connectionDO.getAuthParameters() != null) {
+            connectionDTO.setAuthParameters(JSONObject.parseObject(connectionDO.getAuthParameters(), AuthParameters.class));
+        }
         connectionDTO.setNetworkParameters(JSONObject.parseObject(connectionDO.getNetworkParameters(), NetworkParameters.class));
+        connectionDTO.setGmtCreate(connectionDO.getGmtCreate());
+        connectionDTO.setId(connectionDO.getId());
+        connectionDTO.setApiDestinationName(connectionDO.getApiDestinationName());
         return connectionDTO;
     }
 
@@ -47,12 +52,14 @@ public class ConnectConverter {
         }
         ConnectionDO connectionDO = new ConnectionDO();
         connectionDO.setAccountId(connectionDTO.getAccountId());
-        connectionDO.setAuthorizationType(connectionDTO.getAuthParameters().getAuthorizationType());
+        if (connectionDTO.getAuthParameters() != null) {
+            connectionDO.setAuthorizationType(connectionDTO.getAuthParameters().getAuthorizationType());
+            connectionDO.setAuthParameters(JSONObject.toJSONString(connectionDTO.getAuthParameters()));
+        }
         connectionDO.setName(connectionDTO.getConnectionName());
         connectionDO.setNetworkParameters(JSON.toJSONString(connectionDTO.getNetworkParameters()));
         connectionDO.setDescription(connectionDTO.getDescription());
         connectionDO.setNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
-        connectionDO.setAuthParameters(JSONObject.toJSONString(connectionDTO.getAuthParameters()));
         return connectionDO;
     }
 

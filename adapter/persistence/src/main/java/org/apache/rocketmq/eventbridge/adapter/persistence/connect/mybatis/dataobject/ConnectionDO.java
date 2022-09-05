@@ -110,6 +110,7 @@ public class ConnectionDO implements Serializable {
      */
     private Date gmtModify;
 
+    private String apiDestinationName;
 
-
+    private Integer id;
 }

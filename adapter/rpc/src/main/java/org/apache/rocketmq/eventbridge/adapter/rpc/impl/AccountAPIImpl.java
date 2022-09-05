@@ -20,6 +20,8 @@ package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class AccountAPIImpl implements AccountAPI {
     public static final String HEADER_KEY_LOGIN_ACCOUNT_ID = "loginAccountId";
@@ -37,7 +39,7 @@ public class AccountAPIImpl implements AccountAPI {
     }
 
     @Override
-    public String getResourceOwnerAccountId() {
+    public String getResourceOwnerAccountId(Map<String,Object> headers) {
         return "Admin";
     }
 
