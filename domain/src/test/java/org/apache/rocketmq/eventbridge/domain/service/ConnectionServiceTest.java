@@ -105,6 +105,7 @@ public class ConnectionServiceTest {
     @Test
     public void testUpdateConnection() {
         Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
+        Mockito.when(connectionRepository.getConnectionByName(anyString())).thenReturn(new ConnectionDTO());
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         NetworkParameters networkParameters = new NetworkParameters();

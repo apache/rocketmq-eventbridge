@@ -17,11 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class SecretManagerAPIImpl implements SecretManagerAPI {
 
