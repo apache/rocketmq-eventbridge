@@ -58,21 +58,25 @@ public class EventDataController {
 
     @PostMapping(value = {"putEvents"})
     public Mono<PutEventsResponse> putEvents(@RequestHeader Map<String, String> headers, @RequestBody byte[] body) {
-        List<CloudEvent> cloudEvents = eventConverterAdapter.toEventsRequest(headers, body);
-        List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
-        return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(), eventList);
+        return Mono.subscriberContext()
+            .flatMap(ctx -> {
+                List<CloudEvent> cloudEvents = eventConverterAdapter.toEventsRequest(headers, body);
+                List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
+                return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(ctx), eventList);
+            });
     }
 
     @RequestMapping(value = {"webhook/putEvents"})
     public Mono<PutEventsResponse> putHttpEvents(ServerWebExchange serverWebExchange,
-                                                 @RequestHeader Map<String, String> headers,
-                                                 @RequestBody byte[] body,
-                                                 @RequestParam("token") String token) {
-        ServerHttpRequest request = serverWebExchange.getRequest();
-        List<CloudEvent> cloudEvents = httpEventConverter.toEventBridgeEvent(request, body,
-                headers, accountAPI.getResourceOwnerAccountId(), token);
-        List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
-        return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(), eventList);
+        @RequestHeader Map<String, String> headers, @RequestBody byte[] body, @RequestParam("token") String token) {
+        return Mono.subscriberContext()
+            .flatMap(ctx -> {
+                ServerHttpRequest request = serverWebExchange.getRequest();
+                List<CloudEvent> cloudEvents = httpEventConverter.toEventBridgeEvent(request, body, headers,
+                    accountAPI.getResourceOwnerAccountId(ctx), token);
+                List<EventBridgeEvent> eventList = this.converterEventBridgeEvent(cloudEvents);
+                return eventDataHandler.putEvents(accountAPI.getResourceOwnerAccountId(ctx), eventList);
+            });
     }
 
     private List<EventBridgeEvent> converterEventBridgeEvent(List<CloudEvent> cloudEvents) {
@@ -91,7 +95,8 @@ public class EventDataController {
                 .dataschema(cloudEvent.getDataSchema())
                 .datacontenttype(cloudEvent.getDataContentType())
                 .time(cloudEvent.getTime())
-                .data(cloudEvent.getData().toBytes())
+                .data(cloudEvent.getData()
+                    .toBytes())
                 .build();
             if (cloudEvent.getExtensionNames() != null) {
                 cloudEvent.getExtensionNames()

@@ -19,32 +19,26 @@ package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
+import reactor.util.context.Context;
 
 @Component
-public class AccountAPIImpl implements AccountAPI {
+public class AccountAPIImpl implements AccountAPI<Context> {
     public static final String HEADER_KEY_LOGIN_ACCOUNT_ID = "loginAccountId";
     public static final String HEADER_KEY_PARENT_ACCOUNT_ID = "parentAccountId";
     public static final String HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID = "resourceOwnerAccountId";
 
     @Override
-    public String getLoginAccountId() {
-        return null;
+    public String getLoginAccountId(Context ctx) {
+        return ctx.get(HEADER_KEY_LOGIN_ACCOUNT_ID);
     }
 
     @Override
-    public String getParentAccountId() {
-        return null;
+    public String getParentAccountId(Context ctx) {
+        return ctx.get(HEADER_KEY_PARENT_ACCOUNT_ID);
     }
 
     @Override
-    public String getResourceOwnerAccountId(Map<String,Object> headers) {
-        return "Admin";
-    }
-
-    @Override
-    public boolean isParentAccount() {
-        return false;
+    public String getResourceOwnerAccountId(Context ctx) {
+        return ctx.get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID);
     }
 }

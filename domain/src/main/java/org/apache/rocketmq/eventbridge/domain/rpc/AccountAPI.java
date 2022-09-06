@@ -17,15 +17,32 @@
 
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
-import java.util.Map;
+public interface AccountAPI<T> {
 
-public interface AccountAPI {
+    /**
+     * Return the login accountId.
+     *
+     * @param ctx
+     *
+     * @return
+     */
+    String getLoginAccountId(T ctx);
 
-    String getLoginAccountId();
+    /**
+     * Return the parent of login accountId.
+     *
+     * @param ctx
+     *
+     * @return
+     */
+    String getParentAccountId(T ctx);
 
-    String getParentAccountId();
-
-    String getResourceOwnerAccountId(Map<String,Object> headers);
-
-    boolean isParentAccount();
+    /**
+     * Return the resource owner's accountId.
+     *
+     * @param ctx
+     *
+     * @return
+     */
+    String getResourceOwnerAccountId(T ctx);
 }

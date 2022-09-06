@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/rule/")
@@ -63,83 +64,105 @@ public class EventRuleController {
     AccountAPI accountAPI;
 
     @PostMapping(value = {"createEventRule"})
-    public CreateRuleResponse createRule(@RequestBody CreateRuleRequest createRuleRequest) {
-        eventRuleService.createEventRule(accountAPI.getResourceOwnerAccountId(), createRuleRequest.getEventBusName(),
-            createRuleRequest.getEventRuleName(), createRuleRequest.getDescription(),
-            createRuleRequest.getFilterPattern());
-        return new CreateRuleResponse(createRuleRequest.getEventRuleName());
+    public Mono<CreateRuleResponse> createRule(@RequestBody CreateRuleRequest createRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventRuleService.createEventRule(accountAPI.getResourceOwnerAccountId(ctx),
+                    createRuleRequest.getEventBusName(), createRuleRequest.getEventRuleName(),
+                    createRuleRequest.getDescription(), createRuleRequest.getFilterPattern());
+                return new CreateRuleResponse(createRuleRequest.getEventRuleName());
+            });
     }
 
     @PostMapping(value = {"getEventRule"})
-    public GetRuleResponse getRule(@RequestBody GetRuleRequest getRuleRequest) {
-        EventRuleDetail eventRuleDetail = eventRuleDomainService.getEventRuleDetail(
-            accountAPI.getResourceOwnerAccountId(), getRuleRequest.getEventBusName(),
-            getRuleRequest.getEventRuleName());
+    public Mono<GetRuleResponse> getRule(@RequestBody GetRuleRequest getRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                EventRuleDetail eventRuleDetail = eventRuleDomainService.getEventRuleDetail(
+                    accountAPI.getResourceOwnerAccountId(ctx), getRuleRequest.getEventBusName(),
+                    getRuleRequest.getEventRuleName());
 
-        List<EventTargetDTO> eventTargets = EventTargetDTOConverter.convert(eventRuleDetail.getEventTargets());
-        GetRuleResponse getRuleResponse = GetRuleResponse.builder()
-            .eventBusName(eventRuleDetail.getEventBusName())
-            .eventRuleName(eventRuleDetail.getName())
-            .description(eventRuleDetail.getDescription())
-            .filterPattern(eventRuleDetail.getFilterPattern())
-            .status(eventRuleDetail.getStatus())
-            .gmtCreate(eventRuleDetail.getGmtCreate())
-            .gmtModify(eventRuleDetail.getGmtModify())
-            .eventTargets(eventTargets)
-            .build();
-        return getRuleResponse;
+                List<EventTargetDTO> eventTargets = EventTargetDTOConverter.convert(eventRuleDetail.getEventTargets());
+                GetRuleResponse getRuleResponse = GetRuleResponse.builder()
+                    .eventBusName(eventRuleDetail.getEventBusName())
+                    .eventRuleName(eventRuleDetail.getName())
+                    .description(eventRuleDetail.getDescription())
+                    .filterPattern(eventRuleDetail.getFilterPattern())
+                    .status(eventRuleDetail.getStatus())
+                    .gmtCreate(eventRuleDetail.getGmtCreate())
+                    .gmtModify(eventRuleDetail.getGmtModify())
+                    .eventTargets(eventTargets)
+                    .build();
+                return getRuleResponse;
+            });
     }
 
     @PostMapping(value = {"deleteEventRule"})
-    public DeleteRuleResponse deleteRule(@RequestBody DeleteRuleRequest deleteRuleRequest) {
-        eventRuleDomainService.deleteEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
-            deleteRuleRequest.getEventBusName(), deleteRuleRequest.getEventRuleName());
-        return new DeleteRuleResponse();
+    public Mono<DeleteRuleResponse> deleteRule(@RequestBody DeleteRuleRequest deleteRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventRuleDomainService.deleteEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(ctx),
+                    deleteRuleRequest.getEventBusName(), deleteRuleRequest.getEventRuleName());
+                return new DeleteRuleResponse();
+            });
     }
 
     @PostMapping(value = {"updateEventRule"})
-    public UpdateRuleResponse updateRule(@RequestBody UpdateRuleRequest updateRuleRequest) {
-        eventRuleDomainService.updateEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
-            updateRuleRequest.getEventBusName(), updateRuleRequest.getEventRuleName(),
-            updateRuleRequest.getDescription(), updateRuleRequest.getFilterPattern());
-        return new UpdateRuleResponse();
+    public Mono<UpdateRuleResponse> updateRule(@RequestBody UpdateRuleRequest updateRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventRuleDomainService.updateEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(ctx),
+
+                    updateRuleRequest.getEventBusName(), updateRuleRequest.getEventRuleName(),
+                    updateRuleRequest.getDescription(), updateRuleRequest.getFilterPattern());
+                return new UpdateRuleResponse();
+            });
     }
 
     @PostMapping(value = {"listEventRules"})
-    public ListRulesResponse listRules(@RequestBody ListRulesRequest listRulesRequest) {
-        PaginationResult<List<EventRule>> paginationResult = eventRuleService.listEventRules(
-            accountAPI.getResourceOwnerAccountId(), listRulesRequest.getEventBusName(), listRulesRequest.getNextToken(),
-            listRulesRequest.getMaxResults());
-        List<EventRuleDTO> eventRules = Lists.newArrayList();
-        paginationResult.getData()
-            .forEach(eventRule -> {
-                EventRuleDTO eventRuleDTO = EventRuleDTO.builder()
-                    .eventBusName(eventRule.getEventBusName())
-                    .eventRuleName(eventRule.getName())
-                    .description(eventRule.getDescription())
-                    .filterPattern(eventRule.getFilterPattern())
-                    .status(eventRule.getStatus())
-                    .gmtCreate(eventRule.getGmtCreate())
-                    .gmtModify(eventRule.getGmtModify())
-                    .build();
-                eventRules.add(eventRuleDTO);
+    public Mono<ListRulesResponse> listRules(@RequestBody ListRulesRequest listRulesRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                PaginationResult<List<EventRule>> paginationResult = eventRuleService.listEventRules(
+                    accountAPI.getResourceOwnerAccountId(ctx), listRulesRequest.getEventBusName(),
+                    listRulesRequest.getNextToken(), listRulesRequest.getMaxResults());
+                List<EventRuleDTO> eventRules = Lists.newArrayList();
+                paginationResult.getData()
+                    .forEach(eventRule -> {
+                        EventRuleDTO eventRuleDTO = EventRuleDTO.builder()
+                            .eventBusName(eventRule.getEventBusName())
+                            .eventRuleName(eventRule.getName())
+                            .description(eventRule.getDescription())
+                            .filterPattern(eventRule.getFilterPattern())
+                            .status(eventRule.getStatus())
+                            .gmtCreate(eventRule.getGmtCreate())
+                            .gmtModify(eventRule.getGmtModify())
+                            .build();
+                        eventRules.add(eventRuleDTO);
+                    });
+                return new ListRulesResponse(eventRules, paginationResult.getNextToken(), paginationResult.getTotal(),
+                    listRulesRequest.getMaxResults());
             });
-        return new ListRulesResponse(eventRules, paginationResult.getNextToken(), paginationResult.getTotal(),
-            listRulesRequest.getMaxResults());
     }
 
     @PostMapping(value = {"enableEventRule"})
-    public EnableRuleResponse enableRule(@RequestBody EnableRuleRequest enableRuleRequest) {
-        eventRuleDomainService.enableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
-            enableRuleRequest.getEventBusName(), enableRuleRequest.getEventRuleName());
-        return new EnableRuleResponse();
+    public Mono<EnableRuleResponse> enableRule(@RequestBody EnableRuleRequest enableRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventRuleDomainService.enableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(ctx),
+                    enableRuleRequest.getEventBusName(), enableRuleRequest.getEventRuleName());
+                return new EnableRuleResponse();
+            });
     }
 
     @PostMapping(value = {"disableEventRule"})
-    public DisableRuleResponse disableRule(@RequestBody DisableRuleRequest disableRuleRequest) {
-        eventRuleDomainService.disableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(),
-            disableRuleRequest.getEventBusName(), disableRuleRequest.getEventRuleName());
-        return new DisableRuleResponse();
+    public Mono<DisableRuleResponse> disableRule(@RequestBody DisableRuleRequest disableRuleRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                eventRuleDomainService.disableEventRuleWithDependencies(accountAPI.getResourceOwnerAccountId(ctx),
+                    disableRuleRequest.getEventBusName(), disableRuleRequest.getEventRuleName());
+                return new DisableRuleResponse();
+            });
     }
 
 }
