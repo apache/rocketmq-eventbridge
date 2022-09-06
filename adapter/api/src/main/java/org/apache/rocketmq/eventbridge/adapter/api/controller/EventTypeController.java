@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/type/")
@@ -44,27 +45,30 @@ public class EventTypeController {
     EventTypeService eventTypeService;
 
     @PostMapping(value = {"listEventTypes"})
-    public ListEventTypesResponse listEventTypes(@RequestBody ListEventTypesRequest listEventTypesRequest) {
-        PaginationResult<List<EventType>> paginationResult = eventTypeService.listEventTypes(
-            accountAPI.getResourceOwnerAccountId(), listEventTypesRequest.getEventBusName(),
-            listEventTypesRequest.getEventSourceName(), listEventTypesRequest.getNextToken(),
-            listEventTypesRequest.getMaxResults());
+    public Mono<ListEventTypesResponse> listEventTypes(@RequestBody ListEventTypesRequest listEventTypesRequest) {
+        return Mono.subscriberContext()
+            .map(ctx -> {
+                PaginationResult<List<EventType>> paginationResult = eventTypeService.listEventTypes(
+                    accountAPI.getResourceOwnerAccountId(ctx), listEventTypesRequest.getEventBusName(),
+                    listEventTypesRequest.getEventSourceName(), listEventTypesRequest.getNextToken(),
+                    listEventTypesRequest.getMaxResults());
 
-        List<EventTypeDTO> eventTypeDTOS = Lists.newArrayList();
-        paginationResult.getData()
-            .forEach(eventType -> {
-                EventTypeDTO eventTypeDTO = EventTypeDTO.builder()
-                    .eventBusName(eventType.getEventBusName())
-                    .eventSourceName(eventType.getEventSourceName())
-                    .eventTypeName(eventType.getName())
-                    .description(eventType.getDescription())
-                    .gmtCreate(eventType.getGmtCreate())
-                    .gmtModify(eventType.getGmtModify())
-                    .build();
-                eventTypeDTOS.add(eventTypeDTO);
+                List<EventTypeDTO> eventTypeDTOS = Lists.newArrayList();
+                paginationResult.getData()
+                    .forEach(eventType -> {
+                        EventTypeDTO eventTypeDTO = EventTypeDTO.builder()
+                            .eventBusName(eventType.getEventBusName())
+                            .eventSourceName(eventType.getEventSourceName())
+                            .eventTypeName(eventType.getName())
+                            .description(eventType.getDescription())
+                            .gmtCreate(eventType.getGmtCreate())
+                            .gmtModify(eventType.getGmtModify())
+                            .build();
+                        eventTypeDTOS.add(eventTypeDTO);
+                    });
+                return new ListEventTypesResponse(eventTypeDTOS, paginationResult.getNextToken(),
+                    paginationResult.getTotal(), listEventTypesRequest.getMaxResults());
             });
-        return new ListEventTypesResponse(eventTypeDTOS, paginationResult.getNextToken(), paginationResult.getTotal(),
-            listEventTypesRequest.getMaxResults());
     }
 
 }
