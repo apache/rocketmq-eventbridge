@@ -11,7 +11,7 @@
     </sql>
     <resultMap id="resultMap" type="org.apache.rocketmq.eventbridge.domain.model.rule.EventRule">
         <result property="accountId" column="account_id"/>
-        <result property="bus" column="eventBusName"/>
+        <result property="eventBusName" column="bus"/>
         <result property="name" column="name"/>
         <result property="description" column="description"/>
         <result property="filterPattern" column="filter_pattern"/>
