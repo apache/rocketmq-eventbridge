@@ -12,12 +12,62 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>18</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>rocketmq-eventbridge</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+    <name>Apache RocketMQ EventBridge ${project.version}</name>
+    <url>https://github.com/apache/rocketmq-eventbridge</url>
+
+    <scm>
+        <url>git@github.com:apache/rocketmq-eventbridge.git</url>
+        <connection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <mailingLists>
+        <mailingList>
+            <name>Development List</name>
+            <subscribe>dev-subscribe@rocketmq.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@rocketmq.apache.org</unsubscribe>
+            <post>dev@rocketmq.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>User List</name>
+            <subscribe>users-subscribe@rocketmq.apache.org</subscribe>
+            <unsubscribe>users-unsubscribe@rocketmq.apache.org</unsubscribe>
+            <post>users@rocketmq.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Commits List</name>
+            <subscribe>commits-subscribe@rocketmq.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@rocketmq.apache.org</unsubscribe>
+            <post>commits@rocketmq.apache.org</post>
+        </mailingList>
+    </mailingLists>
+
+    <organization>
+        <name>Apache Software Foundation</name>
+        <url>http://www.apache.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -42,7 +92,10 @@
         <mockito.version>2.13.0</mockito.version>
         <caffeine.version>2.9.3</caffeine.version>
         <fastjson.version>2.0.2</fastjson.version>
+        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
+        <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
     </properties>
+
     <modules>
         <module>start</module>
         <module>adapter</module>
@@ -277,26 +330,111 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                <version>2.17</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>verify</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <configuration>-->
-<!--                            <configLocation>style/rmq_checkstyle.xml</configLocation>-->
-<!--                            <encoding>UTF-8</encoding>-->
-<!--                            <consoleOutput>true</consoleOutput>-->
-<!--                            <failsOnError>true</failsOnError>-->
-<!--                            <includeTestSourceDirectory>false</includeTestSourceDirectory>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <executions>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <configuration>
+                            <configLocation>style/rmq_checkstyle.xml</configLocation>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>true</failsOnError>
+                            <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-prepare-agent-integration</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                            <propertyName>failsafeArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <skipAfterFailureCount>1</skipAfterFailureCount>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <excludes>
+                        <exclude>**/IT*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.12</version>
+                <configuration>
+                    <excludes>
+                        <exclude>.gitignore</exclude>
+                        <exclude>.travis.yml</exclude>
+                        <exclude>CONTRIBUTING.md</exclude>
+                        <exclude>**/README.md</exclude>
+                        <exclude>**/README_zh_CN.md</exclude>
+                        <exclude>.github/**</exclude>
+                        <exclude>src/test/resources/certs/*</exclude>
+                        <exclude>src/test/**/*.log</exclude>
+                        <exclude>src/test/resources/META-INF/service/*</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>*/*.iml</exclude>
+                        <exclude>**/*/spring.factories</exclude>
+                        <exclude>**/application.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
