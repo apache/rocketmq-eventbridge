@@ -21,7 +21,7 @@
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>rocketmq-eventbridge</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Apache RocketMQ EventBridge ${project.version}</name>
     <url>https://github.com/apache/rocketmq-eventbridge</url>
 
@@ -29,7 +29,7 @@
         <url>git@github.com:apache/rocketmq-eventbridge.git</url>
         <connection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</connection>
         <developerConnection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</developerConnection>
-        <tag>rocketmq-eventbridge-1.0.0</tag>
+        <tag>1.0.0</tag>
     </scm>
 
     <mailingLists>
@@ -106,27 +106,27 @@
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
-                <version> 1.0.0</version>
+                <version> 1.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-domain</artifactId>
-                <version> 1.0.0</version>
+                <version> 1.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-common</artifactId>
-                <version> 1.0.0</version>
+                <version> 1.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-api</artifactId>
-                <version> 1.0.0</version>
+                <version> 1.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-rpc</artifactId>
-                <version> 1.0.0</version>
+                <version> 1.0.1-SNAPSHOT</version>
             </dependency>
 
             <!-- Framework -->

@@ -13,12 +13,12 @@
     <parent>
         <artifactId>rocketmq-eventbridge</artifactId>
         <groupId>org.apache.rocketmq</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rocketmq-eventbridge-adapter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
