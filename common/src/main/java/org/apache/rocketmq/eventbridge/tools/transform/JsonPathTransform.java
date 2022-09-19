@@ -25,7 +25,7 @@ public class JsonPathTransform implements Transform {
 
     /**
      * The extact expr
-     * e.g："{"id":"$.id","name":"$.data.name"}"
+     * e.g:"{"id":"$.id","name":"$.data.name"}"
      */
     private Extract jsonPathExtract;
 

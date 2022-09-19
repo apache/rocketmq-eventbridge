@@ -35,30 +35,33 @@ public class UpdateFieldTransform implements Transform {
     public UpdateFieldTransform(String extractJsonList) throws EventBridgeException {
         JsonElement jsonElement = JsonUtil.parseJsonElement(extractJsonList);
         for (JsonElement element : jsonElement.getAsJsonArray()) {
-            fieldList.add(new Variable(element.getAsJsonObject().getAsJsonPrimitive(
-                TransformFieldEnum.FIELD).getAsString(),
-                    element.getAsJsonObject().getAsJsonPrimitive(TransformFieldEnum.VALUE)));
+            fieldList.add(new Variable(element.getAsJsonObject()
+                .getAsJsonPrimitive(TransformFieldEnum.FIELD)
+                .getAsString(), element.getAsJsonObject()
+                .getAsJsonPrimitive(TransformFieldEnum.VALUE)));
 
         }
     }
 
     @Override
     public Data process(Data inputData) throws EventBridgeException {
-        Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(), new TypeToken<Map<String, Object>>(){}.getType());
+        Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
         for (Variable v : fieldList) {
-            String[] dataList = v.getName().split("\\.");
+            String[] dataList = v.getName()
+                .split("\\.");
             Map<String, Object> tempMap = dataMap;
             for (int i = 1; i < dataList.length - 1; i++) {
                 Object temp = tempMap.get(dataList[i]);
                 if (!(temp instanceof Map)) {
                     throw new EventBridgeException(TransformErrorCode.InvalidConfig);
                 }
-                tempMap = (Map<String, Object>) temp;
+                tempMap = (Map<String, Object>)temp;
             }
             if (tempMap.get(dataList[dataList.length - 1]) == null) {
                 throw new EventBridgeException(TransformErrorCode.InvalidConfig);
             }
-            tempMap.put(dataList[dataList.length - 1], ((JsonPrimitive) v.getValue()).getAsString());
+            tempMap.put(dataList[dataList.length - 1], ((JsonPrimitive)v.getValue()).getAsString());
         }
         String jsonString = JSONObject.toJSONString(dataMap);
         return new StringData(jsonString);

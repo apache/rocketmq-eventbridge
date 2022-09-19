@@ -19,10 +19,6 @@ package org.apache.rocketmq.eventbridge.tools;
 
 import java.util.UUID;
 
-/**
- * @Author changfeng
- * @Date 2022/5/9 5:15 下午
- */
 public class TokenUtil {
     /**
      * Generate the token of the http source.
