@@ -23,10 +23,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/**
- * @Author changfeng
- * @Date 2022/4/25 11:21 上午
- */
 public class NetUtil {
     public static boolean isIpv4(String ip) {
         ip = ip.trim();

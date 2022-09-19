@@ -24,7 +24,7 @@ import static org.apache.rocketmq.eventbridge.exception.code.FiltterPatternError
 
 public abstract class FilterPatternTool {
 
-    public static void checkFilterPattern(String filterPattern){
+    public static void checkFilterPattern(String filterPattern) {
         if (Strings.isNullOrEmpty(filterPattern)) {
             throw new EventBridgeException(EventRuleFilterPatternEmpty);
         }
