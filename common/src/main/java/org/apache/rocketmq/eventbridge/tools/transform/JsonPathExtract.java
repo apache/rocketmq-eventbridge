@@ -29,10 +29,10 @@ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import static org.apache.rocketmq.eventbridge.tools.transform.Transform.DEFAULT_VALUE_NAME;
 
 /**
- * ALL：[{"name":"SYS_DEFAULT","valueFromJsonPath":"$"}]
- * JSON_PATH：[{"name":"SYS_DEFAULT","valueFromJsonPath":"$.data.template"}]
- * CONSTANT：[{"name":"SYS_DEFAULT","value":"I am a constant value!"}]
- * TEMPLATE：[
+ * ALL:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$"}]
+ * JSON_PATH:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$.data.template"}]
+ * CONSTANT:[{"name":"SYS_DEFAULT","value":"I am a constant value!"}]
+ * TEMPLATE:[
  * {"name":"k1","valueFromJsonPath":"$.data.v1"},
  * {"name":"k2","valueFromJsonPath":"$.data.v2"}
  * ]

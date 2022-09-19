@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
@@ -171,14 +171,14 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> basicAuthParametersMap = Maps.newHashMap();
             basicAuthParametersMap.put("username", basicAuthParameters.getUsername());
             basicAuthParametersMap.put("password", basicAuthParameters.getPassword());
-            secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
+            secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParametersMap));
             return authParameters;
         }
         if (apiKeyAuthParameters != null) {
             Map<String, String> apiKeyAuthParametersMap = Maps.newHashMap();
             apiKeyAuthParametersMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
             apiKeyAuthParametersMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-            secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
+            secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParametersMap));
             return authParameters;
         }
         return authParameters;
@@ -222,7 +222,7 @@ public class ConnectionService extends AbstractResourceService {
         Map<String, String> queryStringParameterMap = Maps.newHashMap();
         queryStringParameterMap.put("oauthHttpParameterKey", key);
         queryStringParameterMap.put("oauthHttpParameterValue", value);
-        return secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(queryStringParameterMap));
+        return secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(queryStringParameterMap));
     }
 
     private void checkNetworkType(String type) {

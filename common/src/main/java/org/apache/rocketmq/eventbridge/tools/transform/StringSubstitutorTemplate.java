@@ -64,7 +64,6 @@ public class StringSubstitutorTemplate implements Template {
         log.debug("template: " + outputTemplate);
 
         List<Map.Entry<String, JsonElement>> jsonTemplateEntryList = getAndCheckEmbedObject();
-        // 如果template中包含EB_SYS_EMBED_OBJECT，则判断Data中该EB_SYS_EMBED_OBJECT对应的数据是否为json，如果是则进行替换并打平
         if (jsonTemplateEntryList.size() > 0) {
             for (Map.Entry<String, JsonElement> entry : jsonTemplateEntryList) {
                 String key = removeVariableMark(entry.getValue().getAsJsonObject().get(EB_SYS_EMBED_OBJECT).getAsString());
@@ -93,8 +92,6 @@ public class StringSubstitutorTemplate implements Template {
             return jsonTemplateEntryList;
         }
         JsonElement jsonElement = JsonParser.parseString(outputTemplate);
-        // 遍历template，如果有Entry<String, JsonElement>中的JsonElement包含EB_SYS_EMBED_OBJECT，
-        // 就将这个entry保存起来，以便后面替换
         Deque<Map.Entry<String, JsonElement>> deque = new ArrayDeque<>(jsonElement.getAsJsonObject().entrySet());
         while (!deque.isEmpty()) {
             Map.Entry<String, JsonElement> elementEntry = deque.pop();
