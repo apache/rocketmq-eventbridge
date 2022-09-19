@@ -18,10 +18,8 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -45,7 +43,6 @@ public class DeleteFieldTransform implements Transform {
         Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(), new TypeToken<Map<String, Object>>(){}.getType());
         for (String field : fieldList) {
             String[] dataList = field.split("\\.");
-            System.out.println("dataList is " + Arrays.stream(dataList).collect(Collectors.toList()));
             Map<String, Object> tempMap = dataMap;
             for (int i = 1; i < dataList.length - 1; i++) {
                 Object temp = tempMap.get(dataList[i]);

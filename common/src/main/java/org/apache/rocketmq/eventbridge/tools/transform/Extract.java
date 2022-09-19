@@ -20,8 +20,6 @@ package org.apache.rocketmq.eventbridge.tools.transform;
 import java.util.List;
 
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.tools.transform.Data;
-import org.apache.rocketmq.eventbridge.tools.transform.Variable;
 
 public interface Extract {
     /**

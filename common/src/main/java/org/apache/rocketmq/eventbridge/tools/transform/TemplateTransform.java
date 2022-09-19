@@ -25,7 +25,7 @@ public class TemplateTransform implements Transform {
 
     /**
      * The extact expr
-     * e.g："{"id":"$.id","name":"$.data.name"}"
+     * e.g:"{"id":"$.id","name":"$.data.name"}"
      */
     private Extract jsonPathExtract;
 
@@ -38,7 +38,6 @@ public class TemplateTransform implements Transform {
         this.jsonPathExtract = jsonPathExtract;
         this.template = template;
     }
-
 
     @Override
     public Data process(Data inputData) throws EventBridgeException {
