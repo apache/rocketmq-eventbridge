@@ -5,6 +5,9 @@ RocketMQ EventBridge is a subproject of rocketmq to make it easier to build even
 ## Architecture
 Events are sent to the event bus in two ways: 1) Push events through the SDK or Webhook actively; 2) Pulled events by eventbridge passively. Events obtained in both ways will be stored on the event bus. EventBus is the core concept in EventBridge, which allows you to subscribe to the events, filter the events, and push to the specified target by creating the event rule. The event on the event bus is stored by rocketmq. Through rocketmq-connect, we can pull the event from the register source to the event bus, or push the events from the event bus to the registered target.
 
+<img width="919" alt="image" src="https://user-images.githubusercontent.com/8605835/192938456-bc158f1c-ca4a-458c-9044-7c98cf048a5d.png">
+
+The code architecture of EventBridge include 4 core modules:
 - `adapter` Adapt to different operating environments
     - `persistence` Implement the repository API in the domain layer and persist the model data.
     - `api` The open API provided by EventBridge.
