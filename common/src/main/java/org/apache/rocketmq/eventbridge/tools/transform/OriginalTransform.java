@@ -20,7 +20,7 @@ package org.apache.rocketmq.eventbridge.tools.transform;
 public class OriginalTransform implements Transform {
 
     @Override
-    public Data process(Data inputData){
+    public Data process(Data inputData) {
         return inputData;
     }
 }

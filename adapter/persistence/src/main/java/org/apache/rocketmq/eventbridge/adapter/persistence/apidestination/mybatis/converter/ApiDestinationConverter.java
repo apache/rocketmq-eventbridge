@@ -17,15 +17,14 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.converter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.google.gson.Gson;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.dataobject.ApiDestinationDO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.springframework.beans.BeanUtils;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ApiDestinationConverter {
 
@@ -35,7 +34,7 @@ public class ApiDestinationConverter {
         }
         ApiDestinationDO apiDestinationDO = new ApiDestinationDO();
         BeanUtils.copyProperties(apiDestinationDTO, apiDestinationDO);
-        apiDestinationDO.setApiParams(JSON.toJSONString(apiDestinationDTO.getApiParams()));
+        apiDestinationDO.setApiParams(new Gson().toJson(apiDestinationDTO.getApiParams()));
         return apiDestinationDO;
     }
 
@@ -45,7 +44,7 @@ public class ApiDestinationConverter {
         }
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         BeanUtils.copyProperties(apiDestinationDO, apiDestinationDTO);
-        apiDestinationDTO.setApiParams(JSONObject.parseObject(apiDestinationDO.getApiParams(), HttpApiParameters.class));
+        apiDestinationDTO.setApiParams(new Gson().fromJson(apiDestinationDO.getApiParams(), HttpApiParameters.class));
         return apiDestinationDTO;
     }
 

@@ -17,8 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.converter;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
@@ -36,10 +35,9 @@ public class ConnectConverter {
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(connectionDO.getName());
         connectionDTO.setDescription(connectionDO.getDescription());
-        if (connectionDO.getAuthParameters() != null) {
-            connectionDTO.setAuthParameters(JSONObject.parseObject(connectionDO.getAuthParameters(), AuthParameters.class));
-        }
-        connectionDTO.setNetworkParameters(JSONObject.parseObject(connectionDO.getNetworkParameters(), NetworkParameters.class));
+        connectionDTO.setAuthParameters(new Gson().fromJson(connectionDO.getAuthParameters(), AuthParameters.class));
+        connectionDTO.setNetworkParameters(
+            new Gson().fromJson(connectionDO.getNetworkParameters(), NetworkParameters.class));
         connectionDTO.setGmtCreate(connectionDO.getGmtCreate());
         connectionDTO.setId(connectionDO.getId());
         connectionDTO.setApiDestinationName(connectionDO.getApiDestinationName());
@@ -52,18 +50,20 @@ public class ConnectConverter {
         }
         ConnectionDO connectionDO = new ConnectionDO();
         connectionDO.setAccountId(connectionDTO.getAccountId());
-        if (connectionDTO.getAuthParameters() != null) {
-            connectionDO.setAuthorizationType(connectionDTO.getAuthParameters().getAuthorizationType());
-            connectionDO.setAuthParameters(JSONObject.toJSONString(connectionDTO.getAuthParameters()));
-        }
+        connectionDO.setAuthorizationType(connectionDTO.getAuthParameters()
+            .getAuthorizationType());
         connectionDO.setName(connectionDTO.getConnectionName());
-        connectionDO.setNetworkParameters(JSON.toJSONString(connectionDTO.getNetworkParameters()));
+        connectionDO.setNetworkParameters(new Gson().toJson(connectionDTO.getNetworkParameters()));
         connectionDO.setDescription(connectionDTO.getDescription());
-        connectionDO.setNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
+        connectionDO.setNetworkType(connectionDTO.getNetworkParameters()
+            .getNetworkType());
+        connectionDO.setAuthParameters(new Gson().toJson(connectionDTO.getAuthParameters()));
         return connectionDO;
     }
 
     public static List<ConnectionDTO> doListConvertDtoList(List<ConnectionDO> connectionDOS) {
-        return connectionDOS.stream().map(ConnectConverter::doConvertDto).collect(Collectors.toList());
+        return connectionDOS.stream()
+            .map(ConnectConverter::doConvertDto)
+            .collect(Collectors.toList());
     }
 }

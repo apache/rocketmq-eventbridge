@@ -46,7 +46,7 @@ public class JsonPathUtil {
         .jsonProvider(new GsonJsonProvider())
         .build());
 
-    private static final Logger logger = LoggerFactory.getLogger(JsonPathUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(JsonPathUtil.class);
 
     public static String removeDataOfJsonPath(String jsonPath) {
         if (!jsonPath.startsWith(JSONPATH_DATA)) {
@@ -136,7 +136,7 @@ public class JsonPathUtil {
             //return "";
             return null;
         } catch (InvalidPathException invalidPathException) {
-            logger.warn("Invalid json path:" + jsonPath, invalidPathException);
+            log.warn("Invalid json path:" + jsonPath, invalidPathException);
             return jsonPath;
         }
         if (element.isJsonPrimitive()) {

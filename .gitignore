@@ -12,6 +12,8 @@ devenv
 !LICENSE-BIN
 .DS_Store
 *.class
+target/
+adapter/target/
 adapter/api/target/
 adapter/persistence/target/
 adapter/rpc/target/

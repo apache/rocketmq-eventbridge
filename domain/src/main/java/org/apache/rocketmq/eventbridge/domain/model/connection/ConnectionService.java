@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
