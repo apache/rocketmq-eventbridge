@@ -157,7 +157,7 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> basicAuthParametersMap = Maps.newHashMap();
             basicAuthParametersMap.put("username", basicAuthParameters.getUsername());
             basicAuthParametersMap.put("password", basicAuthParameters.getPassword());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(basicAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParametersMap));
             basicAuthParameters.setPassword(secretName);
             return authParameters;
         }
@@ -165,7 +165,7 @@ public class ConnectionService extends AbstractResourceService {
             Map<String, String> apiKeyAuthParametersMap = Maps.newHashMap();
             apiKeyAuthParametersMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
             apiKeyAuthParametersMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParametersMap));
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
         }
@@ -204,7 +204,7 @@ public class ConnectionService extends AbstractResourceService {
                 Map<String, String> stringMap = Maps.newHashMap();
                 stringMap.put("username", basicAuthParameters.getUsername());
                 stringMap.put("password", basicAuthParameters.getPassword());
-                secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(stringMap));
+                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(stringMap));
             }
 
             basicAuthParameters.setPassword(secretName);
@@ -218,7 +218,7 @@ public class ConnectionService extends AbstractResourceService {
                 Map<String, String> apiKeyMap = Maps.newHashMap();
                 apiKeyMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
                 apiKeyMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-                secretName = secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(apiKeyMap));
+                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyMap));
             }
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
@@ -248,7 +248,7 @@ public class ConnectionService extends AbstractResourceService {
     }
 
     private String getString(String accountId, String connectionName, Map<String, String> secretValues) throws Exception {
-        return secretManagerAPI.createSecretName(accountId, connectionName, JSON.toJSONString(secretValues));
+        return secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValues));
     }
 
     private void checkNetworkType(String type) {
