@@ -52,10 +52,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -186,6 +183,9 @@ public class ConnectionControllerTest {
         networkParameters.setVswitcheId(UUID.randomUUID()
             .toString());
         connectionDTO.setNetworkParameters(networkParameters);
+        connectionDTO.setGmtCreate(new Date());
+        List<ConnectionDTO> list = Lists.newArrayList();
+        list.add(connectionDTO);
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
         basicAuthParameters.setPassword(UUID.randomUUID()
@@ -196,7 +196,7 @@ public class ConnectionControllerTest {
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
         BDDMockito.given(connectionService.getConnection(any(), any()))
-            .willReturn(connectionDTO);
+            .willReturn(list);
         GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
         getConnectionRequest.setConnectionName(UUID.randomUUID()
             .toString());
@@ -204,6 +204,44 @@ public class ConnectionControllerTest {
             getConnectionRequest);
         Assert.assertEquals(getConnectionResponse.block()
             .getCode(), EventBridgeErrorCode.Success.getCode());
+    }
+
+    @Test
+    public void testSelectOneConnection() {
+        Set<ConstraintViolation<GetConnectionRequest>> constraintViolations = new HashSet<>();
+        Mockito.when(validator.validate(any(GetConnectionRequest.class)))
+                .thenReturn(constraintViolations);
+        final ConnectionDTO connectionDTO = new ConnectionDTO();
+        NetworkParameters networkParameters = new NetworkParameters();
+        networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
+        networkParameters.setSecurityGroupId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVpcId(UUID.randomUUID()
+                .toString());
+        networkParameters.setVswitcheId(UUID.randomUUID()
+                .toString());
+        connectionDTO.setNetworkParameters(networkParameters);
+        connectionDTO.setGmtCreate(new Date());
+        List<ConnectionDTO> list = Lists.newArrayList();
+        list.add(connectionDTO);
+        AuthParameters authParameters = new AuthParameters();
+        BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
+        basicAuthParameters.setPassword(UUID.randomUUID()
+                .toString());
+        basicAuthParameters.setUsername(UUID.randomUUID()
+                .toString());
+        authParameters.setBasicAuthParameters(basicAuthParameters);
+        authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
+        connectionDTO.setAuthParameters(authParameters);
+        BDDMockito.given(connectionService.getConnection(any(), any()))
+                .willReturn(list);
+        GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
+        getConnectionRequest.setConnectionName(UUID.randomUUID()
+                .toString());
+        final Mono<GetConnectionResponse> getConnectionResponse = connectionController.selectOneConnection(
+                getConnectionRequest);
+        Assert.assertEquals(getConnectionResponse.block()
+                .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test

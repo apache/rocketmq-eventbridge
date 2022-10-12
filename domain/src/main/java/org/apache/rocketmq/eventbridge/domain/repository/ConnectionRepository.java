@@ -29,10 +29,14 @@ public interface ConnectionRepository {
 
     boolean updateConnection(ConnectionDTO connectionDTO);
 
-    ConnectionDTO getConnection(String accountId, String connectionName);
+    List<ConnectionDTO> getConnection(String accountId, String connectionName);
 
     List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
                                         int maxResults);
 
     int getConnectionCount(String accountId);
+
+    ConnectionDTO getConnectionById(Integer id);
+
+    ConnectionDTO getConnectionByName(String name);
 }

@@ -63,7 +63,7 @@ public interface EventApiDestinationMapper {
      * @mbggenerated
      */
     List<ApiDestinationDO> listApiDestinations(@Param("accountId") String accountId, @Param("name") String name,
-                                                @Param("nextToken") int nextToken, @Param("maxResults") int maxResults);
+                                               @Param("nextToken") int nextToken, @Param("maxResults") int maxResults);
 
     /**
      * 通过用户id和名称查询

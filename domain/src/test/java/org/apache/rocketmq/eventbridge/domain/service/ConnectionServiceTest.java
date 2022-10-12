@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.domain.service;
 
+import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
@@ -67,7 +68,9 @@ public class ConnectionServiceTest {
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
         connectionDTO.setNetworkParameters(networkParameters);
-        Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(connectionDTO);
+        List<ConnectionDTO> connectionDTOS = Lists.newArrayList();
+        connectionDTOS.add(connectionDTO);
+        Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(connectionDTOS);
     }
 
     @Test
@@ -102,6 +105,7 @@ public class ConnectionServiceTest {
     @Test
     public void testUpdateConnection() {
         Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
+        Mockito.when(connectionRepository.getConnectionByName(anyString())).thenReturn(new ConnectionDTO());
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         NetworkParameters networkParameters = new NetworkParameters();
@@ -122,7 +126,7 @@ public class ConnectionServiceTest {
 
     @Test
     public void testGetConnection() {
-        final ConnectionDTO connectionDTO = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        final List<ConnectionDTO> connectionDTO = connectionService.getConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         Assert.assertNotNull(connectionDTO);
     }
 

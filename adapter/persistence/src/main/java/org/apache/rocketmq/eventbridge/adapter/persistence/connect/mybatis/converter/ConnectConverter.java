@@ -38,6 +38,9 @@ public class ConnectConverter {
         connectionDTO.setAuthParameters(new Gson().fromJson(connectionDO.getAuthParameters(), AuthParameters.class));
         connectionDTO.setNetworkParameters(
             new Gson().fromJson(connectionDO.getNetworkParameters(), NetworkParameters.class));
+        connectionDTO.setGmtCreate(connectionDO.getGmtCreate());
+        connectionDTO.setId(connectionDO.getId());
+        connectionDTO.setApiDestinationName(connectionDO.getApiDestinationName());
         return connectionDTO;
     }
 

@@ -77,7 +77,7 @@ public class ApiDestinationService extends AbstractResourceService {
     public ApiDestinationDTO getApiDestination(String accountId, String apiDestinationName) {
         try {
             if (checkApiDestination(accountId, apiDestinationName) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, accountId);
+                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
             }
             return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class ApiDestinationService extends AbstractResourceService {
     public Boolean deleteApiDestination(String accountId, String apiDestinationName) {
         try {
             if (checkApiDestination(accountId, apiDestinationName) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, accountId);
+                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
             }
             return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
         } catch (Exception e) {
