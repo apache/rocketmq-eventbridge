@@ -47,12 +47,12 @@ public class SecretManagerAPIImpl implements SecretManagerAPI {
     }
 
     @Override
-    public Map<String, String> getSecretValue(String secretName) {
+    public Object getSecretValue(String secretName) {
         return null;
     }
 
     @Override
-    public String updateSecretValue(String oldSecretName, String accountId, String connectionName) {
+    public String updateSecretValue(String oldSecretName, String accountId, String connectionName, String key, String value) throws Exception {
         return null;
     }
 }

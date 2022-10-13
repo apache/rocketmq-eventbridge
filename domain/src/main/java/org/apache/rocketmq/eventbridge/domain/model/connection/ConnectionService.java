@@ -198,7 +198,7 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getBasicAuthParameters() != null) {
                 BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
-                secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName);
+                secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName, basicAuthParameters.getUsername(), basicAuthParameters.getPassword());
             } else {
                 secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParameters));
             }
@@ -210,7 +210,7 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
                 ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
-                secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName);
+                secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName, apiKeyAuthParameters.getApiKeyName(), apiKeyAuthParameters.getApiKeyValue());
             } else {
                 secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParameters));
             }
@@ -229,7 +229,9 @@ public class ConnectionService extends AbstractResourceService {
         String clientSecretSecretValue = null;
         if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
             OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
-            clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(), accountId, connectionName);
+            clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
+                    accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
+                    connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
         } else {
             clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
         }

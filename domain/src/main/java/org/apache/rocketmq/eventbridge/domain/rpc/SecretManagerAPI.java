@@ -29,7 +29,7 @@ public interface SecretManagerAPI {
 
     Boolean querySecretName(String secretName);
 
-    Map<String, String> getSecretValue(String secretName);
+    Object getSecretValue(String secretName);
 
-    String updateSecretValue(String oldSecretName, String accountId, String connectionName);
+    String updateSecretValue(String oldSecretName, String accountId, String connectionName, String key, String value) throws Exception;
 }
