@@ -20,6 +20,8 @@ package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class SecretManagerAPIImpl implements SecretManagerAPI {
 
@@ -36,6 +38,16 @@ public class SecretManagerAPIImpl implements SecretManagerAPI {
 
     @Override
     public String getSecretName(String accountId, String connectionName) {
+        return null;
+    }
+
+    @Override
+    public Boolean querySecretName(String secretName) {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Map<String, String> getSecretValue(String secretName) {
         return null;
     }
 }

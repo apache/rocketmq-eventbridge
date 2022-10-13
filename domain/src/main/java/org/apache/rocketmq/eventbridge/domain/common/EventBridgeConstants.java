@@ -53,5 +53,10 @@ public class EventBridgeConstants {
     public static final int CONNECTION_COUNT_LIMIT = 10;
 
     public static final String SYSTEM_ENVIRONMENT_ACCOUNT_ID = "AccountId";
+    public static final String PASSWORD = "password";
+
+    public static final String API_KEY_VALUE = "apiKeyValue";
+
+    public static final String CLIENT_SECRET = "client_secret";
 
 }

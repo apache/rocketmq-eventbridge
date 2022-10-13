@@ -27,6 +27,7 @@ import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorC
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.*;
+import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
@@ -49,10 +50,14 @@ public class ConnectionService extends AbstractResourceService {
     protected SecretManagerAPI secretManagerAPI;
     protected NetworkServiceAPI networkServiceAPI;
 
-    public ConnectionService(ConnectionRepository connectionRepository, SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI) {
+    protected ApiDestinationRepository apiDestinationRepository;
+
+    public ConnectionService(ConnectionRepository connectionRepository,
+                             SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI, ApiDestinationRepository apiDestinationRepository) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
+        this.apiDestinationRepository = apiDestinationRepository;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -85,12 +90,18 @@ public class ConnectionService extends AbstractResourceService {
             if (CollectionUtils.isEmpty(checkConnection(accountId, connectionName))) {
                 throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
             }
+            if (!CollectionUtils.isEmpty(apiDestinationRepository.queryApiDestinationByConnectionName(accountId, connectionName))) {
+                throw new EventBridgeException(EventBridgeErrorCode.ConnectionBoundApiDestination, connectionName);
+            }
             List<ConnectionDTO> connection = getConnection(accountId, connectionName);
             ConnectionDTO connectionDTO = connection.get(0);
             if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
                 networkServiceAPI.deletePrivateNetwork();
             }
             connectionRepository.deleteConnection(accountId, connectionName);
+            if (secretManagerAPI.querySecretName(secretManagerAPI.getSecretName(accountId, connectionName))) {
+                secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
+            }
         } catch (Exception e) {
             log.error("ConnectionService | deleteConnection | error", e);
             throw new EventBridgeException(e);
@@ -200,6 +211,14 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getBasicAuthParameters() != null) {
                 BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
+                Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldBasicAuthParameters.getPassword());
+                if (secretValue != null) {
+                    secretValue.put("username", basicAuthParameters.getUsername());
+                    if (!secretValue.get(EventBridgeConstants.PASSWORD).equals(basicAuthParameters.getPassword())) {
+                        secretValue.put("password", basicAuthParameters.getPassword());
+                    }
+                    secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValue));
+                }
             } else {
                 Map<String, String> stringMap = Maps.newHashMap();
                 stringMap.put("username", basicAuthParameters.getUsername());
@@ -214,6 +233,14 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
                 ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
+                Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldApiKeyAuthParameters.getApiKeyValue());
+                if (secretValue != null) {
+                    secretValue.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
+                    if (!secretValue.get(EventBridgeConstants.API_KEY_VALUE).equals(apiKeyAuthParameters.getApiKeyValue())) {
+                        secretValue.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
+                    }
+                    secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValue));
+                }
             } else {
                 Map<String, String> apiKeyMap = Maps.newHashMap();
                 apiKeyMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
@@ -237,6 +264,14 @@ public class ConnectionService extends AbstractResourceService {
         String clientSecretSecretValue = null;
         if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
             OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
+            Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldClientParameters.getClientSecret());
+            if (secretValue != null) {
+                secretValue.put("client_id", clientID);
+                if (!secretValue.get(EventBridgeConstants.CLIENT_SECRET).equals(clientSecret)) {
+                    secretValue.put("client_secret", clientSecret);
+                }
+                clientSecretSecretValue = getString(accountId, connectionName, secretValue);
+            }
         } else {
             Map<String, String> secretValue = Maps.newHashMap();
             secretValue.put("client_id", clientID);

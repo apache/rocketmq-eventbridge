@@ -122,14 +122,15 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new GetApiDestinationResponse(null, null, null, null, null).parameterCheckFailRes(
+                    return new GetApiDestinationResponse(null, null, null, null, null, null).parameterCheckFailRes(
                         errMessage.toString());
                 }
                 final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(
                     accountAPI.getResourceOwnerAccountId(ctx), getApiDestinationRequest.getApiDestinationName());
                 return new GetApiDestinationResponse(apiDestinationDTO.getName(), apiDestinationDTO.getConnectionName(),
-                    apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(),
-                    apiDestinationDTO.getInvocationRateLimitPerSecond()).success();
+                        apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(),
+                        apiDestinationDTO.getInvocationRateLimitPerSecond(), apiDestinationDTO.getGmtCreate()
+                        .getTime()).success();
             });
     }
 
@@ -179,6 +180,8 @@ public class ApiDestinationController {
                         BeanUtils.copyProperties(eventApiDestination, apiDestinationsResponse);
                         apiDestinationsResponse.setApiDestinationName(eventApiDestination.getName());
                         apiDestinationsResponse.setHttpApiParameters(eventApiDestination.getApiParams());
+                        apiDestinationsResponse.setGmtCreate(eventApiDestination.getGmtCreate()
+                                .getTime());
                         apiDestinationsResponses.add(apiDestinationsResponse);
                     });
                 return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(),

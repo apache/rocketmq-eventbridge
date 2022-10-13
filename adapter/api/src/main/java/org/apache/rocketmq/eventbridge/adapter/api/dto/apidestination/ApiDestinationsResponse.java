@@ -42,4 +42,7 @@ public class ApiDestinationsResponse {
 
     @SerializedName("InvocationRateLimitPerSecond")
     private Integer invocationRateLimitPerSecond;
+
+    @SerializedName("GmtCreate")
+    private Long gmtCreate;
 }

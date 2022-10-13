@@ -251,6 +251,7 @@ public class ConnectionControllerTest {
         ConnectionDTO eventConnection = new ConnectionDTO();
         eventConnection.setConnectionName(UUID.randomUUID()
             .toString());
+        eventConnection.setGmtCreate(new Date());
         eventConnectionWithBLOBs.add(eventConnection);
         result.setData(eventConnectionWithBLOBs);
         result.setTotal(9);

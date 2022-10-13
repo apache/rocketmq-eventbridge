@@ -188,7 +188,10 @@ public class ConnectionController {
                             .forEach(connectionDTO -> {
                                 ConnectionResponse connectionResponse = new ConnectionResponse();
                                 BeanUtils.copyProperties(connectionDTO, connectionResponse);
-                                connectionResponses.add(connectionResponse);
+                                connectionResponse.setGmtCreate(connectionDTO.getGmtCreate().getTime());
+                                connectionResponse.setApiDestinationName(connectionDTO.getApiDestinationName());
+                                connectionResponse.setId(connectionDTO.getId());
+                                connectionResponses.add(dataMasking(connectionResponse));
                             });
                     return new ListConnectionResponse(connectionResponses, listPaginationResult.getNextToken(),
                             listPaginationResult.getTotal(), listConnectionRequest.getMaxResults()).success();

@@ -26,6 +26,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
+import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
@@ -57,6 +58,8 @@ public class ConnectionServiceTest {
     private SecretManagerAPI secretManagerAPI;
     @Mock
     private NetworkServiceAPI networkServiceAPI;
+    @Mock
+    private ApiDestinationRepository apiDestinationRepository;
 
     @Before
     public void testBefore() throws Exception {
@@ -99,6 +102,7 @@ public class ConnectionServiceTest {
     @Test
     public void testDeleteConnection() throws Exception {
         Mockito.when(connectionRepository.deleteConnection(any(), any())).thenReturn(Boolean.TRUE);
+        Mockito.when(apiDestinationRepository.queryApiDestinationByConnectionName(any(), any())).thenReturn(null);
         connectionService.deleteConnection(UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }
 

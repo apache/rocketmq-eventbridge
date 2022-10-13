@@ -289,4 +289,15 @@
       <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
     </where>
   </select>
+  <select id="queryApiDestinationByConnectionName" resultMap="ResultMapWithBLOBs" parameterType="java.util.Map" >
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from event_api_destination
+    <where>
+      <if test="accountId != null and accountId != ''"> account_id = #{accountId}</if>
+      <if test="connectionName != null and connectionName != ''">and connection_name = #{connectionName}</if>
+    </where>
+  </select>
 </mapper>
