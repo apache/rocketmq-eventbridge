@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ConnectionCountExceedLimit;
 
@@ -165,18 +163,12 @@ public class ConnectionService extends AbstractResourceService {
         final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
         final OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (basicAuthParameters != null) {
-            Map<String, String> basicAuthParametersMap = Maps.newHashMap();
-            basicAuthParametersMap.put("username", basicAuthParameters.getUsername());
-            basicAuthParametersMap.put("password", basicAuthParameters.getPassword());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParameters));
             basicAuthParameters.setPassword(secretName);
             return authParameters;
         }
         if (apiKeyAuthParameters != null) {
-            Map<String, String> apiKeyAuthParametersMap = Maps.newHashMap();
-            apiKeyAuthParametersMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
-            apiKeyAuthParametersMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParametersMap));
+            final String secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParameters));
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
         }
@@ -190,12 +182,7 @@ public class ConnectionService extends AbstractResourceService {
 
     private void saveClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters) throws Exception {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
-        String clientID = clientParameters.getClientID();
-        String clientSecret = clientParameters.getClientSecret();
-        Map<String, String> secretValue = Maps.newHashMap();
-        secretValue.put("client_id", clientID);
-        secretValue.put("client_secret", clientSecret);
-        clientParameters.setClientSecret(getString(accountId, connectionName, secretValue));
+        clientParameters.setClientSecret(secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters)));
         oauthParameters.setClientParameters(clientParameters);
     }
 
@@ -211,19 +198,9 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getBasicAuthParameters() != null) {
                 BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
-                Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldBasicAuthParameters.getPassword());
-                if (secretValue != null) {
-                    secretValue.put("username", basicAuthParameters.getUsername());
-                    if (!secretValue.get(EventBridgeConstants.PASSWORD).equals(basicAuthParameters.getPassword())) {
-                        secretValue.put("password", basicAuthParameters.getPassword());
-                    }
-                    secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValue));
-                }
+                secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName);
             } else {
-                Map<String, String> stringMap = Maps.newHashMap();
-                stringMap.put("username", basicAuthParameters.getUsername());
-                stringMap.put("password", basicAuthParameters.getPassword());
-                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(stringMap));
+                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParameters));
             }
 
             basicAuthParameters.setPassword(secretName);
@@ -233,19 +210,9 @@ public class ConnectionService extends AbstractResourceService {
             String secretName = null;
             if (connection.getAuthParameters() != null && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
                 ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
-                Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldApiKeyAuthParameters.getApiKeyValue());
-                if (secretValue != null) {
-                    secretValue.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
-                    if (!secretValue.get(EventBridgeConstants.API_KEY_VALUE).equals(apiKeyAuthParameters.getApiKeyValue())) {
-                        secretValue.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-                    }
-                    secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValue));
-                }
+                secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName);
             } else {
-                Map<String, String> apiKeyMap = Maps.newHashMap();
-                apiKeyMap.put("apiKeyName", apiKeyAuthParameters.getApiKeyName());
-                apiKeyMap.put("apiKeyValue", apiKeyAuthParameters.getApiKeyValue());
-                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyMap));
+                secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParameters));
             }
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
@@ -259,31 +226,15 @@ public class ConnectionService extends AbstractResourceService {
 
     private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) throws Exception {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
-        String clientID = clientParameters.getClientID();
-        String clientSecret = clientParameters.getClientSecret();
         String clientSecretSecretValue = null;
         if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
             OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
-            Map<String, String> secretValue = secretManagerAPI.getSecretValue(oldClientParameters.getClientSecret());
-            if (secretValue != null) {
-                secretValue.put("client_id", clientID);
-                if (!secretValue.get(EventBridgeConstants.CLIENT_SECRET).equals(clientSecret)) {
-                    secretValue.put("client_secret", clientSecret);
-                }
-                clientSecretSecretValue = getString(accountId, connectionName, secretValue);
-            }
+            clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(), accountId, connectionName);
         } else {
-            Map<String, String> secretValue = Maps.newHashMap();
-            secretValue.put("client_id", clientID);
-            secretValue.put("client_secret", clientSecret);
-            clientSecretSecretValue = getString(accountId, connectionName, secretValue);
+            clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
         }
         clientParameters.setClientSecret(clientSecretSecretValue);
         oauthParameters.setClientParameters(clientParameters);
-    }
-
-    private String getString(String accountId, String connectionName, Map<String, String> secretValues) throws Exception {
-        return secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(secretValues));
     }
 
     private void checkNetworkType(String type) {

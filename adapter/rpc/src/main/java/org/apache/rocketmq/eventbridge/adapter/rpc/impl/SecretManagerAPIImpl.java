@@ -50,4 +50,9 @@ public class SecretManagerAPIImpl implements SecretManagerAPI {
     public Map<String, String> getSecretValue(String secretName) {
         return null;
     }
+
+    @Override
+    public String updateSecretValue(String oldSecretName, String accountId, String connectionName) {
+        return null;
+    }
 }
