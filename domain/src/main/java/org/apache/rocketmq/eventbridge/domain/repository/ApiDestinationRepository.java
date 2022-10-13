@@ -35,4 +35,6 @@ public interface ApiDestinationRepository {
                                                 int maxResults);
 
     int getApiDestinationCount(String accountId);
+
+    List<ApiDestinationDTO> queryApiDestinationByConnectionName(String accountId, String connectionName);
 }

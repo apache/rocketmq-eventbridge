@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
+import java.util.Map;
+
 public interface SecretManagerAPI {
 
     String createSecretName(String accountId, String connectionName, String secretData) throws Exception;
@@ -24,4 +26,10 @@ public interface SecretManagerAPI {
     void deleteSecretName(String secretName) throws Exception;
 
     String getSecretName(String accountId, String connectionName);
+
+    Boolean querySecretName(String secretName);
+
+    Object getSecretValue(String secretName);
+
+    String updateSecretValue(String oldSecretName, String accountId, String connectionName, String key, String value) throws Exception;
 }

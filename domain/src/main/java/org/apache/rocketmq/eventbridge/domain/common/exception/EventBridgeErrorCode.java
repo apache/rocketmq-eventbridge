@@ -88,6 +88,7 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     EventRuleAlreadyExist(409, "EventRuleAlreadyExist", "The event rule [{0}] of event bus [{1}] already existed!"),
 
     //Connection
+    ConnectionBoundApiDestination(409, "ConnectionBoundApiDestination", "The Connection [{0}] has bound API Destination, deletion is not allowed."),
     ConnectionAlreadyExist(409, "ConnectionAlreadyExist", "The Connection [{0}]  already existed!"),
     ConnectionNameInvalid(409, "ConnectionNameInvalid", "The Connection name [{0}] is invalid! Which should match the pattern [{1}]."),
     ConnectionCountExceedLimit(409, "ConnectionCountExceedLimit", "The current count of Connection is [{0}], which will exceed the limit quota [{1}]."),

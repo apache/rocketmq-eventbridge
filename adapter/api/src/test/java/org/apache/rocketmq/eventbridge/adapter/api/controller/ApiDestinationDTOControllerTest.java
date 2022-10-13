@@ -46,10 +46,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -129,6 +126,7 @@ public class ApiDestinationDTOControllerTest {
         ApiDestinationDTO eventApiDestinationDTO = new ApiDestinationDTO();
         eventApiDestinationDTO.setName(UUID.randomUUID()
             .toString());
+        eventApiDestinationDTO.setGmtCreate(new Date());
         Mockito.when(apiDestinationService.getApiDestination(any(), any()))
             .thenReturn(eventApiDestinationDTO);
         GetApiDestinationRequest getApiDestinationRequest = new GetApiDestinationRequest();
@@ -166,6 +164,7 @@ public class ApiDestinationDTOControllerTest {
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         apiDestinationDTO.setName(UUID.randomUUID()
             .toString());
+        apiDestinationDTO.setGmtCreate(new Date());
         apiDestinationDTOList.add(apiDestinationDTO);
         result.setData(apiDestinationDTOList);
         result.setTotal(9);

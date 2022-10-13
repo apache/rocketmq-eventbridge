@@ -35,9 +35,10 @@ public class ConnectConverter {
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(connectionDO.getName());
         connectionDTO.setDescription(connectionDO.getDescription());
-        connectionDTO.setAuthParameters(new Gson().fromJson(connectionDO.getAuthParameters(), AuthParameters.class));
-        connectionDTO.setNetworkParameters(
-            new Gson().fromJson(connectionDO.getNetworkParameters(), NetworkParameters.class));
+        if (connectionDO.getAuthParameters() != null) {
+            connectionDTO.setAuthParameters(new Gson().fromJson(connectionDO.getAuthParameters(), AuthParameters.class));
+        }
+        connectionDTO.setNetworkParameters(new Gson().fromJson(connectionDO.getNetworkParameters(), NetworkParameters.class));
         connectionDTO.setGmtCreate(connectionDO.getGmtCreate());
         connectionDTO.setId(connectionDO.getId());
         connectionDTO.setApiDestinationName(connectionDO.getApiDestinationName());
@@ -50,20 +51,18 @@ public class ConnectConverter {
         }
         ConnectionDO connectionDO = new ConnectionDO();
         connectionDO.setAccountId(connectionDTO.getAccountId());
-        connectionDO.setAuthorizationType(connectionDTO.getAuthParameters()
-            .getAuthorizationType());
+        if (connectionDTO.getAuthParameters() != null) {
+            connectionDO.setAuthorizationType(connectionDTO.getAuthParameters().getAuthorizationType());
+            connectionDO.setAuthParameters(new Gson().toJson(connectionDTO.getAuthParameters()));
+        }
         connectionDO.setName(connectionDTO.getConnectionName());
         connectionDO.setNetworkParameters(new Gson().toJson(connectionDTO.getNetworkParameters()));
         connectionDO.setDescription(connectionDTO.getDescription());
-        connectionDO.setNetworkType(connectionDTO.getNetworkParameters()
-            .getNetworkType());
-        connectionDO.setAuthParameters(new Gson().toJson(connectionDTO.getAuthParameters()));
+        connectionDO.setNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
         return connectionDO;
     }
 
     public static List<ConnectionDTO> doListConvertDtoList(List<ConnectionDO> connectionDOS) {
-        return connectionDOS.stream()
-            .map(ConnectConverter::doConvertDto)
-            .collect(Collectors.toList());
+        return connectionDOS.stream().map(ConnectConverter::doConvertDto).collect(Collectors.toList());
     }
 }
