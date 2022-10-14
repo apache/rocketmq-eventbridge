@@ -18,17 +18,22 @@
 package org.apache.rocketmq.eventbridge.adapter.api.handler;
 
 import com.google.gson.Gson;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
-@Slf4j
+import java.util.Objects;
+
 @Aspect
 @Component
 public class WebLogAspect {
+
+    private static final Logger log = LoggerFactory.getLogger("accessLog");
 
     @Pointcut("@annotation(org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog)")
     public void webLog() {
@@ -37,16 +42,21 @@ public class WebLogAspect {
 
     @Around("webLog()")
     public Object doControllerAround(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
-        log.info("========================================== Start ==========================================");
-        log.info("Class Method   : {}.{}", proceedingJoinPoint.getSignature().
-                getDeclaringTypeName(), proceedingJoinPoint.getSignature().getName());
-        log.info("Request Args   : {}", new Gson().toJson(proceedingJoinPoint.getArgs()));
         Object result = proceedingJoinPoint.proceed();
-        log.info("Response Args : {}", new Gson().toJson(result));
-        log.info("Time-Consuming : {} ms", System.currentTimeMillis() - startTime);
-        log.info("=========================================== End ===========================================");
-        log.info("");
+        if (result instanceof Mono) {
+            Mono monoResult = (Mono) result;
+            return monoResult.doOnSuccess(o -> {
+                String response = "";
+                if (Objects.nonNull(o)) {
+                    response = o.toString();
+                }
+                log.info("Class Method   : {}.{} | Request Args   : {} | Response Args : {}",
+                        proceedingJoinPoint.getSignature().getDeclaringTypeName(),
+                        proceedingJoinPoint.getSignature().getName(),
+                        new Gson().toJson(proceedingJoinPoint.getArgs()),
+                        response);
+            });
+        }
         return result;
     }
 
