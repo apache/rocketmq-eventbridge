@@ -20,10 +20,12 @@ import com.google.gson.Gson;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -34,11 +36,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
-@Component
+ @Component
 @Order(value = 1)
 public class LogFilter implements WebFilter {
     private static final Logger log = LoggerFactory.getLogger("accessLog");
+    @Value("request.trace.id")
+    private String requestTraceId;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequestDecorator accessPermissionDecorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
@@ -49,7 +55,13 @@ public class LogFilter implements WebFilter {
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                         Channels.newChannel(byteArrayOutputStream).write(dataBuffer.asByteBuffer().asReadOnlyBuffer());
                         String requestBody = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-                        log.info("url : {} | requestParam : {} | requestMethod : {} | requestBody : {}",
+                        List<String> requestTraceIds = exchange.getRequest().getHeaders().get(requestTraceId);
+                        String requestId = "";
+                        if (!CollectionUtils.isEmpty(requestTraceIds)) {
+                            requestId = requestTraceIds.get(0);
+                        }
+                        log.info("requestTraceId : {} | url : {} | requestParam : {} | requestMethod : {} | requestBody : {}",
+                                requestId,
                                 exchange.getRequest().getURI(),
                                 exchange.getRequest().getQueryParams(),
                                 exchange.getRequest().getMethodValue(),
