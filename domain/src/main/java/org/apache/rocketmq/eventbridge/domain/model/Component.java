@@ -17,7 +17,6 @@
 package org.apache.rocketmq.eventbridge.domain.model;
 
 import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

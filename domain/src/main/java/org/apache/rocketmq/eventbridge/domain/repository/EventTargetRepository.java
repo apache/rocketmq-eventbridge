@@ -19,13 +19,13 @@ package org.apache.rocketmq.eventbridge.domain.repository;
 
 import java.util.List;
 import java.util.Map;
-
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 import org.apache.rocketmq.eventbridge.domain.model.target.EventTarget;
 
 public interface EventTargetRepository {
 
-    boolean createEventTarget(String accountId, String eventBusName, String eventRuleName, String name, String className,
+    boolean createEventTarget(String accountId, String eventBusName, String eventRuleName, String name,
+        String className,
         Map<String, Object> config, RunOptions runOptions);
 
     List<EventTarget> listEventTargets(String accountId, String eventBusName, String eventRuleName);

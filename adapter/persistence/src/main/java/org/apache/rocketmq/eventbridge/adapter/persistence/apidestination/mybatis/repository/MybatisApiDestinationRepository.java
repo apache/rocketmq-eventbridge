@@ -17,15 +17,14 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.repository;
 
+import java.util.Date;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.converter.ApiDestinationConverter;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.dataobject.ApiDestinationDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.mapper.EventApiDestinationMapper;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Date;
-import java.util.List;
 
 @Repository
 public class MybatisApiDestinationRepository implements ApiDestinationRepository {
@@ -64,7 +63,7 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
 
     @Override
     public List<ApiDestinationDTO> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                       int maxResults) {
+        int maxResults) {
         return ApiDestinationConverter.doListCoverterDtoList(eventApiDestinationMapper.listApiDestinations(accountId, apiDestinationName, Integer.parseInt(nextToken), maxResults));
     }
 

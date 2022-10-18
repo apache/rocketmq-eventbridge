@@ -17,12 +17,11 @@
 
 package org.apache.rocketmq.eventbridge.tools;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;

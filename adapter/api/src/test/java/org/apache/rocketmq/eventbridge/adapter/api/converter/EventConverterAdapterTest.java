@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import io.cloudevents.CloudEvent;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import io.cloudevents.CloudEvent;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

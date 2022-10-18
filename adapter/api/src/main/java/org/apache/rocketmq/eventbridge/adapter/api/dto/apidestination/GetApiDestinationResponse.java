@@ -49,6 +49,7 @@ public class GetApiDestinationResponse extends BaseResponse {
 
     @SerializedName("GmtCreate")
     private Long gmtCreate;
+
     public GetApiDestinationResponse success() {
         setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());

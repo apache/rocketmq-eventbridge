@@ -17,17 +17,16 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
+import com.google.common.base.Strings;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,6 @@ public class StringSubstitutorTemplate implements Template {
     private JsonObject jsonObject;
     private boolean isEmbedObject;
 
-
     public StringSubstitutorTemplate(String outputTemplate) {
         this.outputTemplate = outputTemplate;
         if (this.outputTemplate.contains(EB_SYS_EMBED_OBJECT)) {
@@ -58,8 +56,8 @@ public class StringSubstitutorTemplate implements Template {
     @Override
     public Data parse(List<Variable> variableList) {
         Map<String, String> valuesMap = variableList.stream()
-                .filter(variable -> variable.getValue() != null)
-                .collect(Collectors.toMap(Variable::getName, Variable::defaultStringValue));
+            .filter(variable -> variable.getValue() != null)
+            .collect(Collectors.toMap(Variable::getName, Variable::defaultStringValue));
         StringSubstitutor sub = new StringSubstitutor(valuesMap);
         log.debug("template: " + outputTemplate);
 
@@ -126,7 +124,6 @@ public class StringSubstitutorTemplate implements Template {
         log.debug("EB_SYS_EMBED_OBJECT list size is " + jsonTemplateEntryList.size());
         return jsonTemplateEntryList;
     }
-
 
     public String removeVariableMark(String key) {
         return key.substring(2, key.length() - 1);

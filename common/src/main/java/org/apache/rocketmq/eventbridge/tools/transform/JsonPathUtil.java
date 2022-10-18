@@ -17,9 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.jayway.jsonpath.Configuration;
@@ -31,6 +28,8 @@ import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.internal.path.CompiledPath;
 import com.jayway.jsonpath.internal.path.PathCompiler;
 import com.jayway.jsonpath.spi.json.GsonJsonProvider;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +58,6 @@ public class JsonPathUtil {
      * return true , if the jsonpath is definite which current system support.
      *
      * @param jsonPath
-     *
      * @return
      */
     public static boolean isValidAndDefinite(String jsonPath) {
@@ -68,7 +66,7 @@ public class JsonPathUtil {
         }
         CompiledPath compiledPath = null;
         try {
-            compiledPath = (CompiledPath)PathCompiler.compile(jsonPath);
+            compiledPath = (CompiledPath) PathCompiler.compile(jsonPath);
         } catch (InvalidPathException e) {
             return Boolean.FALSE;
         }
@@ -79,7 +77,6 @@ public class JsonPathUtil {
      * read the json path value by the index
      *
      * @param
-     *
      * @return
      */
     public static String readJsonPathByIndex(String jsonPath, int index) throws EventBridgeException {
@@ -98,7 +95,6 @@ public class JsonPathUtil {
      * read the json path value by the start index
      *
      * @param
-     *
      * @return
      */
     public static String readJsonPath(String jsonPath, int startIndex) throws EventBridgeException {
@@ -121,7 +117,6 @@ public class JsonPathUtil {
      * read the json path value from the json String
      *
      * @param
-     *
      * @return
      */
     public static String readJsonPathValue(String jsonString, String jsonPath) throws EventBridgeException {
@@ -147,11 +142,9 @@ public class JsonPathUtil {
     }
 
     /**
-     * return  the length of json path.
-     * If it is not valid json path, return -1.
+     * return  the length of json path. If it is not valid json path, return -1.
      *
      * @param
-     *
      * @return
      */
     public static int jsonPathLength(String jsonPath) {

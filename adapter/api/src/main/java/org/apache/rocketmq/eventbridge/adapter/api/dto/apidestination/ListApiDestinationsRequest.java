@@ -18,13 +18,12 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
 
 import com.google.gson.annotations.SerializedName;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter

@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
-import java.util.Map;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import java.util.Map;
 
 /**
  * NumericOperators provides some built-in operator to compare two JSON numbers in Double manner

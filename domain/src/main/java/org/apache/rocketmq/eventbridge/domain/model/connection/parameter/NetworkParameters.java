@@ -18,11 +18,10 @@
 package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
 
 import com.google.gson.annotations.SerializedName;
+import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter

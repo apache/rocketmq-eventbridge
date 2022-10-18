@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
+import com.google.common.base.Strings;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.DeadLetterQueueDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.EventTargetDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.RetryStrategyDTO;
@@ -40,7 +39,6 @@ public class EventTargetConverter {
      * @param eventBusName
      * @param eventRuleName
      * @param eventTargetDTOs
-     *
      * @return
      */
     public static List<EventTarget> convertEventTargets(String accountId, String eventBusName,
@@ -60,7 +58,6 @@ public class EventTargetConverter {
      * @param eventBusName
      * @param eventRuleName
      * @param eventTargetDTO
-     *
      * @return
      */
     public static EventTarget convertEventTarget(String accountId, String eventBusName,
@@ -94,7 +91,6 @@ public class EventTargetConverter {
      * convert {@link RetryStrategyDTO} to {@link RetryStrategy}.
      *
      * @param retryStrategyDTO
-     *
      * @return
      */
     public static RetryStrategy convertRetryStrategy(RetryStrategyDTO retryStrategyDTO) {
@@ -113,7 +109,6 @@ public class EventTargetConverter {
      * convert errorsTolerance to {@link ErrorToleranceEnum}.
      *
      * @param errorsTolerance
-     *
      * @return
      */
     public static ErrorToleranceEnum convertErrorTolerance(String errorsTolerance) {
@@ -128,7 +123,6 @@ public class EventTargetConverter {
      * convert {@link DeadLetterQueueDTO} to {@link DeadLetterQueue}.
      *
      * @param deadLetterQueueDTO
-     *
      * @return
      */
     public static DeadLetterQueue convertDeadLetterQueue(DeadLetterQueueDTO deadLetterQueueDTO) {

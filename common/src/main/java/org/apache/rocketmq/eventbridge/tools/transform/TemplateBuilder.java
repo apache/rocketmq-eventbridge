@@ -23,7 +23,6 @@ public class TemplateBuilder {
      * Build StringSubstitutorTemplate
      *
      * @param template
-     *
      * @return
      */
     public static StringSubstitutorTemplate stringSubstitutorTemplate(String template) {

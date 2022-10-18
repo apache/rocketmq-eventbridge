@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.repository;
 
 import java.util.List;
-
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBus;
 
 public interface EventBusRepository {

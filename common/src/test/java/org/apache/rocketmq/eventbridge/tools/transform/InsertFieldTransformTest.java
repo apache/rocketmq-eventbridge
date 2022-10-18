@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.reflect.TypeToken;
 import net.minidev.json.JSONObject;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.junit.Test;
@@ -41,20 +40,20 @@ public class InsertFieldTransformTest {
         JsonElement jsonElement = JsonUtil.parseJsonElement(jsonList);
         for (JsonElement element : jsonElement.getAsJsonArray()) {
             fieldList.add(new Variable(element.getAsJsonObject().getAsJsonPrimitive(TransformFieldEnum.FIELD).getAsString(),
-                    element.getAsJsonObject().getAsJsonPrimitive(TransformFieldEnum.VALUE)));
+                element.getAsJsonObject().getAsJsonPrimitive(TransformFieldEnum.VALUE)));
 
         }
     }
-
 
     @Test
     public void processTest() {
         System.out.println(System.currentTimeMillis());
         getFieldList();
         String data = "{\n" + "  \"text\":\"100\",\n" + "  \"number\":100 \n,     \"data\":{\n" +
-                "        \"tag\":\"123\"\n" +
-                "    }}";
-        Map<String, Object> dataMap = new Gson().fromJson(data, new TypeToken<Map<String, Object>>(){}.getType());
+            "        \"tag\":\"123\"\n" +
+            "    }}";
+        Map<String, Object> dataMap = new Gson().fromJson(data, new TypeToken<Map<String, Object>>() {
+        }.getType());
         for (Variable v : fieldList) {
             String[] dataList = v.getName().split("\\.");
             System.out.println("dataList is " + Arrays.stream(dataList).collect(Collectors.toList()));

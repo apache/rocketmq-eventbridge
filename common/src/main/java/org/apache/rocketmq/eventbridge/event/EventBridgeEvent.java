@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.event;
 
+import com.google.common.collect.Maps;
+import io.cloudevents.SpecVersion;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Maps;
-import io.cloudevents.SpecVersion;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,8 +31,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public @Data
-class EventBridgeEvent {
+@Data
+public class EventBridgeEvent {
 
     private String id;
     private URI source;

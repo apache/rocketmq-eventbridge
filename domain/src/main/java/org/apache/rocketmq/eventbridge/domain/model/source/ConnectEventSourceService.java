@@ -17,18 +17,17 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.source;
 
-import java.util.Map;
-
 import com.google.common.base.Strings;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.model.classes.EventSourceClassService;
 import org.apache.rocketmq.eventbridge.domain.model.run.EventSourceRunner;
 import org.apache.rocketmq.eventbridge.domain.model.run.EventSourceRunnerService;
-import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class ConnectEventSourceService extends EventSourceService {
 

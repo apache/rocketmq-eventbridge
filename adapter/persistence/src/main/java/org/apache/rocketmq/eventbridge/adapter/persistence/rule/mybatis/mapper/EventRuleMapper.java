@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.adapter.persistence.rule.mybatis.mapper;
 
  import java.util.List;
-
  import org.apache.ibatis.annotations.Param;
  import org.apache.rocketmq.eventbridge.domain.model.rule.EventRule;
 

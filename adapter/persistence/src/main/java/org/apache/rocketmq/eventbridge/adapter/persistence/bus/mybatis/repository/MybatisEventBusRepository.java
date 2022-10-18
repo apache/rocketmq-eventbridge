@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.adapter.persistence.bus.mybatis.repository;
 
  import java.util.List;
-
  import org.apache.rocketmq.eventbridge.adapter.persistence.bus.mybatis.mapper.EventBusMapper;
  import org.apache.rocketmq.eventbridge.domain.model.bus.EventBus;
  import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;

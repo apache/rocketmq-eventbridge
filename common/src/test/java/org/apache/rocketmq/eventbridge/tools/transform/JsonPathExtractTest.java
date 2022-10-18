@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 import java.text.MessageFormat;
-
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.junit.Assert;
 import org.junit.Rule;

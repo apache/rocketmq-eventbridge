@@ -55,9 +55,7 @@ public class EventBridgeTransformBuilder extends TransformBuilder {
      * build JsonTransform
      *
      * @param extractJson
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     public static Transform buildJsonTransform(String extractJson) throws EventBridgeException {
@@ -75,9 +73,7 @@ public class EventBridgeTransformBuilder extends TransformBuilder {
      *
      * @param extractJson
      * @param template
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     public static Transform buildTemplateTransForm(String extractJson, String template) throws EventBridgeException {

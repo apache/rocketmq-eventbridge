@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import net.minidev.json.JSONObject;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
@@ -40,7 +39,9 @@ public class DeleteFieldTransform implements Transform {
 
     @Override
     public Data process(Data inputData) throws EventBridgeException {
-        Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(), new TypeToken<Map<String, Object>>(){}.getType());
+        Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(),
+            new TypeToken<Map<String, Object>>() {
+            }.getType());
         for (String field : fieldList) {
             String[] dataList = field.split("\\.");
             Map<String, Object> tempMap = dataMap;

@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public interface Transform {
@@ -30,9 +29,7 @@ public interface Transform {
      * transform the inputData to outputData
      *
      * @param inputData
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     Data process(Data inputData) throws EventBridgeException;
@@ -42,9 +39,7 @@ public interface Transform {
      *
      * @param inputData
      * @param extract
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     default List<Variable> extract(Data inputData, Extract extract) throws EventBridgeException {
@@ -59,9 +54,7 @@ public interface Transform {
      *
      * @param variableList
      * @param template
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     default Data format(List<Variable> variableList, Template template) throws EventBridgeException {

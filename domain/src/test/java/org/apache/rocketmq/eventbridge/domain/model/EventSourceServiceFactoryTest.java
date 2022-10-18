@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.model;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSourceService;

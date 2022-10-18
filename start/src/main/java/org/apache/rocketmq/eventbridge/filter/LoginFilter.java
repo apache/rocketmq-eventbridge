@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.filter;
 
  import java.util.List;
-
  import lombok.extern.slf4j.Slf4j;
  import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
  import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
@@ -49,9 +48,9 @@
                      .get(HEADER_KEY_LOGIN_ACCOUNT_ID);
                  List<String> resourceOwnerIds = request.getHeaders()
                      .get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID);
-                if(resourceOwnerIds == null || resourceOwnerIds.isEmpty()){
-                    throw new EventBridgeException(DefaultErrorCode.LoginFailed);
-                }
+                 if (resourceOwnerIds == null || resourceOwnerIds.isEmpty()) {
+                     throw new EventBridgeException(DefaultErrorCode.LoginFailed);
+                 }
                  return ctx.put(HEADER_KEY_PARENT_ACCOUNT_ID,
                      parentAccountIds != null && !parentAccountIds.isEmpty() ? parentAccountIds.get(0) : "")
                      .put(HEADER_KEY_LOGIN_ACCOUNT_ID,

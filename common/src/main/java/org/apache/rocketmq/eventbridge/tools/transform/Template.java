@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 import java.util.List;
-
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public interface Template {
@@ -26,9 +25,7 @@ public interface Template {
      * parse the variableList by the template
      *
      * @param variableList
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     Data parse(List<Variable> variableList) throws EventBridgeException;

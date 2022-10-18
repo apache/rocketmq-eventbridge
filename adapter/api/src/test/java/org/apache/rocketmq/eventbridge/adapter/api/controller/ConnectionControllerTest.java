@@ -18,6 +18,13 @@
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.google.common.collect.Lists;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.CreateConnectionResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.DeleteConnectionRequest;
@@ -33,10 +40,10 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.junit.Assert;
@@ -49,10 +56,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.core.publisher.Mono;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -210,16 +213,16 @@ public class ConnectionControllerTest {
     public void testSelectOneConnection() {
         Set<ConstraintViolation<GetConnectionRequest>> constraintViolations = new HashSet<>();
         Mockito.when(validator.validate(any(GetConnectionRequest.class)))
-                .thenReturn(constraintViolations);
+            .thenReturn(constraintViolations);
         final ConnectionDTO connectionDTO = new ConnectionDTO();
         NetworkParameters networkParameters = new NetworkParameters();
         networkParameters.setNetworkType(NetworkTypeEnum.PUBLIC_NETWORK.getNetworkType());
         networkParameters.setSecurityGroupId(UUID.randomUUID()
-                .toString());
+            .toString());
         networkParameters.setVpcId(UUID.randomUUID()
-                .toString());
+            .toString());
         networkParameters.setVswitcheId(UUID.randomUUID()
-                .toString());
+            .toString());
         connectionDTO.setNetworkParameters(networkParameters);
         connectionDTO.setGmtCreate(new Date());
         List<ConnectionDTO> list = Lists.newArrayList();
@@ -227,21 +230,21 @@ public class ConnectionControllerTest {
         AuthParameters authParameters = new AuthParameters();
         BasicAuthParameters basicAuthParameters = new BasicAuthParameters();
         basicAuthParameters.setPassword(UUID.randomUUID()
-                .toString());
+            .toString());
         basicAuthParameters.setUsername(UUID.randomUUID()
-                .toString());
+            .toString());
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
         BDDMockito.given(connectionService.getConnection(any(), any()))
-                .willReturn(list);
+            .willReturn(list);
         GetConnectionRequest getConnectionRequest = new GetConnectionRequest();
         getConnectionRequest.setConnectionName(UUID.randomUUID()
-                .toString());
+            .toString());
         final Mono<GetConnectionResponse> getConnectionResponse = connectionController.selectOneConnection(
-                getConnectionRequest);
+            getConnectionRequest);
         Assert.assertEquals(getConnectionResponse.block()
-                .getCode(), EventBridgeErrorCode.Success.getCode());
+            .getCode(), EventBridgeErrorCode.Success.getCode());
     }
 
     @Test

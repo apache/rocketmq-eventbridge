@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.repository;
 
 import java.util.Map;
-
 import org.apache.rocketmq.eventbridge.domain.model.run.EventTargetRunner;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 

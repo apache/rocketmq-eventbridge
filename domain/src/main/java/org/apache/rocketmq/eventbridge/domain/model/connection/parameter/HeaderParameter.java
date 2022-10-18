@@ -24,5 +24,5 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class HeaderParameter extends BaseParameter{
+public class HeaderParameter extends BaseParameter {
 }

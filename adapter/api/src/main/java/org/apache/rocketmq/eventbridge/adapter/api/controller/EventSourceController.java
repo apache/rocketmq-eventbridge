@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.source.CreateEventSourceRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.source.CreateEventSourceResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.source.DeleteEventSourceRequest;

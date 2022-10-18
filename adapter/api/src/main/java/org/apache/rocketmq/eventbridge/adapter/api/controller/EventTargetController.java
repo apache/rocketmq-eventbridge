@@ -19,7 +19,6 @@ package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.rocketmq.eventbridge.adapter.api.converter.EventTargetConverter;
 import org.apache.rocketmq.eventbridge.adapter.api.converter.EventTargetDTOConverter;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.CreateTargetsRequest;

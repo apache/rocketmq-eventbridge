@@ -25,7 +25,6 @@ public class ConstantTransform implements Transform {
         this.constant = constant;
     }
 
-
     @Override
     public Data process(Data inputData) {
         return new StringData(constant);

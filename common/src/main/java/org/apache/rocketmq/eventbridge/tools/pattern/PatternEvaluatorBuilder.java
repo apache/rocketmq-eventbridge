@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
-import java.util.Deque;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingDeque;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.tools.JsonUtil;
@@ -39,9 +38,7 @@ public class PatternEvaluatorBuilder {
      * The handler to build {@link PatternEvaluator} from a json event pattern string
      *
      * @param eventPattern the json event pattern string
-     *
      * @return the instance of RuleEvalutor
-     *
      * @throws InvalidEventPatternException if any error occurs
      */
     public static PatternEvaluator build(String eventPattern) {
@@ -147,7 +144,6 @@ public class PatternEvaluatorBuilder {
      *
      * @param filterPattern
      * @param elements
-     *
      * @return
      */
     public static String getTargetElementOfFilterPattern(String filterPattern, String... elements) {

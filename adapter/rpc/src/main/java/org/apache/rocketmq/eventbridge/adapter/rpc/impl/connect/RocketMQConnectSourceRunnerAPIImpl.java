@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect;
 
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context.RocketMQConnectTargetRunnerContext;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.TransformRequest;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;

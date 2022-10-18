@@ -73,7 +73,7 @@
     </module>
 
     <module name="FileLength">
-        <property name="max" value="3000"/>
+        <property name="max" value="5000"/>
     </module>
 
     <module name="TreeWalker">
@@ -131,6 +131,7 @@
         <module name="WhitespaceAround">
             <property name="allowEmptyConstructors" value="true"/>
             <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
         </module>
         <module name="Indentation"/>
         <module name="MethodParamPad"/>

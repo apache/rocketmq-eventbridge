@@ -16,9 +16,8 @@
   */
  package org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.repository;
 
- import java.util.Map;
-
  import com.google.gson.Gson;
+ import java.util.Map;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.converter.EventTargetRunnerConverter;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetRunnerDO;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.mapper.EventTargetRunnerMapper;

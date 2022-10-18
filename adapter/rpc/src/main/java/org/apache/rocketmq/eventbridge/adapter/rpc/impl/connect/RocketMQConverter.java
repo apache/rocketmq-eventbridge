@@ -16,10 +16,9 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.dataobject.EventTopicDO;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.TransformRequest;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
@@ -83,14 +82,14 @@ public class RocketMQConverter {
     }
 
     protected String parseConnectorClass(Component component) {
-        return (String)component.getConfig()
+        return (String) component.getConfig()
             .get(KEY_CLASS);
     }
 
     protected String parseTopicName(Component source) {
-        String eventBusName = (String)(source.getConfig()
+        String eventBusName = (String) (source.getConfig()
             .get(EVENT_BUS_NAME_KEY));
-        String accountId = (String)(source.getConfig()
+        String accountId = (String) (source.getConfig()
             .get(ACCOUNT_ID_KEY));
         String persistentContext = eventDataRepository.getEventBusPersistentContext(accountId, eventBusName);
         EventTopicDO eventTopicDO = new Gson().fromJson(persistentContext, EventTopicDO.class);

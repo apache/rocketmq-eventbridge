@@ -17,14 +17,13 @@
 
  package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
- import java.util.List;
- import java.util.Map;
-
  import com.google.common.base.Strings;
  import com.google.common.collect.Lists;
  import io.cloudevents.CloudEvent;
  import io.cloudevents.core.format.EventFormat;
  import io.cloudevents.core.provider.EventFormatProvider;
+ import java.util.List;
+ import java.util.Map;
  import org.springframework.stereotype.Service;
 
  import static org.apache.http.protocol.HTTP.CONTENT_TYPE;

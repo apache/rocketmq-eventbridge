@@ -29,7 +29,6 @@ public class BaseTransformTest {
         + "                \"level2-1\":\"level2-1\"\n" + "            },\n" + "            {\n"
         + "                \"level2-2\":\"level2-2\"\n" + "            }\n" + "        ]\n" + "    }\n" + "}";
 
-
     public static final String JSON_EVENT_DATA = "{\"null\":null,\"text\":\"100\",\"number\":100,\"boolean\":false,"
         + "\"cn\":\"中国\",\"array\":[{\"level2-1\":\"level2-1\"},{\"level2-2\":\"level2-2\"}]}";
 

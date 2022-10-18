@@ -21,7 +21,6 @@ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public class TransformBuilder {
 
-
     public static Transform buildTransform(
         TransformParam transformParam) throws EventBridgeException {
         switch (transformParam.getForm()) {
@@ -60,9 +59,7 @@ public class TransformBuilder {
      * build JsonTransform
      *
      * @param extractJson
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     public static Transform buildJsonTransform(String extractJson) throws EventBridgeException {
@@ -79,9 +76,7 @@ public class TransformBuilder {
      *
      * @param extractJson
      * @param template
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     public static Transform buildTemplateTransForm(String extractJson, String template) throws EventBridgeException {
@@ -94,7 +89,6 @@ public class TransformBuilder {
      * build ConstantTransform
      *
      * @param constant
-     *
      * @return
      */
     public static Transform buildConstantTransform(String constant) {

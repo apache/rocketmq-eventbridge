@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto;
 
 import java.util.UUID;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

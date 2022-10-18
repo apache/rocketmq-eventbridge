@@ -29,8 +29,8 @@
             <option name="prefixLines" value="false"/>
         </LanguageOptions>
         <LanguageOptions name="JAVA">
-            <option name="fileTypeOverride" value="3" />
-            <option name="addBlankAfter" value="false" />
+            <option name="fileTypeOverride" value="3"/>
+            <option name="addBlankAfter" value="false"/>
         </LanguageOptions>
         <LanguageOptions name="JSP">
             <option name="fileTypeOverride" value="3"/>

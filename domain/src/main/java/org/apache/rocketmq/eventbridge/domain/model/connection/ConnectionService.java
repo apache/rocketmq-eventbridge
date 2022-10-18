@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
 import com.google.gson.Gson;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
@@ -25,7 +26,11 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.*;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
@@ -35,8 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ConnectionCountExceedLimit;
 
@@ -51,7 +54,8 @@ public class ConnectionService extends AbstractResourceService {
     protected ApiDestinationRepository apiDestinationRepository;
 
     public ConnectionService(ConnectionRepository connectionRepository,
-                             SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI, ApiDestinationRepository apiDestinationRepository) {
+        SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
+        ApiDestinationRepository apiDestinationRepository) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
@@ -140,7 +144,8 @@ public class ConnectionService extends AbstractResourceService {
         return connectionRepository.getConnection(accountId, connectionName);
     }
 
-    public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, int maxResults) {
+    public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName,
+        String nextToken, int maxResults) {
         try {
             List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
             PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
@@ -158,7 +163,8 @@ public class ConnectionService extends AbstractResourceService {
         return connectionRepository.getConnectionCount(accountId);
     }
 
-    private AuthParameters setSecretData(AuthParameters authParameters, String accountId, String connectionName) throws Exception {
+    private AuthParameters setSecretData(AuthParameters authParameters, String accountId,
+        String connectionName) throws Exception {
         final BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
         final OAuthParameters oauthParameters = authParameters.getOauthParameters();
@@ -180,13 +186,15 @@ public class ConnectionService extends AbstractResourceService {
         return authParameters;
     }
 
-    private void saveClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters) throws Exception {
+    private void saveClientByKms(String accountId, String connectionName,
+        OAuthParameters oauthParameters) throws Exception {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
         clientParameters.setClientSecret(secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters)));
         oauthParameters.setClientParameters(clientParameters);
     }
 
-    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) throws Exception {
+    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName,
+        String name) throws Exception {
         ConnectionDTO connection = connectionRepository.getConnectionByName(name);
         if (authParameters == null) {
             return null;
@@ -224,14 +232,15 @@ public class ConnectionService extends AbstractResourceService {
         return authParameters;
     }
 
-    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) throws Exception {
+    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters,
+        ConnectionDTO connection) throws Exception {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
         String clientSecretSecretValue = null;
         if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
             OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
             clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
-                    accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
-                    connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
+                accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
+                connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
         } else {
             clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
         }

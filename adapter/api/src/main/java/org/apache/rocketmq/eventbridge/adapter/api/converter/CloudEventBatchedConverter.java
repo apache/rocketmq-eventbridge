@@ -17,11 +17,10 @@
 
  package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
- import java.util.List;
- import java.util.Map;
-
  import com.google.common.base.Strings;
  import io.cloudevents.CloudEvent;
+ import java.util.List;
+ import java.util.Map;
  import org.apache.rocketmq.eventbridge.adapter.api.converter.format.BatchedJsonFormat;
  import org.springframework.stereotype.Service;
 

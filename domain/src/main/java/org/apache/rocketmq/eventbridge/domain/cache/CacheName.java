@@ -15,12 +15,12 @@
   * limitations under the License.
   */
 
-package org.apache.rocketmq.eventbridge.domain.cache;
+ package org.apache.rocketmq.eventbridge.domain.cache;
 
-/**
- * @Author changfeng
- * @Date 2022/4/25 11:14 上午
- */
-public class CacheName {
-    public static final String EVENT_SOURCE = "event_source";
-}
+ /**
+  * @Author changfeng
+  * @Date 2022/4/25 11:14 上午
+  */
+ public class CacheName {
+     public static final String EVENT_SOURCE = "event_source";
+ }

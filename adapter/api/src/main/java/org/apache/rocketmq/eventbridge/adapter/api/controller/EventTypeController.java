@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.type.EventTypeDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.type.ListEventTypesRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.type.ListEventTypesResponse;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventType;
-import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventTypeService;
+import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.model.rule;
 
 import java.util.Date;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 import java.util.List;
-
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public interface Extract {
@@ -26,9 +25,7 @@ public interface Extract {
      * extra variable from  data
      *
      * @param data
-     *
      * @return
-     *
      * @throws EventBridgeException
      */
     List<Variable> parse(Data data) throws EventBridgeException;

@@ -19,7 +19,6 @@ package org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.datao
 
 import java.io.Serializable;
 import java.util.Date;
-
 import lombok.Data;
 
 public @Data

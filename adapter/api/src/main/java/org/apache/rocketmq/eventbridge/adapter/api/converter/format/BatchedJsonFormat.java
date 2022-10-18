@@ -17,15 +17,14 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter.format;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.cloudevents.CloudEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +75,7 @@ public class BatchedJsonFormat {
         }
     }
 
-    public List<CloudEvent> deserialize(byte[] bytes){
+    public List<CloudEvent> deserialize(byte[] bytes) {
         try {
             return mapper.readValue(bytes, type);
         } catch (IOException e) {

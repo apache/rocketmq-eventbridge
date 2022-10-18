@@ -18,6 +18,12 @@
 package org.apache.rocketmq.eventbridge.adapter.api.controller;
 
 import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.annotation.Resource;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import org.apache.rocketmq.eventbridge.adapter.api.annotations.WebLog;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ApiDestinationsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.CreateApiDestinationRequest;
@@ -43,13 +49,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
-
-import javax.annotation.Resource;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api-destination/")
@@ -128,9 +127,9 @@ public class ApiDestinationController {
                 final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(
                     accountAPI.getResourceOwnerAccountId(ctx), getApiDestinationRequest.getApiDestinationName());
                 return new GetApiDestinationResponse(apiDestinationDTO.getName(), apiDestinationDTO.getConnectionName(),
-                        apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(),
-                        apiDestinationDTO.getInvocationRateLimitPerSecond(), apiDestinationDTO.getGmtCreate()
-                        .getTime()).success();
+                    apiDestinationDTO.getDescription(), apiDestinationDTO.getApiParams(),
+                    apiDestinationDTO.getInvocationRateLimitPerSecond(), apiDestinationDTO.getGmtCreate()
+                    .getTime()).success();
             });
     }
 
@@ -181,7 +180,7 @@ public class ApiDestinationController {
                         apiDestinationsResponse.setApiDestinationName(eventApiDestination.getName());
                         apiDestinationsResponse.setHttpApiParameters(eventApiDestination.getApiParams());
                         apiDestinationsResponse.setGmtCreate(eventApiDestination.getGmtCreate()
-                                .getTime());
+                            .getTime());
                         apiDestinationsResponses.add(apiDestinationsResponse);
                     });
                 return new ListApiDestinationsResponse(apiDestinationsResponses, listPaginationResult.getNextToken(),
