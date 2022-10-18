@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.domain.common;
 
+import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.Sets;
 
 public class EventBridgeConstants {
 

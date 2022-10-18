@@ -40,9 +40,9 @@ public class ConnectRecordJsonPathExtract extends JsonPathExtract {
 
     @Override
     public List<Variable> parse(Data data) throws EventBridgeException {
-        if (data instanceof ObjectData && ((ObjectData)data).getClassType()
+        if (data instanceof ObjectData && ((ObjectData) data).getClassType()
             .equals(ConnectRecord.class)) {
-            return parseElementFromConnectRecord((ConnectRecord)((ObjectData)data).getData());
+            return parseElementFromConnectRecord((ConnectRecord) ((ObjectData) data).getData());
         } else {
             return super.parse(data);
         }
@@ -64,7 +64,7 @@ public class ConnectRecordJsonPathExtract extends JsonPathExtract {
                     variableList.add(new Variable(element.getVariableName(), connectRecord.getData()));
                 } else if (element.getJsonPath()
                     .startsWith(JsonPathUtil.JSONPATH_DATA)) {
-                    String StringData = connectRecord.getData() instanceof String ? (String)(connectRecord.getData())
+                    String StringData = connectRecord.getData() instanceof String ? (String) (connectRecord.getData())
                         : new Gson().toJson(connectRecord.getData());
                     variableList.add(new Variable(element.getVariableName(), JsonPathUtil.readJsonPathValue(StringData,
                         JsonPathUtil.removeDataOfJsonPath(element.getJsonPath()))));

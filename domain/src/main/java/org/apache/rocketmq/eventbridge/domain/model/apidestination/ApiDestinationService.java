@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
@@ -27,8 +28,6 @@ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ApiDestinationCountExceedLimit;
 
@@ -49,7 +48,7 @@ public class ApiDestinationService extends AbstractResourceService {
                 throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
             }
             super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
-                    ApiDestinationCountExceedLimit);
+                ApiDestinationCountExceedLimit);
             final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
             if (apiDestination) {
                 return eventApiDestinationDTO.getName();
@@ -103,8 +102,9 @@ public class ApiDestinationService extends AbstractResourceService {
         }
     }
 
-    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                                         int maxResults) {
+    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName,
+        String nextToken,
+        int maxResults) {
         try {
             final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
             PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();

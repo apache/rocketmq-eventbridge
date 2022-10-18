@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.converter;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetDO;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 import org.apache.rocketmq.eventbridge.domain.model.target.EventTarget;
@@ -39,7 +38,8 @@ public class EventTargetConverter {
     }
 
     public static EventTarget convert(EventTargetDO eventTargetRunnerDO) {
-        Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+        Type mapType = new TypeToken<Map<String, Object>>() {
+        }.getType();
         Map<String, Object> config = new Gson().fromJson(eventTargetRunnerDO.getConfig(), mapType);
         RunOptions runOptions = new Gson().fromJson(eventTargetRunnerDO.getRunOptions(), RunOptions.class);
         return EventTarget.builder()

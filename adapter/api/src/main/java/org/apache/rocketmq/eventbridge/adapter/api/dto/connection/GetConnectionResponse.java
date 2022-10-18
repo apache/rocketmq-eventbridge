@@ -18,14 +18,13 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
-
-import java.util.List;
 
 @AllArgsConstructor
 @Getter

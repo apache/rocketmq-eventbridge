@@ -17,29 +17,25 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
+import com.google.common.base.Strings;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.base.Strings;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import org.apache.commons.net.util.SubnetUtils;
 
 /**
  * The handler to build a {@link PatternCondition} from a specific JsonElement. Each inherited class should a default
- * constructor
- * which will be used in {@link ComplexConditionBuilders#builder()}
+ * constructor which will be used in {@link ComplexConditionBuilders#builder()}
  */
 public interface PatternConditionBuilder {
     /**
      * Builds a RuleCondition from a JsonElement
      *
      * @param jsonElement contains the condition value
-     *
      * @return the RuleCondition
-     *
      * @throws InvalidEventPatternException if any error occurs
      */
     PatternCondition build(final JsonElement jsonElement);

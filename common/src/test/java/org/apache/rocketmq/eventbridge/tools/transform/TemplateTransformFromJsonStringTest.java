@@ -80,6 +80,7 @@ public class TemplateTransformFromJsonStringTest extends BaseTransformTest {
         Assert.assertEquals("The instance is broken，which name is 100 , Please deal with it timely.",
             output.toString());
     }
+
     @Test
     public void testTransformTemplate_Constant() throws EventBridgeException {
         String extractJson = "{\"name\":\"$.data.text\",\"table\":\"tableName\"" + "}";

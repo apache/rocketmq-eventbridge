@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.handler;
 
-import java.nio.charset.StandardCharsets;
-
 import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
@@ -47,13 +46,13 @@ public class ExceptionHandler implements ErrorWebExceptionHandler {
         BaseResponse baseResponse = new BaseResponse();
         HttpStatus httpStatus = null;
         if (throwable instanceof EventBridgeException) {
-            EventBridgeException eventBridgeException = (EventBridgeException)throwable.getCause();
+            EventBridgeException eventBridgeException = (EventBridgeException) throwable;
             baseResponse.setCode(eventBridgeException.getCode());
             baseResponse.setMessage(eventBridgeException.getMessage());
             httpStatus = HttpStatus.resolve(eventBridgeException.getHttpCode());
         } else if (throwable instanceof ResponseStatusException) {
-            baseResponse.setMessage(((ResponseStatusException)throwable).getMessage());
-            httpStatus = ((ResponseStatusException)throwable).getStatus();
+            baseResponse.setMessage(((ResponseStatusException) throwable).getMessage());
+            httpStatus = ((ResponseStatusException) throwable).getStatus();
         } else {
             baseResponse.setCode(EventBridgeErrorCode.InternalError.getCode());
             baseResponse.setMessage(EventBridgeErrorCode.InternalError.getMsg());

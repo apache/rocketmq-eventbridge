@@ -18,8 +18,8 @@ package org.apache.rocketmq.eventbridge.config;
 
 import lombok.Data;
 
-public @Data
-class LocalConfig {
+@Data
+public class LocalConfig {
     private String region;
     private String publicHttpWebhookSchema;
     private String publicHttpsWebhookSchema;

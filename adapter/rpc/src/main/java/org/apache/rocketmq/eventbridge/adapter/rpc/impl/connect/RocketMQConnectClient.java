@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect;
 
+import com.google.gson.Gson;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
@@ -29,7 +28,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.ConnectStatusResponseEnum;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.CreateSinkConnectorRequest;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.CreateSourceConnectorRequest;
-import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.DeleteConnectorRequest;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.GetConnectorStatusRequest;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.StartConnectorRequest;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.StopConnectorRequest;

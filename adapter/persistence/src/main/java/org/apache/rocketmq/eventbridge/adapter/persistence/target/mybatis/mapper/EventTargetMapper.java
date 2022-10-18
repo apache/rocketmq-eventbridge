@@ -17,10 +17,8 @@
  package org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.mapper;
 
  import java.util.List;
-
  import org.apache.ibatis.annotations.Param;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetDO;
- import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetRunnerDO;
 
  public interface EventTargetMapper {
      int createEventTarget(@Param("accountId") String accountId, @Param("eventBusName") String eventBusName,

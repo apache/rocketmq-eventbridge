@@ -18,14 +18,12 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 import java.util.List;
-
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public class JsonPathTransform implements Transform {
 
     /**
-     * The extact expr
-     * e.g:"{"id":"$.id","name":"$.data.name"}"
+     * The extact expr e.g:"{"id":"$.id","name":"$.data.name"}"
      */
     private Extract jsonPathExtract;
 

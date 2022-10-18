@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.classes;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.repository.EventTargetClassRepository;

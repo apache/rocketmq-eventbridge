@@ -17,18 +17,16 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
-import java.util.List;
-import java.util.Map;
-
 import io.cloudevents.CloudEvent;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.List;
+import java.util.Map;
 
 public interface EventConverter {
     /**
      * whether hit the current protocol
      *
      * @param headers
-     *
      * @return
      */
     boolean hit(Map<String, String> headers);
@@ -38,9 +36,7 @@ public interface EventConverter {
      *
      * @param headers
      * @param body
-     *
      * @return
-     *
      * @throws Throwable
      */
     List<CloudEvent> toEventBridgeEvent(Map<String, String> headers, byte[] body);

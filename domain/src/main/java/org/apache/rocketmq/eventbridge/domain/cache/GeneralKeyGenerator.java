@@ -15,40 +15,39 @@
   * limitations under the License.
   */
 
-package org.apache.rocketmq.eventbridge.domain.cache;
+ package org.apache.rocketmq.eventbridge.domain.cache;
 
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.cache.interceptor.SimpleKey;
-import org.springframework.stereotype.Component;
+ import java.lang.reflect.Method;
+ import org.springframework.cache.interceptor.KeyGenerator;
+ import org.springframework.cache.interceptor.SimpleKey;
+ import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
+ /**
+  * @Author changfeng
+  * @Date 2022/4/25 11:14 上午
+  */
+ @Component
+ public class GeneralKeyGenerator implements KeyGenerator {
+     @Override
+     public Object generate(Object target, Method method, Object... params) {
+         return generateKey(params);
+     }
 
-/**
- * @Author changfeng
- * @Date 2022/4/25 11:14 上午
- */
-@Component
-public class GeneralKeyGenerator implements KeyGenerator {
-    @Override
-    public Object generate(Object target, Method method, Object... params) {
-        return generateKey(params);
-    }
-
-    /**
-     * Generate a key based on the specified parameters.
-     */
-    public static Object generateKey(Object... params) {
-        if (params.length == 0) {
-            return SimpleKey.EMPTY;
-        } else {
-            StringBuilder keyBuilder = new StringBuilder();
-            for (int i = 0; i < params.length; i++) {
-                keyBuilder.append(params[i].toString());
-                if (i != params.length -1) {
-                    keyBuilder.append("/");
-                }
-            }
-            return new SimpleKey(keyBuilder.toString());
-        }
-    }
-}
+     /**
+      * Generate a key based on the specified parameters.
+      */
+     public static Object generateKey(Object... params) {
+         if (params.length == 0) {
+             return SimpleKey.EMPTY;
+         } else {
+             StringBuilder keyBuilder = new StringBuilder();
+             for (int i = 0; i < params.length; i++) {
+                 keyBuilder.append(params[i].toString());
+                 if (i != params.length - 1) {
+                     keyBuilder.append("/");
+                 }
+             }
+             return new SimpleKey(keyBuilder.toString());
+         }
+     }
+ }

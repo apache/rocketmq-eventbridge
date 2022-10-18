@@ -15,32 +15,31 @@
   * limitations under the License.
   */
 
-package org.apache.rocketmq.eventbridge.adapter.api.dto.data;
+ package org.apache.rocketmq.eventbridge.adapter.api.dto.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+ import com.fasterxml.jackson.annotation.JsonProperty;
+ import java.util.Map;
+ import lombok.Data;
 
-import java.util.Map;
+ /**
+  * @Author changfeng
+  * @Date 2022/4/25 11:27 上午
+  */
+ @Data
+ public class HttpEventData {
+     @JsonProperty("Body")
+     private Object body;
 
-/**
- * @Author changfeng
- * @Date 2022/4/25 11:27 上午
- */
-@Data
-public class HttpEventData {
-    @JsonProperty("Body")
-    private Object body;
+     @JsonProperty("Headers")
+     private Map<String, String> headers;
 
-    @JsonProperty("Headers")
-    private Map<String, String> headers;
+     @JsonProperty("HttpMethod")
+     private String httpMethod;
 
-    @JsonProperty("HttpMethod")
-    private String httpMethod;
+     @JsonProperty("Path")
+     private String path;
 
-    @JsonProperty("Path")
-    private String path;
+     @JsonProperty("QueryString")
+     private Map<String, String> queryString;
 
-    @JsonProperty("QueryString")
-    private Map<String, String> queryString;
-
-}
+ }

@@ -18,13 +18,12 @@
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
 import io.cloudevents.core.v1.CloudEventBuilder;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
 import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 /**
  * @Author changfeng
@@ -35,18 +34,16 @@ public class HttpEventAPIImpl implements HttpEventAPI {
 
     public static final String EVENTSOURCE_PATTERN = "eventbridge:%s:%s:eventbus/%s/eventsource/%s";
 
-
-
     @Override
     public CloudEventBuilder addExtensions(ServerHttpRequest request,
-                                           String regionId,
-                                           String accountId,
-                                           Map<String, String> headers,
-                                           EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
+        String regionId,
+        String accountId,
+        Map<String, String> headers,
+        EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
         CloudEventBuilder newBuilder = cloudEventBuilder.newBuilder();
 
         newBuilder.withExtension(AppConfig.getGlobalConfig().getGetEventBusExtensionKey(),
-                eventSource.getEventBusName());
+            eventSource.getEventBusName());
 
         return newBuilder;
     }
@@ -54,6 +51,6 @@ public class HttpEventAPIImpl implements HttpEventAPI {
     @Override
     public String generateSubject(String region, String accountId, String eventBusName, String eventSourceFullName) {
         return String.format(EVENTSOURCE_PATTERN, region, accountId, eventBusName,
-                eventSourceFullName);
+            eventSourceFullName);
     }
 }

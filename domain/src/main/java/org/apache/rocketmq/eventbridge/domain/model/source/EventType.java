@@ -18,8 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.model.source;
 
 import java.util.Date;
-
-import lombok.Builder;
 import lombok.Data;
 
 public @Data

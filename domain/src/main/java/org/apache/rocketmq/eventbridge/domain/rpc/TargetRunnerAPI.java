@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
 import java.util.Map;
-
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;

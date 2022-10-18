@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
-import java.util.Set;
-
 import com.google.common.collect.Sets;
+import java.util.Set;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.config.GlobalConfig;
 import org.apache.rocketmq.eventbridge.config.LocalConfig;

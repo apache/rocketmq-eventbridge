@@ -22,6 +22,7 @@ import java.util.UUID;
 public class TokenUtil {
     /**
      * Generate the token of the http source.
+     *
      * @return
      */
     public static String generateHttpSourceToken() {

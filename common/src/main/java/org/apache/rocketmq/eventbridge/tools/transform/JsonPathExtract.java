@@ -17,25 +17,20 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 import static org.apache.rocketmq.eventbridge.tools.transform.Transform.DEFAULT_VALUE_NAME;
 
 /**
- * ALL:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$"}]
- * JSON_PATH:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$.data.template"}]
- * CONSTANT:[{"name":"SYS_DEFAULT","value":"I am a constant value!"}]
- * TEMPLATE:[
- * {"name":"k1","valueFromJsonPath":"$.data.v1"},
- * {"name":"k2","valueFromJsonPath":"$.data.v2"}
- * ]
+ * ALL:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$"}] JSON_PATH:[{"name":"SYS_DEFAULT","valueFromJsonPath":"$.data.template"}]
+ * CONSTANT:[{"name":"SYS_DEFAULT","value":"I am a constant value!"}] TEMPLATE:[ {"name":"k1","valueFromJsonPath":"$.data.v1"},
+ * {"name":"k2","valueFromJsonPath":"$.data.v2"} ]
  */
 public class JsonPathExtract implements Extract {
 
@@ -64,8 +59,8 @@ public class JsonPathExtract implements Extract {
     @Override
     public List<Variable> parse(Data data) throws EventBridgeException {
         List<Variable> variableList = null;
-        if ((data instanceof StringData) && StringType.JSON.equals(((StringData)data).getType())) {
-            variableList = parseJsonString((StringData)data);
+        if ((data instanceof StringData) && StringType.JSON.equals(((StringData) data).getType())) {
+            variableList = parseJsonString((StringData) data);
         }
         return variableList;
     }
@@ -74,7 +69,6 @@ public class JsonPathExtract implements Extract {
      * parse variable list  from Json String data
      *
      * @param stringData
-     *
      * @return
      */
     public List<Variable> parseJsonString(StringData stringData) throws EventBridgeException {

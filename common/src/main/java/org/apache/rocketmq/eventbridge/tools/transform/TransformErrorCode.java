@@ -20,11 +20,11 @@ package org.apache.rocketmq.eventbridge.tools.transform;
 import org.apache.rocketmq.eventbridge.exception.code.BaseErrorCode;
 
 public enum TransformErrorCode implements BaseErrorCode {
-    InternalError(409,"InternalError", "{0}"),
+    InternalError(409, "InternalError", "{0}"),
 
-    NotSupport(409,"NotSupport", "Not support the key ,which is [{0}]."),
+    NotSupport(409, "NotSupport", "Not support the key ,which is [{0}]."),
 
-    InvalidConfig(409,"InvalidConfig", "The config is invalid. which is [{0}]."),
+    InvalidConfig(409, "InvalidConfig", "The config is invalid. which is [{0}]."),
     ;
 
     private final int httpCode;

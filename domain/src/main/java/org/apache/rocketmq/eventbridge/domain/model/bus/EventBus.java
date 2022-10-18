@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.model.bus;
 
 import java.util.Date;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;

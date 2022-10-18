@@ -17,24 +17,21 @@
 
 package org.apache.rocketmq.eventbridge.tools;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.tools.pattern.InvalidEventPatternException;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternErrorMessages;
 
 public class JsonUtil {
 
-
     /**
      * Convert the value of map to json element
      *
      * @param specMap
-     *
      * @return
      */
     public static Map<String, JsonElement> convertToJsonElement(Map<String, String> specMap) {
@@ -50,12 +47,10 @@ public class JsonUtil {
         return result;
     }
 
-
     /**
      * Return true if input is "{}", else return false
      *
      * @param jsonString
-     *
      * @return
      */
     public static boolean isEmptyJsonObject(String jsonString) {

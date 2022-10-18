@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.adapter.persistence.rule.mybatis.repository;
 
  import java.util.List;
-
  import org.apache.rocketmq.eventbridge.adapter.persistence.rule.mybatis.mapper.EventRuleMapper;
  import org.apache.rocketmq.eventbridge.domain.common.enums.EventRuleStatusEnum;
  import org.apache.rocketmq.eventbridge.domain.model.rule.EventRule;

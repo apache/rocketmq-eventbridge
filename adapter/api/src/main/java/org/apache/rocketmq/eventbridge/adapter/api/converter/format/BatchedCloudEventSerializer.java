@@ -17,13 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter.format;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import javax.ws.rs.core.MediaType;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -31,6 +24,12 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.base.Strings;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.data.BytesCloudEventData;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.core.MediaType;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -106,7 +105,7 @@ public class BatchedCloudEventSerializer extends StdSerializer<ArrayList<CloudEv
             }
 
             // Serialize data
-            byte[] data = ((BytesCloudEventData)(value.getData())).toBytes();
+            byte[] data = ((BytesCloudEventData) (value.getData())).toBytes();
             String contentType = value.getDataContentType();
             if (data != null) {
                 if (shouldSerializeBase64(contentType)) {

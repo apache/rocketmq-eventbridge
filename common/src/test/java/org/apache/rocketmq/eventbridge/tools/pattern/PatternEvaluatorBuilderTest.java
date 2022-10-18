@@ -20,7 +20,6 @@ package org.apache.rocketmq.eventbridge.tools.pattern;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -322,17 +321,17 @@ public class PatternEvaluatorBuilderTest {
     }
 
     @Test
-    public void test_getTargetElementOfFilterPattern(){
+    public void test_getTargetElementOfFilterPattern() {
         String sourcePattern = "{\n" + "  \"source\" : [ \"acs.oss\" ],\n"
             + "  \"type\" : [ \"oss:ObjectCreated:PostObject\", \"oss:ObjectCreated:PutObject\", \"oss:ObjectCreated:CopyObject\", \"oss:ObjectCreated:CompleteMultipartUpload\" ],\n"
             + "  \"subject\" : [ {\n"
             + "    \"prefix\" : \"acs:oss:cn-shanghai:1646030314736845:ali-hdsh-ai-label-online-bucket/\"\n" + "  } ]\n"
             + "}";
-        String targetPattern = PatternEvaluatorBuilder.getTargetElementOfFilterPattern(sourcePattern,"source","type");
+        String targetPattern = PatternEvaluatorBuilder.getTargetElementOfFilterPattern(sourcePattern, "source", "type");
         Assert.assertEquals("{\"source\":[\"acs.oss\"],\"type\":[\"oss:ObjectCreated:PostObject\","
             + "\"oss:ObjectCreated:PutObject\",\"oss:ObjectCreated:CopyObject\","
-            + "\"oss:ObjectCreated:CompleteMultipartUpload\"]}",targetPattern);
+            + "\"oss:ObjectCreated:CompleteMultipartUpload\"]}", targetPattern);
 
-        Assert.assertEquals("{}",PatternEvaluatorBuilder.getTargetElementOfFilterPattern("{}","source","type"));
+        Assert.assertEquals("{}", PatternEvaluatorBuilder.getTargetElementOfFilterPattern("{}", "source", "type"));
     }
 }

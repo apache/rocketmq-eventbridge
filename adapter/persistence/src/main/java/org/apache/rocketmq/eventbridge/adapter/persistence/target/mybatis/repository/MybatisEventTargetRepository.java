@@ -16,10 +16,9 @@
   */
  package org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.repository;
 
+ import com.google.gson.Gson;
  import java.util.List;
  import java.util.Map;
-
- import com.google.gson.Gson;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.converter.EventTargetConverter;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetDO;
  import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.mapper.EventTargetMapper;
@@ -36,7 +35,6 @@
      public MybatisEventTargetRepository(EventTargetMapper eventTargetMapper) {
          this.eventTargetMapper = eventTargetMapper;
      }
-
 
      @Override
      public boolean createEventTarget(String accountId, String eventBusName, String eventRuleName, String name,

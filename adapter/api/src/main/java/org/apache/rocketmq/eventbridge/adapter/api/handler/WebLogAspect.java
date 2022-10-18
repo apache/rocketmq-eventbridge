@@ -40,7 +40,7 @@ public class WebLogAspect {
         long startTime = System.currentTimeMillis();
         log.info("========================================== Start ==========================================");
         log.info("Class Method   : {}.{}", proceedingJoinPoint.getSignature().
-                getDeclaringTypeName(), proceedingJoinPoint.getSignature().getName());
+            getDeclaringTypeName(), proceedingJoinPoint.getSignature().getName());
         log.info("Request Args   : {}", new Gson().toJson(proceedingJoinPoint.getArgs()));
         Object result = proceedingJoinPoint.proceed();
         log.info("Response Args : {}", new Gson().toJson(result));

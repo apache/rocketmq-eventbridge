@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.mapper;
 
  import java.util.List;
-
  import org.apache.ibatis.annotations.Param;
  import org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.dataobject.EventSourceDO;
 

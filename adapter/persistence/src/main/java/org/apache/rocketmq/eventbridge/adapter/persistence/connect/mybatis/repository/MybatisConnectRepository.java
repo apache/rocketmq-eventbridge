@@ -18,6 +18,8 @@
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.repository;
 
 import com.google.gson.Gson;
+import java.util.Date;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.converter.ConnectConverter;
 import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
@@ -25,9 +27,6 @@ import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.mappe
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @Repository
@@ -68,7 +67,7 @@ public class MybatisConnectRepository implements ConnectionRepository {
 
     @Override
     public List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
-                                               int maxResults) {
+        int maxResults) {
         List<ConnectionDO> connectionDOS = eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults);
         return ConnectConverter.doListConvertDtoList(connectionDOS);
     }

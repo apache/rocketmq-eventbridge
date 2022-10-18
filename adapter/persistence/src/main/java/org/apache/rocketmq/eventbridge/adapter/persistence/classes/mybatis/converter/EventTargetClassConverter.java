@@ -16,10 +16,9 @@
   */
  package org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.converter;
 
- import java.util.Map;
-
  import com.google.common.reflect.TypeToken;
  import com.google.gson.Gson;
+ import java.util.Map;
  import org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.dataobject.EventTargetClassDO;
  import org.apache.rocketmq.eventbridge.domain.model.classes.APIAttribute;
  import org.apache.rocketmq.eventbridge.domain.model.classes.EventTargetClass;
@@ -30,11 +29,14 @@
              return null;
          }
          Map<String, APIAttribute> apiParams = new Gson().fromJson(eventTargetClassDO.getApiParams(),
-             new TypeToken<Map<String, APIAttribute>>() {}.getType());
+             new TypeToken<Map<String, APIAttribute>>() {
+             }.getType());
          Map<String, Object> requiredParams = new Gson().fromJson(eventTargetClassDO.getRequiredParams(),
-             new TypeToken<Map<String, Object>>() {}.getType());
+             new TypeToken<Map<String, Object>>() {
+             }.getType());
          Map<String, String> targetTransform = new Gson().fromJson(eventTargetClassDO.getTargetTransform(),
-             new TypeToken<Map<String, String>>() {}.getType());
+             new TypeToken<Map<String, String>>() {
+             }.getType());
          return EventTargetClass.builder()
              .name(eventTargetClassDO.getName())
              .apiParams(apiParams)

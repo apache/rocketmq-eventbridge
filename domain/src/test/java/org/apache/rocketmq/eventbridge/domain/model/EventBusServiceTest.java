@@ -17,10 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.model;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
-import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBus;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;

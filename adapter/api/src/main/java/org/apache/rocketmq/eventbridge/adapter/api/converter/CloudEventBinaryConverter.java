@@ -17,17 +17,15 @@
 
  package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
- import java.util.List;
- import java.util.Map;
- import javax.ws.rs.core.MediaType;
- import javax.ws.rs.core.MultivaluedHashMap;
-
  import com.google.common.base.Strings;
  import com.google.common.collect.Lists;
  import io.cloudevents.CloudEvent;
  import io.cloudevents.SpecVersion;
  import io.cloudevents.http.restful.ws.impl.RestfulWSMessageFactory;
- import io.netty.handler.codec.http.HttpHeaders;
+ import java.util.List;
+ import java.util.Map;
+ import javax.ws.rs.core.MediaType;
+ import javax.ws.rs.core.MultivaluedHashMap;
  import org.springframework.stereotype.Service;
 
  import static org.apache.http.protocol.HTTP.CONTENT_TYPE;

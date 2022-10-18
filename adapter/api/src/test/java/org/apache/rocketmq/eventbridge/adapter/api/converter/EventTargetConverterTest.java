@@ -16,9 +16,8 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.DeadLetterQueueDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.EventTargetDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.RetryStrategyDTO;

@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.tools;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.apache.commons.lang3.StringUtils;
 
 public class NetUtil {
     public static boolean isIpv4(String ip) {

@@ -17,7 +17,6 @@
  package org.apache.rocketmq.eventbridge.adapter.api.handler;
 
  import java.util.List;
-
  import org.apache.rocketmq.eventbridge.adapter.api.dto.data.PutEventsResponse;
  import org.apache.rocketmq.eventbridge.domain.model.data.EventDataService;
  import org.apache.rocketmq.eventbridge.domain.model.data.PutEventsResponseEntry;
@@ -35,23 +34,23 @@
      EventDataService eventDataService;
 
      public Mono<PutEventsResponse> putEvents(String accountId, List<EventBridgeEvent> eventList) {
-        return Flux.fromIterable(eventList)
+         return Flux.fromIterable(eventList)
              .flatMap(event -> {
                  Mono<PutEventsResponseEntry> result = Mono.create(monoSink -> {
                      eventDataService.putEvent(accountId, event, new ReactorPutEventCallback(monoSink));
                  });
                  return result;
              }).collectList().map(putEventsResponseEntries -> {
-                PutEventsResponse putEventsResponse = new PutEventsResponse();
-             putEventsResponse.setEntryList(putEventsResponseEntries);
-             long failedEntryCount = putEventsResponseEntries.stream()
-                 .filter(putEventsResponseEntry -> !DefaultErrorCode.Success.getCode()
-                     .equals(putEventsResponseEntry.getErrorCode()))
-                 .count();
-             putEventsResponse.setFailedEntryCount(Long.valueOf(failedEntryCount)
-                 .intValue());
-             return putEventsResponse;
-         });
+                 PutEventsResponse putEventsResponse = new PutEventsResponse();
+                 putEventsResponse.setEntryList(putEventsResponseEntries);
+                 long failedEntryCount = putEventsResponseEntries.stream()
+                     .filter(putEventsResponseEntry -> !DefaultErrorCode.Success.getCode()
+                         .equals(putEventsResponseEntry.getErrorCode()))
+                     .count();
+                 putEventsResponse.setFailedEntryCount(Long.valueOf(failedEntryCount)
+                     .intValue());
+                 return putEventsResponse;
+             });
      }
 
  }

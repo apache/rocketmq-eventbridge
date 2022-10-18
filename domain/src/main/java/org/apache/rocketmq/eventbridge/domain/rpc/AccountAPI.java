@@ -23,7 +23,6 @@ public interface AccountAPI<T> {
      * Return the login accountId.
      *
      * @param ctx
-     *
      * @return
      */
     String getLoginAccountId(T ctx);
@@ -32,7 +31,6 @@ public interface AccountAPI<T> {
      * Return the parent of login accountId.
      *
      * @param ctx
-     *
      * @return
      */
     String getParentAccountId(T ctx);
@@ -41,7 +39,6 @@ public interface AccountAPI<T> {
      * Return the resource owner's accountId.
      *
      * @param ctx
-     *
      * @return
      */
     String getResourceOwnerAccountId(T ctx);

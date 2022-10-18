@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.net.util.SubnetUtils;
 
 /**
@@ -34,7 +33,6 @@ public interface PatternCondition {
      * Tests the provided json element whether matches the pattern condition
      *
      * @param jsonData the provided json element to test
-     *
      * @return true if match, false otherwise
      */
     boolean match(JsonElement jsonData);

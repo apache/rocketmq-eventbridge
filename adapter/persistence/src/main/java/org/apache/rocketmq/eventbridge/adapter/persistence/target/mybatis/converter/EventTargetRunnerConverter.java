@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.converter;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetRunnerDO;
 import org.apache.rocketmq.eventbridge.domain.model.run.EventTargetRunner;
 

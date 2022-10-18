@@ -27,10 +27,10 @@ public class TransformValidator {
      * @param form
      * @param template
      * @param value
-     *
      * @throws EventBridgeException
      */
-    public static void validateTransform(TransformEnum form, String template, String value) throws EventBridgeException {
+    public static void validateTransform(TransformEnum form, String template,
+        String value) throws EventBridgeException {
         ObjectUtil.checkNotNullOrEmpty(new EventBridgeException(TransformErrorCode.InvalidConfig, form), form);
         switch (form) {
             case ORIGINAL:

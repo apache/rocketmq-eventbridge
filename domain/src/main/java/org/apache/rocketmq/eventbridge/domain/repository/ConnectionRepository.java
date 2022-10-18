@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.repository;
 
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
-
 import java.util.List;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 
 public interface ConnectionRepository {
 
@@ -32,7 +31,7 @@ public interface ConnectionRepository {
     List<ConnectionDTO> getConnection(String accountId, String connectionName);
 
     List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
-                                        int maxResults);
+        int maxResults);
 
     int getConnectionCount(String accountId);
 

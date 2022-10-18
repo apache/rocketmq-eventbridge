@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
+import com.google.common.collect.Maps;
 import java.lang.reflect.Constructor;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 /**
  * ComplexConditionBuilders provides some enum fields to construct {@link PatternConditionBuilder} which can be used to

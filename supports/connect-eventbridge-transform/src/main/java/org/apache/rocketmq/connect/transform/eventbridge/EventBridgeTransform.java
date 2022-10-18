@@ -44,11 +44,11 @@ public class EventBridgeTransform implements io.openmessaging.connector.api.comp
                 Data data = entry.getValue()
                     .process(new ObjectData(record, ConnectRecord.class));
                 if (DEFAULT_DATA_KEY.equals(entry.getKey())) {
-                    record.setData(((StringData)data).getData());
+                    record.setData(((StringData) data).getData());
                     record.setSchema(SchemaBuilder.string()
                         .build());
                 } else {
-                    record.addExtension(entry.getKey(), ((StringData)data).getData());
+                    record.addExtension(entry.getKey(), ((StringData) data).getData());
                 }
             });
         return record;

@@ -18,14 +18,12 @@
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto;
 
 import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @AllArgsConstructor
-public @Data  class TransformRequest {
+public @Data class TransformRequest {
     private String name;
     private Map<String, Object> config;
-
 
 }
