@@ -38,7 +38,7 @@ import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
- @Component
+@Component
 @Order(value = 1)
 public class LogFilter implements WebFilter {
     private static final Logger log = LoggerFactory.getLogger("accessLog");
