@@ -65,7 +65,7 @@ public interface EventApiDestinationMapper {
         @Param("nextToken") int nextToken, @Param("maxResults") int maxResults);
 
     /**
-     * 通过用户id和名称查询
+     * Select by account and name
      *
      * @param accountId
      * @param name
@@ -106,7 +106,7 @@ public interface EventApiDestinationMapper {
     int updateByPrimaryKey(ApiDestinationDO record);
 
     /**
-     * 根据用户Id和名称删除数据
+     * delete event_api_destination
      *
      * @param accountId
      * @param name

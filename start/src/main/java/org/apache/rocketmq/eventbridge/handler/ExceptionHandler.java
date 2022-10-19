@@ -59,7 +59,6 @@ public class ExceptionHandler implements ErrorWebExceptionHandler {
             httpStatus = HttpStatus.resolve(EventBridgeErrorCode.InternalError.getHttpCode());
             log.error("Catch unexpected exception.", throwable);
         }
-        System.out.println("Response:" + new Gson().toJson(baseResponse));
         byte[] responseByte = new Gson().toJson(baseResponse)
             .getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = serverHttpResponse.bufferFactory()

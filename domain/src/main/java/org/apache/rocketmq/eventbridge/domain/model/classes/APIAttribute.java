@@ -21,8 +21,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @AllArgsConstructor
-public @Data
-class APIAttribute {
+@Data
+public class APIAttribute {
     private String type;
     private String description;
     private boolean required;

@@ -22,8 +22,8 @@ import lombok.Builder;
 import lombok.Data;
 
 @Builder
-public @Data
-class DeadLetterQueue {
+@Data
+public class DeadLetterQueue {
 
     private String type;
 

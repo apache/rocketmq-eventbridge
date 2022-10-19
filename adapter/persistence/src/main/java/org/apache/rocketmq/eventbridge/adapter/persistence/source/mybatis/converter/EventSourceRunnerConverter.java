@@ -28,8 +28,9 @@ import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 public class EventSourceRunnerConverter {
 
     public static EventSourceRunner convert(EventSourceRunnerDO eventTargetRunnerDO) {
-        Type mapType = new TypeToken<Map<String, Object>>() {
-        }.getType();
+        TypeToken typeToken = new TypeToken<Map<String, Object>>() {
+        };
+        Type mapType = typeToken.getType();
         Map<String, Object> config = new Gson().fromJson(eventTargetRunnerDO.getConfig(), mapType);
         RunOptions runOptions = new Gson().fromJson(eventTargetRunnerDO.getRunOptions(), RunOptions.class);
         return EventSourceRunner.builder()

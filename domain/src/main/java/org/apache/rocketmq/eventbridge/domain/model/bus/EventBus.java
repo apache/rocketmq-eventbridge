@@ -23,8 +23,8 @@ import lombok.EqualsAndHashCode;
 import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;
 
 @EqualsAndHashCode(of = {"accountId", "name"})
-public @Data
-class EventBus {
+@Data
+public class EventBus {
     private String accountId;
     private String name;
     private String description;

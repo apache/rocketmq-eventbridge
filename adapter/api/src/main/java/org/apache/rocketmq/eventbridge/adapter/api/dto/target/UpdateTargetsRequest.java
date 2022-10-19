@@ -22,8 +22,8 @@ import java.util.List;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 
-public @Data
-class UpdateTargetsRequest extends BaseRequest {
+@Data
+public class UpdateTargetsRequest extends BaseRequest {
     @SerializedName("EventBusName")
     private String eventBusName;
 

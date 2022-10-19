@@ -22,8 +22,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public @Data
-class BaseResponse extends BaseDTO {
+@Data
+public class BaseResponse extends BaseDTO {
 
     public String requestId = UUID.randomUUID()
         .toString();

@@ -19,8 +19,8 @@ package org.apache.rocketmq.eventbridge.domain.model.data;
 
 import lombok.Data;
 
-public @Data
-class PutEventsResponseEntry {
+@Data
+public class PutEventsResponseEntry {
 
     private String eventId;
 

@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
-public @Data
-class EventTargetClassDO implements Serializable {
+@Data
+public class EventTargetClassDO implements Serializable {
 
     private static final long serialVersionUID = -1L;
     private String name;

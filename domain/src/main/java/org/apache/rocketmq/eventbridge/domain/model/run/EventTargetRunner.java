@@ -24,8 +24,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
 
 @Builder
-public @Data
-class EventTargetRunner {
+@Data
+public class EventTargetRunner {
     private String accountId;
     private String eventBusName;
     private String eventRuleName;

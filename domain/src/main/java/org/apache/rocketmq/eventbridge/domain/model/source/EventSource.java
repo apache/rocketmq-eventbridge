@@ -25,8 +25,8 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
 
 @Builder
-public @Data
-class EventSource {
+@Data
+public class EventSource {
     private String accountId;
     private String eventBusName;
     private String name;

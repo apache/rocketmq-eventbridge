@@ -21,8 +21,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 import lombok.Data;
 
-public @Data
-class DeadLetterQueueDTO {
+@Data
+public class DeadLetterQueueDTO {
 
     @SerializedName("Type")
     private String type;

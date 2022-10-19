@@ -20,8 +20,8 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
-public @Data
-class RunOptionsDTO extends BaseDTO {
+@Data
+public class RunOptionsDTO extends BaseDTO {
 
     @SerializedName("ErrorsTolerance")
     private String errorsTolerance;
