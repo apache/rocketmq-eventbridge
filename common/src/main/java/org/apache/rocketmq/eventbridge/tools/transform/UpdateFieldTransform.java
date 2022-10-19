@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import net.minidev.json.JSONObject;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public class UpdateFieldTransform implements Transform {
 
@@ -46,7 +45,8 @@ public class UpdateFieldTransform implements Transform {
     @Override
     public Data process(Data inputData) throws EventBridgeException {
         Map<String, Object> dataMap = new Gson().fromJson(inputData.toString(),
-            new TypeToken<Map<String, Object>>() {}.getType());
+            new TypeToken<Map<String, Object>>() {
+            }.getType());
         for (Variable v : fieldList) {
             String[] dataList = v.getName()
                 .split("\\.");
@@ -56,12 +56,12 @@ public class UpdateFieldTransform implements Transform {
                 if (!(temp instanceof Map)) {
                     throw new EventBridgeException(TransformErrorCode.InvalidConfig);
                 }
-                tempMap = (Map<String, Object>)temp;
+                tempMap = (Map<String, Object>) temp;
             }
             if (tempMap.get(dataList[dataList.length - 1]) == null) {
                 throw new EventBridgeException(TransformErrorCode.InvalidConfig);
             }
-            tempMap.put(dataList[dataList.length - 1], ((JsonPrimitive)v.getValue()).getAsString());
+            tempMap.put(dataList[dataList.length - 1], ((JsonPrimitive) v.getValue()).getAsString());
         }
         String jsonString = JSONObject.toJSONString(dataMap);
         return new StringData(jsonString);

@@ -19,15 +19,14 @@ package org.apache.rocketmq.eventbridge.domain.model.source;
 
 import java.util.Date;
 import java.util.Map;
-
 import lombok.Builder;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceTypeEnum;
 
 @Builder
-public @Data
-class EventSource {
+@Data
+public class EventSource {
     private String accountId;
     private String eventBusName;
     private String name;

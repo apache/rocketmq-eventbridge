@@ -158,9 +158,9 @@ public class CloudEventTransform implements io.openmessaging.connector.api.compo
 
     private static String withStringData(Data result) {
         if (result instanceof StringData) {
-            return ((StringData)result).getData();
+            return ((StringData) result).getData();
         } else if (result instanceof ObjectData) {
-            return ((ObjectData)result).toString();
+            return ((ObjectData) result).toString();
         } else {
             return result.toString();
         }

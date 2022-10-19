@@ -17,13 +17,12 @@
 package org.apache.rocketmq.eventbridge.domain.model;
 
 import java.util.Map;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @AllArgsConstructor
-public @Data
-class Component {
+@Data
+public class Component {
     private String name;
     private Map<String, Object> config;
 }

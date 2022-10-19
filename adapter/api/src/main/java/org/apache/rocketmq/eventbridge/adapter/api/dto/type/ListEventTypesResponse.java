@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.dto.type;
 
-import java.util.List;
-
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @AllArgsConstructor
-public @Data
-class ListEventTypesResponse extends BaseResponse {
+@Data
+public class ListEventTypesResponse extends BaseResponse {
     @SerializedName("EventTypes")
     private List<EventTypeDTO> eventTypes;
 

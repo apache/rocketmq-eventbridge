@@ -18,6 +18,9 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
 
 import com.google.gson.annotations.SerializedName;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,10 +28,6 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.hibernate.validator.constraints.Length;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 
 @Setter
 @Getter

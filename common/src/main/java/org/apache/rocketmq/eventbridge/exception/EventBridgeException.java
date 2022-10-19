@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.exception;
 
 import java.text.MessageFormat;
-
 import org.apache.rocketmq.eventbridge.exception.code.BaseErrorCode;
 import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 

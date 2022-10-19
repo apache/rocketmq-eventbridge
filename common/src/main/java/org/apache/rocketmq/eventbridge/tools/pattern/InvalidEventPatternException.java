@@ -44,8 +44,8 @@ public class InvalidEventPatternException extends RuntimeException {
     }
 
     /**
-     * Creates exception with the specified cause. Consider using {@link #InvalidEventPatternException(String, Throwable)} instead
-     * if you can describe what happened.
+     * Creates exception with the specified cause. Consider using {@link #InvalidEventPatternException(String,
+     * Throwable)} instead if you can describe what happened.
      *
      * @param cause root exception that caused this exception to be thrown.
      */

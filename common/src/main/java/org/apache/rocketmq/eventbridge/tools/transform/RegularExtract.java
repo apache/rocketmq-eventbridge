@@ -18,5 +18,5 @@
 package org.apache.rocketmq.eventbridge.tools.transform;
 
 public class RegularExtract {
-    
+
 }

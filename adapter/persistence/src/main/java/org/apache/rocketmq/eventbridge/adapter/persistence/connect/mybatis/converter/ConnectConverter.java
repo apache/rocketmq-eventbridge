@@ -18,13 +18,12 @@
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.converter;
 
 import com.google.gson.Gson;
-import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.dataobject.ConnectionDO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 
 public class ConnectConverter {
 

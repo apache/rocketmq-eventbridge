@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.dto.data;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.annotations.SerializedName;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventsResponseEntry;
 

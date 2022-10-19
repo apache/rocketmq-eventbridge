@@ -25,7 +25,6 @@ public interface EventDataRepository {
     /**
      * @param accountId
      * @param eventBusName
-     *
      * @return
      */
     boolean createEventBusPersistence(String accountId, String eventBusName);
@@ -33,7 +32,6 @@ public interface EventDataRepository {
     /**
      * @param accountId
      * @param eventBusName
-     *
      * @return
      */
     boolean deleteEventBusPersistence(String accountId, String eventBusName);
@@ -43,7 +41,6 @@ public interface EventDataRepository {
      * @param eventBusName
      * @param event
      * @param putEventCallback
-     *
      * @return
      */
     boolean putEvent(String accountId, String eventBusName, EventBridgeEvent event, PutEventCallback putEventCallback);
@@ -51,7 +48,6 @@ public interface EventDataRepository {
     /**
      * @param accountId
      * @param eventBusName
-     *
      * @return
      */
     String getEventBusPersistentContext(String accountId, String eventBusName);

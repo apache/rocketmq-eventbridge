@@ -1,4 +1,4 @@
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.mapper;
 
- import org.apache.ibatis.annotations.Param;
- import org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.dataobject.EventSourceClassDO;
+import org.apache.ibatis.annotations.Param;
+import org.apache.rocketmq.eventbridge.adapter.persistence.classes.mybatis.dataobject.EventSourceClassDO;
 
- public interface EventSourceClassMapper {
+public interface EventSourceClassMapper {
 
     EventSourceClassDO getEventSourceClass(@Param("name") String name);
 }

@@ -17,19 +17,20 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.converter;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import java.lang.reflect.Type;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.dataobject.EventSourceRunnerDO;
-import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 import org.apache.rocketmq.eventbridge.domain.model.run.EventSourceRunner;
+import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 
 public class EventSourceRunnerConverter {
 
     public static EventSourceRunner convert(EventSourceRunnerDO eventTargetRunnerDO) {
-        Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+        TypeToken typeToken = new TypeToken<Map<String, Object>>() {
+        };
+        Type mapType = typeToken.getType();
         Map<String, Object> config = new Gson().fromJson(eventTargetRunnerDO.getConfig(), mapType);
         RunOptions runOptions = new Gson().fromJson(eventTargetRunnerDO.getRunOptions(), RunOptions.class);
         return EventSourceRunner.builder()
@@ -44,6 +45,5 @@ public class EventSourceRunnerConverter {
             .gmtModify(eventTargetRunnerDO.getGmtModify())
             .build();
     }
-
 
 }

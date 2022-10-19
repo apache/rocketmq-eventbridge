@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +20,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -41,7 +39,7 @@ public class RocketMQMetaService {
 
     private final DefaultMQAdminExt defaultMQAdminExt;
 
-    private final int DEFAULT_QUEUE_NUM = 1;
+    private final static int DEFAULT_QUEUE_NUM = 1;
 
     public RocketMQMetaService(DefaultMQAdminExt defaultMQAdminExt) {
         this.defaultMQAdminExt = defaultMQAdminExt;

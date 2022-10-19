@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
+import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.JsonElement;
 
 /**
  * Given the below json rule, contains two pattern entries, the ruleName of second RuleEntry is `risk-score`, while the
@@ -36,6 +35,7 @@ public class PatternEntry {
 
     /**
      * Path of the PatternEntry, follow the spec of json-path
+     *
      * @see "https://github.com/json-path/JsonPath"
      */
     private String patternPath;

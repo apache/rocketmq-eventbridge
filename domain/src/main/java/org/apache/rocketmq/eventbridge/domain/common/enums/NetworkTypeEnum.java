@@ -32,6 +32,7 @@ public enum NetworkTypeEnum {
     PRIVATE_NETWORK("PrivateNetwork");
 
     private final String networkType;
+
     NetworkTypeEnum(String networkType) {
         this.networkType = networkType;
     }

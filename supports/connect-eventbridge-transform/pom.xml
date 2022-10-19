@@ -163,7 +163,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.rocketmq.connect.transform.eventbridge.EventBridgeTransform</mainClass>
+                            <mainClass>org.apache.rocketmq.connect.transform.eventbridge.EventBridgeTransform
+                            </mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

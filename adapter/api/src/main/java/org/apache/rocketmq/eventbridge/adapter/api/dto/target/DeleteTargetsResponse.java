@@ -19,4 +19,5 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.target;
 
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
-public class DeleteTargetsResponse extends BaseResponse {}
+public class DeleteTargetsResponse extends BaseResponse {
+}

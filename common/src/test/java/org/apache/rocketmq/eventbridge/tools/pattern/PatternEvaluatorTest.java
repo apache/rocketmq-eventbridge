@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.config.GlobalConfig;
 import org.apache.rocketmq.eventbridge.tools.JsonUtil;

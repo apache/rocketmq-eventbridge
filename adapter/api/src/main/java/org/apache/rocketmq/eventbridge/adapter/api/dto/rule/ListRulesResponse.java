@@ -17,16 +17,15 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.dto.rule;
 
-import java.util.List;
-
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @AllArgsConstructor
-public @Data
-class ListRulesResponse extends BaseResponse {
+@Data
+public class ListRulesResponse extends BaseResponse {
     @SerializedName("EventRules")
     private List<EventRuleDTO> eventRules;
 

@@ -23,7 +23,6 @@ import org.junit.Test;
 
 public class OriginalTransformTest extends BaseTransformTest {
 
-
     @Test
     public void testTransformOriginalFromString() throws EventBridgeException {
         Transform transform = TransformBuilder.buildOriginalTransform();

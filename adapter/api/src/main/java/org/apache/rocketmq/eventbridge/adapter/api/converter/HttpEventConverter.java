@@ -1,75 +1,69 @@
- /*
-  * Licensed to the Apache Software Foundation (ASF) under one or more
-  * contributor license agreements.  See the NOTICE file distributed with
-  * this work for additional information regarding copyright ownership.
-  * The ASF licenses this file to You under the Apache License, Version 2.0
-  * (the "License"); you may not use this file except in compliance with
-  * the License.  You may obtain a copy of the License at
-  *
-  *     http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
- import com.google.common.net.MediaType;
- import com.google.common.reflect.TypeToken;
- import com.google.gson.Gson;
- import io.cloudevents.CloudEvent;
- import io.cloudevents.core.v1.CloudEventBuilder;
- import org.apache.commons.lang3.StringUtils;
- import org.apache.commons.net.util.SubnetUtils;
- import org.apache.rocketmq.eventbridge.adapter.api.dto.data.HttpEventData;
- import org.apache.rocketmq.eventbridge.config.AppConfig;
- import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
- import org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService;
- import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
- import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
- import org.apache.rocketmq.eventbridge.tools.NetUtil;
- import org.apache.rocketmq.eventbridge.tools.transform.Data;
- import org.apache.rocketmq.eventbridge.tools.transform.StringData;
- import org.apache.rocketmq.eventbridge.tools.transform.Transform;
- import org.apache.rocketmq.eventbridge.tools.transform.TransformBuilder;
- import org.slf4j.Logger;
- import org.slf4j.LoggerFactory;
- import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.http.HttpHeaders;
- import org.springframework.http.HttpMethod;
- import org.springframework.http.server.reactive.ServerHttpRequest;
- import org.springframework.stereotype.Service;
- import org.springframework.util.CollectionUtils;
+import com.google.common.net.MediaType;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.util.SubnetUtils;
+import org.apache.rocketmq.eventbridge.adapter.api.dto.data.HttpEventData;
+import org.apache.rocketmq.eventbridge.config.AppConfig;
+import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
+import org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService;
+import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NetUtil;
+import org.apache.rocketmq.eventbridge.tools.transform.Data;
+import org.apache.rocketmq.eventbridge.tools.transform.StringData;
+import org.apache.rocketmq.eventbridge.tools.transform.Transform;
+import org.apache.rocketmq.eventbridge.tools.transform.TransformBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
- import java.lang.reflect.Type;
- import java.net.URI;
- import java.nio.charset.StandardCharsets;
- import java.time.OffsetDateTime;
- import java.time.ZonedDateTime;
- import java.util.Collections;
- import java.util.HashMap;
- import java.util.HashSet;
- import java.util.List;
- import java.util.Map;
- import java.util.Set;
- import java.util.UUID;
+import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.JSON_ATTRIBUTE_INVALID;
+import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.PutEventsRequestSecurityCheckFailed;
+import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_IP;
+import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_NONE;
+import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_REFERER;
 
- import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.JSON_ATTRIBUTE_INVALID;
- import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.PutEventsRequestSecurityCheckFailed;
- import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_IP;
- import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_NONE;
- import static org.apache.rocketmq.eventbridge.domain.model.source.HTTPEventSourceService.SECURITY_CONFIG_REFERER;
-
-/**
- * @Author changfeng
- * @Date 2022/4/25 11:28 上午
- */
 @Service
+@Slf4j
 public class HttpEventConverter {
-    private static final Logger logger = LoggerFactory.getLogger(HttpEventConverter.class);
 
     @Autowired
     HttpEventAPI httpEventAPI;
@@ -87,7 +81,6 @@ public class HttpEventConverter {
 
     private static final Set<String> DISCARD_FIELDS = new HashSet<>();
 
-
     static {
         DISCARD_FIELDS.add("authorization");
         DISCARD_FIELDS.add("cookie");
@@ -95,7 +88,7 @@ public class HttpEventConverter {
     }
 
     public List<CloudEvent> toEventBridgeEvent(ServerHttpRequest request, byte[] body,
-                                               Map<String, String> headers, String accountId, String token) {
+        Map<String, String> headers, String accountId, String token) {
         this.checkConfig(request, headers, accountId, token);
 
         CloudEvent cloudEvent = parseRequest(request, body, headers, accountId, token, null, null);
@@ -104,8 +97,8 @@ public class HttpEventConverter {
     }
 
     private CloudEvent parseRequest(ServerHttpRequest request, byte[] body,
-                                    Map<String, String> headers, String accountId, String token, String extractJson,
-                                    String template) {
+        Map<String, String> headers, String accountId, String token, String extractJson,
+        String template) {
         EventSource eventSource = httpEventSourceService.getEventSourceByToken(accountId, token);
         HttpEventData httpEventData = getHttpEventData(request, body, headers, accountId, token);
         Map<String, Object> schema = parseSchema(httpEventData, extractJson, template);
@@ -118,12 +111,13 @@ public class HttpEventConverter {
         return builderWithData.build();
     }
 
-    private CloudEventBuilder addAttributes(String regionId, String accountId, String sourceName, String busName, Map<String, Object> schema, CloudEventBuilder cloudEventBuilder) {
+    private CloudEventBuilder addAttributes(String regionId, String accountId, String sourceName, String busName,
+        Map<String, Object> schema, CloudEventBuilder cloudEventBuilder) {
         CloudEventBuilder newBuilder = cloudEventBuilder.newBuilder();
         newBuilder.withId(UUID.randomUUID().toString())
-                .withSource(URI.create(sourceName))
-                .withDataContentType(DATA_CONTENT_TYPE)
-                .withDataSchema(null);
+            .withSource(URI.create(sourceName))
+            .withDataContentType(DATA_CONTENT_TYPE)
+            .withDataSchema(null);
 
         String subject = (String) schema.get("subject");
         String time = (String) schema.get("time");
@@ -150,10 +144,10 @@ public class HttpEventConverter {
     }
 
     private CloudEventBuilder addExtensions(ServerHttpRequest request,
-                                            String regionId,
-                                            String accountId,
-                                            Map<String, String> headers,
-                                            EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
+        String regionId,
+        String accountId,
+        Map<String, String> headers,
+        EventSource eventSource, CloudEventBuilder cloudEventBuilder) {
         return httpEventAPI.addExtensions(request, regionId, accountId, headers, eventSource, cloudEventBuilder);
     }
 
@@ -188,7 +182,7 @@ public class HttpEventConverter {
             boolean matched = false;
             for (String ip : ips) {
                 if (StringUtils.equals(ip, requestIp) ||
-                        (NetUtil.isNetSegment(ip) && new SubnetUtils(ip).getInfo().isInRange(requestIp))) {
+                    (NetUtil.isNetSegment(ip) && new SubnetUtils(ip).getInfo().isInRange(requestIp))) {
                     matched = true;
                     break;
                 }
@@ -207,7 +201,7 @@ public class HttpEventConverter {
     }
 
     private HttpEventData getHttpEventData(ServerHttpRequest request, byte[] body, Map<String, String> headers,
-                                           String accountId, String token) {
+        String accountId, String token) {
         HttpEventData httpEventData = new HttpEventData();
         HashMap<String, String> dataHeaders = new HashMap<>();
         headers.forEach((k, v) -> {
@@ -226,12 +220,13 @@ public class HttpEventConverter {
             if (StringUtils.isNotBlank(contentType)) {
                 MediaType type = MediaType.parse(contentType);
                 if (type.toString().contains("application/json")) {
-                    bodyContent = new Gson().fromJson((String) bodyContent, new TypeToken<Map<String, ?>>() {}.getType());
+                    bodyContent = new Gson().fromJson((String) bodyContent, new TypeToken<Map<String, ?>>() {
+                    }.getType());
                 }
             }
         } catch (Exception e) {
-            logger.warn("GenerateEBHttpEventData failed. Http content is not a valid json format. accountId={}, token={}, content-type={}",
-                    accountId, token, temp.get("content-type"), e);
+            log.warn("GenerateEBHttpEventData failed. Http content is not a valid json format. accountId={}, token={}, content-type={}",
+                accountId, token, temp.get("content-type"), e);
             throw new EventBridgeException(JSON_ATTRIBUTE_INVALID);
         }
         httpEventData.setBody(bodyContent);
@@ -259,7 +254,9 @@ public class HttpEventConverter {
         Transform transform = TransformBuilder.buildTemplateTransForm(extractJson, template);
         StringData stringData = new StringData(new Gson().toJson(httpEventData));
         Data output = transform.process(stringData);
-        Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+        TypeToken typeToken = new TypeToken<Map<String, Object>>() {
+        };
+        Type mapType = typeToken.getType();
         Map<String, Object> objectMap = new Gson().fromJson(output.toString(), mapType);
         Map<String, Object> templateData = (Map<String, Object>) objectMap.get("data");
         // If data is not defined in the template, the default logic is executed

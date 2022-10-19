@@ -17,18 +17,17 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.dto.target;
 
-import java.util.Map;
-
 import com.google.gson.annotations.SerializedName;
+import java.util.Map;
 import lombok.Data;
 
-public @Data
-class DeadLetterQueueDTO {
+@Data
+public class DeadLetterQueueDTO {
 
     @SerializedName("Type")
     private String type;
 
     @SerializedName("Config")
-    private Map<String,Object> config;
+    private Map<String, Object> config;
 
 }

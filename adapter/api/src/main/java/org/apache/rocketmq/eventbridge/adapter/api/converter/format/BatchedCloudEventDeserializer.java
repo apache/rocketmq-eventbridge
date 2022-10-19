@@ -17,10 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.api.converter.format;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -42,12 +38,11 @@ import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventReader;
 import io.cloudevents.rw.CloudEventWriter;
 import io.cloudevents.rw.CloudEventWriterFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * @author jingluo.sl
- * <p>
- * 2020-08-14 10:57
- **/
+
 public class BatchedCloudEventDeserializer extends StdDeserializer<ArrayList<CloudEvent>> {
 
     protected BatchedCloudEventDeserializer() {
@@ -159,7 +154,6 @@ public class BatchedCloudEventDeserializer extends StdDeserializer<ArrayList<Clo
             return null;
         }
 
-
         private String getStringNode(ObjectNode objNode, JsonParser p, String attributeName)
             throws JsonProcessingException {
             String val = getOptionalStringNode(objNode, p, attributeName);
@@ -205,7 +199,7 @@ public class BatchedCloudEventDeserializer extends StdDeserializer<ArrayList<Clo
         } catch (RuntimeException e) {
             // Yeah this is bad but it's needed to support checked exceptions...
             if (e.getCause() instanceof IOException) {
-                throw (IOException)e.getCause();
+                throw (IOException) e.getCause();
             }
             throw MismatchedInputException.wrapWithPath(e, null);
         }

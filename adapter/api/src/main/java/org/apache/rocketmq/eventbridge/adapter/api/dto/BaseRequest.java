@@ -24,7 +24,6 @@ public class BaseRequest extends BaseDTO {
     @SerializedName("RequestId")
     public String requestId;
 
-
     public BaseRequest() {
     }
 

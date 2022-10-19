@@ -17,11 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.tools.pattern;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,6 +25,10 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.spi.json.GsonJsonProvider;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 
@@ -56,7 +55,6 @@ public class PatternEvaluator {
      * Evaluates the provided json string whether matches the event pattern
      *
      * @param jsonData the specific data in json format
-     *
      * @return true if jsonData matches rule, false otherwise
      */
     public boolean evaluateData(String jsonData) {
@@ -84,7 +82,6 @@ public class PatternEvaluator {
      * Evaluates the provided spec attributes whether matches the event pattern
      *
      * @param specAttrs the provided spec attributes in map format
-     *
      * @return true if matches the pattern, false otherwise
      */
     public boolean evaluateSpecAttr(Map<String, JsonElement> specAttrs) {
@@ -95,7 +92,6 @@ public class PatternEvaluator {
      * Evaluates the provided extensions attributes whether matches the event pattern
      *
      * @param extensionsAttrs the provided extensions attributes in map format
-     *
      * @return true if matches the pattern, false otherwise
      */
     public boolean evaluateExtensionAttr(Map<String, JsonElement> extensionsAttrs) {
@@ -106,7 +102,6 @@ public class PatternEvaluator {
      * Tests whether the event pattern matches the provided event in JSON format.
      *
      * @param eventObject the provided event object
-     *
      * @return true if match
      */
     public boolean testEventPattern(JsonObject eventObject) {

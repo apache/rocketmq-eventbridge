@@ -16,14 +16,13 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.api.dto.target;
 
-import java.util.Map;
-
 import com.google.gson.annotations.SerializedName;
+import java.util.Map;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
-public @Data
-class EventTargetDTO extends BaseDTO {
+@Data
+public class EventTargetDTO extends BaseDTO {
     @SerializedName("EventTargetName")
     private String eventTargetName;
 

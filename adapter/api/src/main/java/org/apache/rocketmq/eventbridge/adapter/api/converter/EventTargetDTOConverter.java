@@ -19,7 +19,6 @@ package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.DeadLetterQueueDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.EventTargetDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.RetryStrategyDTO;
@@ -36,7 +35,6 @@ public class EventTargetDTOConverter {
      * convert {@link EventTarget} list to {@link EventTargetDTO} list.
      *
      * @param eventTargets
-     *
      * @return
      */
     public static List<EventTargetDTO> convert(List<EventTarget> eventTargets) {
@@ -49,7 +47,6 @@ public class EventTargetDTOConverter {
      * convert {@link EventTarget} to {@link EventTargetDTO}.
      *
      * @param eventTarget
-     *
      * @return
      */
     public static EventTargetDTO convert(EventTarget eventTarget) {
@@ -65,7 +62,6 @@ public class EventTargetDTOConverter {
      * convert {@link RunOptions} to {@link RunOptionsDTO}.
      *
      * @param runOptions
-     *
      * @return
      */
     private static RunOptionsDTO convertRunOptionsDTO(RunOptions runOptions) {
@@ -80,7 +76,6 @@ public class EventTargetDTOConverter {
      * convert {@link ErrorToleranceEnum} to string
      *
      * @param errorsTolerance
-     *
      * @return
      */
     private static String convertErrorTolerance(ErrorToleranceEnum errorsTolerance) {
@@ -95,7 +90,6 @@ public class EventTargetDTOConverter {
      * convert {@link DeadLetterQueue} to {@link DeadLetterQueueDTO}.
      *
      * @param deadLetterQueue
-     *
      * @return
      */
     private static DeadLetterQueueDTO convertDeadLetterQueueDTO(DeadLetterQueue deadLetterQueue) {
@@ -112,7 +106,6 @@ public class EventTargetDTOConverter {
      * convert {@link RetryStrategy} to {@link RetryStrategyDTO}.
      *
      * @param retryStrategy
-     *
      * @return
      */
     private static RetryStrategyDTO convertRetryStrategyDTO(RetryStrategy retryStrategy) {

@@ -29,8 +29,8 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     PutEventsRequestMoreThanOneEventBus(409, "PutEventsRequestMoreThanOneEventBus",
         "The put events request has more than one  event bus [{0}] "),
     PutEventsRequestSecurityCheckFailed(409, "PutEventsRequestSecurityCheckFailed",
-            "The putEvents request failed the webhook security check for {0}. " +
-                    "Event source configuration is {1}, the parameter in the request is {2}."),
+        "The putEvents request failed the webhook security check for {0}. " +
+            "Event source configuration is {1}, the parameter in the request is {2}."),
     JSON_ATTRIBUTE_INVALID(409, "JsonAttributeInvalid", "The Json attribute is invalid"),
 
     //Event Bus
@@ -56,11 +56,11 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     EventSourceTypeOrClassInvalid(409, "EventSourceTypeOrClassInvalid",
         "The event source type[{0}] or class[{1}] is invalid!"),
     HttpSourceParametersInvalid(409, "HttpSourceParametersInvalid",
-            "The parameters of http source is invalid. {0}"),
+        "The parameters of http source is invalid. {0}"),
     HttpSourceParametersEmpty(409, "HttpSourceParametersEmpty",
-            "The parameters of http source is empty or contains empty value. Invalid parameter name={0}"),
+        "The parameters of http source is empty or contains empty value. Invalid parameter name={0}"),
     ExceedHttpSourceParametersCount(409, "ExceedHttpSourceParametersCount",
-            "Exceed http source parameters count limit. Limit count is {0}, and the value of {1} is {2}"),
+        "Exceed http source parameters count limit. Limit count is {0}, and the value of {1} is {2}"),
 
     //Event Target
     EventTargetNotExist(409, "EventTargetNotExist",

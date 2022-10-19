@@ -18,12 +18,10 @@
 package org.apache.rocketmq.eventbridge.domain.model.source;
 
 import java.util.Date;
-
-import lombok.Builder;
 import lombok.Data;
 
-public @Data
-class EventType {
+@Data
+public class EventType {
     private String accountId;
     private String eventBusName;
     private String eventSourceName;

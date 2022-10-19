@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.util.function.Consumer;
-
 import com.google.common.base.Strings;
+import java.util.function.Consumer;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 
 public class ObjectUtil {
@@ -28,7 +27,6 @@ public class ObjectUtil {
      *
      * @param items
      * @param <T>
-     *
      * @return
      */
     public static <T> T coalesce(T... items) {

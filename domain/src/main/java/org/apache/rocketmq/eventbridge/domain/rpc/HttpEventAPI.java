@@ -18,18 +18,14 @@
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
 import io.cloudevents.core.v1.CloudEventBuilder;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.domain.model.source.EventSource;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
-import java.util.Map;
-
-/**
- * @Author changfeng
- * @Date 2022/4/27 5:20 下午
- */
 public interface HttpEventAPI {
     /**
      * add extensions into the CloudEvent
+     *
      * @param request
      * @param regionId
      * @param accountId
@@ -39,13 +35,14 @@ public interface HttpEventAPI {
      * @return
      */
     CloudEventBuilder addExtensions(ServerHttpRequest request,
-                                    String regionId,
-                                    String accountId,
-                                    Map<String, String> headers,
-                                    EventSource eventSource, CloudEventBuilder cloudEventBuilder);
+        String regionId,
+        String accountId,
+        Map<String, String> headers,
+        EventSource eventSource, CloudEventBuilder cloudEventBuilder);
 
     /**
      * generate the subject attribute of CloudEvent
+     *
      * @param region
      * @param accountId
      * @param eventBusName
@@ -53,5 +50,5 @@ public interface HttpEventAPI {
      * @return
      */
     String generateSubject(String region, String accountId, String eventBusName,
-                             String eventSourceFullName);
+        String eventSourceFullName);
 }

@@ -16,11 +16,10 @@
  */
 package org.apache.rocketmq.eventbridge.domain.model;
 
+import com.google.common.base.Strings;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Strings;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 

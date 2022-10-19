@@ -22,8 +22,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.domain.common.enums.ErrorToleranceEnum;
 
 @Builder
-public @Data
-class RunOptions {
+@Data
+public class RunOptions {
     private ErrorToleranceEnum errorsTolerance;
 
     private RetryStrategy retryStrategy;

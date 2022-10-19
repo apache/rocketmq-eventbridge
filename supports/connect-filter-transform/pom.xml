@@ -179,7 +179,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.apache.rocketmq.connect.transform.eventbridge.EventBridgeFilterTransform</mainClass>
+                            <mainClass>org.apache.rocketmq.connect.transform.eventbridge.EventBridgeFilterTransform
+                            </mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

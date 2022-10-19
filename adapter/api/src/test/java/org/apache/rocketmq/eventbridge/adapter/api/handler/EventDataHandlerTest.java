@@ -23,11 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import lombok.SneakyThrows;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.data.PutEventsResponse;
-import org.apache.rocketmq.eventbridge.adapter.api.handler.EventDataHandler;
-import org.apache.rocketmq.eventbridge.adapter.api.handler.ReactorPutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.model.data.EventDataService;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventsResponseEntry;
@@ -58,8 +55,8 @@ public class EventDataHandlerTest {
     public void before() {
         Mockito.doAnswer((invocation) -> {
             Object[] args = invocation.getArguments();
-            EventBridgeEvent event = (EventBridgeEvent)args[1];
-            ReactorPutEventCallback callback = (ReactorPutEventCallback)args[2];
+            EventBridgeEvent event = (EventBridgeEvent) args[1];
+            ReactorPutEventCallback callback = (ReactorPutEventCallback) args[2];
             executor.submit(new PutEventTestThread(event, callback));
             return null;
         })

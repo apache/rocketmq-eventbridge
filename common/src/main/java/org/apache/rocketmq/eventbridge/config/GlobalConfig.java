@@ -17,11 +17,10 @@
 package org.apache.rocketmq.eventbridge.config;
 
 import java.util.Set;
-
 import lombok.Data;
 
-public @Data
-class GlobalConfig {
+@Data
+public class GlobalConfig {
 
     private Set<String> eventExtensionKeys;
 
@@ -30,6 +29,5 @@ class GlobalConfig {
     private String defaultDataPersistentClusterName;
 
     private int eventSizeUpLimit = (1 << 10) * 64;
-
 
 }

@@ -17,9 +17,8 @@
 
 package org.apache.rocketmq.eventbridge.domain.repository;
 
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
-
 import java.util.List;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 
 public interface ApiDestinationRepository {
 
@@ -32,7 +31,7 @@ public interface ApiDestinationRepository {
     Boolean deleteApiDestination(String accountId, String apiDestinationName);
 
     List<ApiDestinationDTO> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                int maxResults);
+        int maxResults);
 
     int getApiDestinationCount(String accountId);
 

@@ -17,6 +17,14 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.source;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.domain.cache.CacheManager;
@@ -29,21 +37,11 @@ import org.apache.rocketmq.eventbridge.domain.repository.EventSourceRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.NetUtil;
 import org.apache.rocketmq.eventbridge.tools.TokenUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.apache.rocketmq.eventbridge.domain.cache.CacheName.EVENT_SOURCE;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.ExceedHttpSourceParametersCount;
@@ -52,8 +50,8 @@ import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridg
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.HttpSourceParametersInvalid;
 
 @Service
+@Slf4j
 public class HTTPEventSourceService extends EventSourceService {
-    private static final Logger logger = LoggerFactory.getLogger(HTTPEventSourceService.class);
 
     private static final String CLASS_NAME = "HttpEvent";
     private static final Integer GET_TOKEN_TIMES = 100;
@@ -72,6 +70,7 @@ public class HTTPEventSourceService extends EventSourceService {
 
     @Autowired
     CacheManager cacheManager;
+
     public HTTPEventSourceService(EventBusService eventBusService, EventSourceRepository eventSourceRepository) {
         super(eventBusService, eventSourceRepository);
     }
@@ -88,10 +87,8 @@ public class HTTPEventSourceService extends EventSourceService {
     @Transactional
     @Override
     public boolean createEventSource(String accountId, String eventBusName, String eventSourceName, String description,
-                                     String className, Map<String, Object> inputConfig) {
-        // 校验
+        String className, Map<String, Object> inputConfig) {
         checkConfig(inputConfig);
-        // 渲染
         Map<String, Object> renderConfig = renderConfig(accountId, eventBusName, eventSourceName, inputConfig);
         return super.createEventSource(accountId, eventBusName, eventSourceName, description, className, renderConfig);
     }
@@ -103,18 +100,17 @@ public class HTTPEventSourceService extends EventSourceService {
     }
 
     @Override
-    public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description, String className, Integer status, Map<String, Object> inputConfig) {
+    public boolean updateEventSource(String accountId, String eventBusName, String eventSourceName, String description,
+        String className, Integer status, Map<String, Object> inputConfig) {
         this.evict(accountId, eventBusName, eventSourceName);
-        // 校验
         checkConfig(inputConfig);
-        // 渲染
         Map<String, Object> renderConfig = renderConfig(accountId, eventBusName, eventSourceName, inputConfig);
         return super.updateEventSource(accountId, eventBusName, eventSourceName, description, className, status, renderConfig);
     }
 
     private void checkConfig(Map<String, Object> inputConfig) {
         HashMap<String, Object> sourceConfig = new HashMap<>(inputConfig.size());
-        inputConfig.forEach((k ,v) -> {
+        inputConfig.forEach((k, v) -> {
             sourceConfig.put(k.toLowerCase(), v);
         });
         // check type
@@ -134,14 +130,15 @@ public class HTTPEventSourceService extends EventSourceService {
         checkReferer(securityConfig, (List<String>) sourceConfig.get("referer"));
     }
 
-    private Map<String, Object> renderConfig(String accountId, String eventBusName, String eventSourceName, Map<String, Object> inputConfig) {
+    private Map<String, Object> renderConfig(String accountId, String eventBusName, String eventSourceName,
+        Map<String, Object> inputConfig) {
         HashMap<String, Object> result = new HashMap<>(inputConfig);
 
         // The ip and referer parameters from the sdk are empty when securityConfig is none
         result.putIfAbsent("Ip", new ArrayList<>());
         result.putIfAbsent("Referer", new ArrayList<>());
 
-        EventSource eventSource =  eventSourceRepository.getEventSource(accountId, eventBusName, eventSourceName);
+        EventSource eventSource = eventSourceRepository.getEventSource(accountId, eventBusName, eventSourceName);
 
         String regionId = AppConfig.getLocalConfig().getRegion();
         String type = (String) inputConfig.get("Type");
@@ -165,16 +162,16 @@ public class HTTPEventSourceService extends EventSourceService {
         Set<String> tokenSet = new HashSet<>();
         int busCount = eventBusService.getEventBusesCount(accountId);
         PaginationResult<List<EventBus>> paginationResult =
-                eventBusService.listEventBuses(accountId, "0", busCount);
+            eventBusService.listEventBuses(accountId, "0", busCount);
 
-        for (EventBus eventBus: paginationResult.getData()) {
+        for (EventBus eventBus : paginationResult.getData()) {
             int sourceCount = getEventSourceCount(accountId, eventBus.getName());
             PaginationResult<List<EventSource>> listEventSources =
-                    listEventSources(accountId, eventBus.getName(), "0", sourceCount);
+                listEventSources(accountId, eventBus.getName(), "0", sourceCount);
 
             listEventSources.getData().stream()
-                    .filter(eventSource -> this.match(eventSource.getType(), eventSource.getClassName()))
-                    .forEach(eventSource -> tokenSet.add((String) eventSource.getConfig().get(TOKEN_CONFIG)));
+                .filter(eventSource -> this.match(eventSource.getType(), eventSource.getClassName()))
+                .forEach(eventSource -> tokenSet.add((String) eventSource.getConfig().get(TOKEN_CONFIG)));
         }
 
         if (count > 0 && tokenSet.contains(token)) {
@@ -187,12 +184,13 @@ public class HTTPEventSourceService extends EventSourceService {
         return token;
     }
 
-    public List<String> generateWebHookUrl(String regionId, String accountId, String type, String token, boolean isVpc) {
+    public List<String> generateWebHookUrl(String regionId, String accountId, String type, String token,
+        boolean isVpc) {
         List<String> webHookUrl = new ArrayList<>();
         String httpWebHookSchema = isVpc ? AppConfig.getLocalConfig().getVpcHttpWebhookSchema() :
-                AppConfig.getLocalConfig().getPublicHttpWebhookSchema();
+            AppConfig.getLocalConfig().getPublicHttpWebhookSchema();
         String httpsWebHookSchema = isVpc ? AppConfig.getLocalConfig().getVpcHttpsWebhookSchema() :
-                AppConfig.getLocalConfig().getPublicHttpsWebhookSchema();
+            AppConfig.getLocalConfig().getPublicHttpsWebhookSchema();
         if ("HTTP".equalsIgnoreCase(type)) {
             webHookUrl.add(String.format(httpWebHookSchema, accountId, regionId, token));
         } else if ("HTTPS".equalsIgnoreCase(type)) {
@@ -277,18 +275,17 @@ public class HTTPEventSourceService extends EventSourceService {
         }
     }
 
-
     @Cacheable(cacheNames = EVENT_SOURCE, keyGenerator = "generalKeyGenerator", unless = "#result == null")
     public EventSource getEventSourceByToken(String accountId, String token) {
         try {
             int busCount = this.eventBusService.getEventBusesCount(accountId);
             PaginationResult<List<EventBus>> paginationResult =
-                    eventBusService.listEventBuses(accountId, "0", busCount);
-            for (EventBus eventBus: paginationResult.getData()) {
+                eventBusService.listEventBuses(accountId, "0", busCount);
+            for (EventBus eventBus : paginationResult.getData()) {
                 int sourceCount = eventSourceRepository.getEventSourceCount(accountId, eventBus.getName());
                 List<EventSource> eventSources = eventSourceRepository
-                        .listEventSources(accountId, eventBus.getName(), "0", sourceCount);
-                for (EventSource eventSource: eventSources) {
+                    .listEventSources(accountId, eventBus.getName(), "0", sourceCount);
+                for (EventSource eventSource : eventSources) {
                     String sourceToken = (String) eventSource.getConfig().get(TOKEN_CONFIG);
                     if (StringUtils.isNotBlank(sourceToken) && StringUtils.equals(sourceToken, token)) {
                         return eventSource;
@@ -296,7 +293,7 @@ public class HTTPEventSourceService extends EventSourceService {
                 }
             }
         } catch (Throwable t) {
-            logger.error("EventSourceCacheService getEventSourceByToken error.", t);
+            log.error("EventSourceCacheService getEventSourceByToken error.", t);
         }
         return null;
     }

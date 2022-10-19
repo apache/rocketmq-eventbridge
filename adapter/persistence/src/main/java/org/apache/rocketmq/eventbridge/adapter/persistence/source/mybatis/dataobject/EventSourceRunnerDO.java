@@ -19,11 +19,10 @@ package org.apache.rocketmq.eventbridge.adapter.persistence.source.mybatis.datao
 
 import java.io.Serializable;
 import java.util.Date;
-
 import lombok.Data;
 
-public @Data
-class EventSourceRunnerDO implements Serializable {
+@Data
+public class EventSourceRunnerDO implements Serializable {
 
     private static final long serialVersionUID = -1L;
     private String accountId;

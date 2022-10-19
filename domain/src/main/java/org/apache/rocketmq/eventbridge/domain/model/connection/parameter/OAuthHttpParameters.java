@@ -18,11 +18,10 @@
 package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @Setter

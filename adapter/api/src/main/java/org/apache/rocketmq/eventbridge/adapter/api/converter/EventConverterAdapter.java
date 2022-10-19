@@ -16,14 +16,13 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.api.converter;
 
-import java.util.List;
-import java.util.Map;
-import javax.annotation.PostConstruct;
-
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import io.cloudevents.CloudEvent;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,13 +49,11 @@ public class EventConverterAdapter {
     }
 
     /**
-     * The entry function：extract the event form body and {@link HttpHeaders}
+     * The entry function:extract the event form body and {@link HttpHeaders}
      *
      * @param headers
      * @param body
-     *
      * @return
-     *
      * @throws Throwable
      */
 
@@ -68,7 +65,6 @@ public class EventConverterAdapter {
      * Find the {@link EventConverter} to handler request, the default strategy is "First fit"
      *
      * @param headers
-     *
      * @return
      */
     private EventConverter getEventConverter(Map<String, String> headers) {

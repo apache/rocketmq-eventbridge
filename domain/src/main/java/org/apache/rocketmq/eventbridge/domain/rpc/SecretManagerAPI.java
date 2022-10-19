@@ -17,8 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
-import java.util.Map;
-
 public interface SecretManagerAPI {
 
     String createSecretName(String accountId, String connectionName, String secretData);

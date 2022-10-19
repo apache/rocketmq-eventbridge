@@ -16,8 +16,6 @@
  */
 package org.apache.rocketmq.eventbridge.domain.model;
 
-import org.apache.rocketmq.eventbridge.domain.model.run.EventTargetRunner;
-
 public abstract class AbstractRunnerService {
 
     protected String buildDefaultComponentName() {
@@ -27,6 +25,5 @@ public abstract class AbstractRunnerService {
     protected String buildRunnerName(String... names) {
         return String.join("-", names);
     }
-
 
 }

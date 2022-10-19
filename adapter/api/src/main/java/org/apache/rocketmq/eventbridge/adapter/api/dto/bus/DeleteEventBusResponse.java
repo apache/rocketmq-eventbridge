@@ -20,7 +20,7 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.bus;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
-public @Data
-class DeleteEventBusResponse extends BaseResponse {
+@Data
+public class DeleteEventBusResponse extends BaseResponse {
 
 }

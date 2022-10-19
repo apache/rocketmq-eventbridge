@@ -17,14 +17,13 @@
 
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
+import java.io.Serializable;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
-
-import java.io.Serializable;
-import java.util.Date;
 
 @Getter
 @Setter

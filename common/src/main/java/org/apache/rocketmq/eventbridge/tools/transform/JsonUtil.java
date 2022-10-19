@@ -17,10 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.tools.transform;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -29,6 +25,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Map;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.pattern.InvalidEventPatternException;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternErrorMessages;
@@ -41,12 +40,10 @@ public class JsonUtil {
 
     protected static Logger logger = LoggerFactory.getLogger(JsonUtil.class);
 
-
     /**
      * Parse json with strict way by GSON
      *
      * @param json
-     *
      * @return
      */
     public static JsonObject parseStrict(String json) throws EventBridgeException {
@@ -66,7 +63,6 @@ public class JsonUtil {
      * Parse string to json element
      *
      * @param jsonString
-     *
      * @return
      */
     public static JsonElement parseJsonElement(String jsonString) {
@@ -83,7 +79,6 @@ public class JsonUtil {
      * return true if a json string can be decode to a json object
      *
      * @param jsonString
-     *
      * @return
      */
     public static boolean isJsonObject(String jsonString) {
@@ -105,7 +100,6 @@ public class JsonUtil {
      *
      * @param key
      * @param value
-     *
      * @return
      */
     public static String buildJsonString(String key, Object value) {
@@ -118,7 +112,6 @@ public class JsonUtil {
      * Return true if input is "{}", else return false
      *
      * @param jsonString
-     *
      * @return
      */
     public static boolean isEmptyJsonObject(String jsonString) {

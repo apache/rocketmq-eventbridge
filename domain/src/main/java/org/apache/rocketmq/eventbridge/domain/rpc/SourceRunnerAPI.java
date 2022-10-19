@@ -18,19 +18,20 @@
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
 import java.util.Map;
-
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 
 public interface SourceRunnerAPI {
 
-    String createAndStartEventSourceRunner(String accountId, String name, Component source, Map<String, Object> transformPattern, Component target,
+    String createAndStartEventSourceRunner(String accountId, String name, Component source,
+        Map<String, Object> transformPattern, Component target,
         RunOptions runOptions);
 
     EventSourceStatusEnum getEventSourceRunnerStatus(String accountId, String runContext);
 
-    String updateEventSourceRunner(String accountId, Component source, Map<String, Object> transformPattern, Component target, RunOptions runOptions,
+    String updateEventSourceRunner(String accountId, Component source, Map<String, Object> transformPattern,
+        Component target, RunOptions runOptions,
         String runContext);
 
     boolean delete(String accountId, String runContext);

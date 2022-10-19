@@ -17,8 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.handler;
 
-import java.nio.charset.StandardCharsets;
-
 import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -55,15 +53,14 @@ public class ExceptionHandler implements ErrorWebExceptionHandler {
             baseResponse.setMessage(eventBridgeException.getMessage());
             httpStatus = HttpStatus.resolve(eventBridgeException.getHttpCode());
         } else if (throwable instanceof ResponseStatusException) {
-            baseResponse.setMessage(((ResponseStatusException)throwable).getMessage());
-            httpStatus = ((ResponseStatusException)throwable).getStatus();
+            baseResponse.setMessage(((ResponseStatusException) throwable).getMessage());
+            httpStatus = ((ResponseStatusException) throwable).getStatus();
         } else {
             baseResponse.setCode(EventBridgeErrorCode.InternalError.getCode());
             baseResponse.setMessage(EventBridgeErrorCode.InternalError.getMsg());
             httpStatus = HttpStatus.resolve(EventBridgeErrorCode.InternalError.getHttpCode());
             log.error("Catch unexpected exception.", throwable);
         }
-        log.info("Response:" + new Gson().toJson(baseResponse));
         byte[] responseByte = new Gson().toJson(baseResponse)
             .getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = serverHttpResponse.bufferFactory()

@@ -17,13 +17,11 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto;
 
+import com.google.common.collect.Maps;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;

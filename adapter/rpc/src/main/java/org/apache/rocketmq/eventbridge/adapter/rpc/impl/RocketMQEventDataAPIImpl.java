@@ -17,14 +17,13 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
 
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.eventbridge.adapter.persistence.rpc.EventDataOnRocketMQConnectAPI;
@@ -94,9 +93,9 @@ public class RocketMQEventDataAPIImpl implements EventDataOnRocketMQConnectAPI {
 
     private static int putIfPresent(String key, Object value, Message rocketMQMsg) {
         int len = 0;
-        if (value instanceof String && StringUtils.isNotEmpty((String)value)) {
-            rocketMQMsg.putUserProperty(key, (String)value);
-            len = key.length() + ((String)value).length() + 2;
+        if (value instanceof String && StringUtils.isNotEmpty((String) value)) {
+            rocketMQMsg.putUserProperty(key, (String) value);
+            len = key.length() + ((String) value).length() + 2;
         } else if (value instanceof Number) {
             String str = String.valueOf(value);
             rocketMQMsg.putUserProperty(key, str);
@@ -106,7 +105,7 @@ public class RocketMQEventDataAPIImpl implements EventDataOnRocketMQConnectAPI {
             rocketMQMsg.putUserProperty(key, str);
             len = key.length() + str.length() + 2;
         } else if (value instanceof ZonedDateTime) {
-            String str = ((ZonedDateTime)value).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String str = ((ZonedDateTime) value).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             rocketMQMsg.putUserProperty(key, str);
             len = key.length() + str.length() + 2;
         }
@@ -139,7 +138,6 @@ public class RocketMQEventDataAPIImpl implements EventDataOnRocketMQConnectAPI {
      *
      * @param accountId
      * @param eventBusName
-     *
      * @return
      */
     @Override

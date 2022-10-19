@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.converter;
 
+import com.google.gson.Gson;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.gson.Gson;
 import org.apache.rocketmq.eventbridge.adapter.persistence.apidestination.mybatis.dataobject.ApiDestinationDO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;

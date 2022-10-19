@@ -19,15 +19,13 @@ package org.apache.rocketmq.eventbridge.domain.model.run;
 
 import java.util.Date;
 import java.util.Map;
-
 import lombok.Builder;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
-import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 
 @Builder
-public @Data
-class EventTargetRunner {
+@Data
+public class EventTargetRunner {
     private String accountId;
     private String eventBusName;
     private String eventRuleName;
