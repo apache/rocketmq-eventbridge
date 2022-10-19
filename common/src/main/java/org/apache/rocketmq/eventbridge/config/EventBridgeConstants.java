@@ -20,4 +20,5 @@ package org.apache.rocketmq.eventbridge.config;
 public class EventBridgeConstants {
     public static final String EVENT_BUS_NAME_KEY = "eventBusName";
     public static final String ACCOUNT_ID_KEY = "accountId";
+    public static final String REQUEST_TRACE_ID = "requestId";
 }

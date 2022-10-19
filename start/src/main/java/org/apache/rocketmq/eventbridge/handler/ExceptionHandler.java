@@ -20,11 +20,11 @@ package org.apache.rocketmq.eventbridge.handler;
 import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import java.nio.charset.StandardCharsets;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -36,17 +36,21 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.ipc.netty.ByteBufMono;
 
+import java.nio.charset.StandardCharsets;
+
 @Component
 @Order(-1)
-@Slf4j
 public class ExceptionHandler implements ErrorWebExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger("accessLog");
+
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable throwable) {
         ServerHttpResponse serverHttpResponse = exchange.getResponse();
         BaseResponse baseResponse = new BaseResponse();
         HttpStatus httpStatus = null;
         if (throwable instanceof EventBridgeException) {
-            EventBridgeException eventBridgeException = (EventBridgeException) throwable;
+            EventBridgeException eventBridgeException = (EventBridgeException)throwable;
             baseResponse.setCode(eventBridgeException.getCode());
             baseResponse.setMessage(eventBridgeException.getMessage());
             httpStatus = HttpStatus.resolve(eventBridgeException.getHttpCode());

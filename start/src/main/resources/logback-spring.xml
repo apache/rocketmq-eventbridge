@@ -39,6 +39,23 @@
         </encoder>
     </appender>
 
+    <appender name="ACCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/${app.name}/access.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/${app.name}/access.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}@@%X{traceId:-}@@%X{parentId:-}@@%X{spanId:-}@@[%thread]@@%level@@%logger{36}[%line]@@%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="accessLog" level="${log.level}" additivity="false">
+        <appender-ref ref="ACCESS"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
     <root level="${log.level}">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="PROJECT"/>

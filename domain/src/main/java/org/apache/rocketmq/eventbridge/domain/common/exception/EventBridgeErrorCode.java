@@ -105,7 +105,11 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     ApiDestinationAlreadyExist(409, "ApiDestinationAlreadyExist", "The api-destination [{0}]  already existed!"),
     ApiDestinationParametersInvalid(409, "ApiDestinationParametersInvalid", "The api-destination parameters [{0}] is invalid! Please see the documentation for details."),
     ApiDestinationNotExist(409, "ApiDestinationNotExist", "The api-destination [{0}] not existed!"),
-    ;
+
+    // SecretManagerAPI
+    SecretManagerAPICreateSecretNameFailed(409, "SecretManagerAPICreateSecretNameFailed", "Create secret manager api secret name [{0}] failed"),
+    SecretManagerAPIDeleteSecretFailed(409, "SecretManagerAPIDeleteSecretFailed", "Delete secret manager api secret [{0}] failed"),
+    SecretManagerAPIGetSecretValueFailed(409, "SecretManagerAPIGetSecretValueFailed", "Get secret manager api secret value [{0}] failed");
 
     private final int httpCode;
     private final String code;

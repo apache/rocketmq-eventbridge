@@ -31,6 +31,11 @@ public class EventBridgeException extends RuntimeException {
         this.code = DefaultErrorCode.InternalError.getCode();
     }
 
+    public EventBridgeException(String code, String msg) {
+        super(msg);
+        this.code = code;
+    }
+
     public EventBridgeException(String msg, Throwable throwable) {
         super(MessageFormat.format(DefaultErrorCode.InternalError.getMsg(), msg), throwable);
         this.code = DefaultErrorCode.InternalError.getCode();
