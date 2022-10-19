@@ -61,12 +61,12 @@ public class ConnectionService extends AbstractResourceService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public String createConnection(ConnectionDTO connectionDTO) {
+        if (!CollectionUtils.isEmpty(checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()))) {
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
+        }
+        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
+        checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
         try {
-            if (!CollectionUtils.isEmpty(checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()))) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
-            }
-            super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
-            checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             if (connectionDTO.getAuthParameters() != null) {
                 connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
             }
@@ -78,79 +78,58 @@ public class ConnectionService extends AbstractResourceService {
             }
         } catch (Exception e) {
             log.error("ConnectionService | createConnection | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
         return null;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteConnection(String accountId, String connectionName) {
+        if (CollectionUtils.isEmpty(checkConnection(accountId, connectionName))) {
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
+        }
+        if (!CollectionUtils.isEmpty(apiDestinationRepository.queryApiDestinationByConnectionName(accountId, connectionName))) {
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionBoundApiDestination, connectionName);
+        }
+        List<ConnectionDTO> connection = getConnection(accountId, connectionName);
+        ConnectionDTO connectionDTO = connection.get(0);
+        if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
+            networkServiceAPI.deletePrivateNetwork();
+        }
         try {
-            if (CollectionUtils.isEmpty(checkConnection(accountId, connectionName))) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
-            }
-            if (!CollectionUtils.isEmpty(apiDestinationRepository.queryApiDestinationByConnectionName(accountId, connectionName))) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionBoundApiDestination, connectionName);
-            }
-            List<ConnectionDTO> connection = getConnection(accountId, connectionName);
-            ConnectionDTO connectionDTO = connection.get(0);
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-                networkServiceAPI.deletePrivateNetwork();
-            }
             connectionRepository.deleteConnection(accountId, connectionName);
             if (secretManagerAPI.querySecretName(secretManagerAPI.getSecretName(accountId, connectionName))) {
                 secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
             }
         } catch (Exception e) {
             log.error("ConnectionService | deleteConnection | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void updateConnection(ConnectionDTO connectionDTO, String accountId) {
+        if (CollectionUtils.isEmpty(checkConnection(accountId, connectionDTO.getConnectionName()))) {
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
+        }
+        checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
         try {
-            if (CollectionUtils.isEmpty(checkConnection(accountId, connectionDTO.getConnectionName()))) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
-            }
-            checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
             if (connectionDTO.getAuthParameters() != null) {
                 connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
             }
             connectionRepository.updateConnection(connectionDTO);
         } catch (Exception e) {
             log.error("ConnectionService | updateConnection | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
     }
 
     public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
-        try {
-            final List<ConnectionDTO> connectionDTO = connectionRepository.getConnection(accountId, connectionName);
-            if (connectionDTO == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
-            }
-            return connectionDTO;
-        } catch (Exception e) {
-            log.error("ConnectionService | getConnection | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+        final List<ConnectionDTO> connectionDTO = connectionRepository.getConnection(accountId, connectionName);
+        if (connectionDTO == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
         }
+        return connectionDTO;
     }
 
     public List<ConnectionDTO> checkConnection(String accountId, String connectionName) {
@@ -158,21 +137,12 @@ public class ConnectionService extends AbstractResourceService {
     }
 
     public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, int maxResults) {
-        try {
-            List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
-            PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
-            result.setData(connectionDTOS);
-            result.setTotal(this.getConnectionCount(accountId));
-            result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
-            return result;
-        } catch (Exception e) {
-            log.error("ConnectionService | listConnections | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
-        }
+        List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
+        PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
+        result.setData(connectionDTOS);
+        result.setTotal(this.getConnectionCount(accountId));
+        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        return result;
     }
 
     public int getConnectionCount(String accountId) {
@@ -193,11 +163,12 @@ public class ConnectionService extends AbstractResourceService {
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
         }
-        final OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
-        if (oauthHttpParameters == null) {
-            throw new EventBridgeException(EventBridgeErrorCode.OauthHttpParametersEmpty);
+        if (oauthParameters != null) {
+            final OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
+            if (oauthHttpParameters != null) {
+                saveClientByKms(accountId, connectionName, oauthParameters);
+            }
         }
-        saveClientByKms(accountId, connectionName, oauthParameters);
         return authParameters;
     }
 

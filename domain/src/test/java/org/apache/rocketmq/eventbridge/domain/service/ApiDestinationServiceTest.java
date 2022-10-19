@@ -18,11 +18,9 @@
 package org.apache.rocketmq.eventbridge.domain.service;
 
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
-import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
-import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
-import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,16 +38,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ApiDestinationDTOServiceTest {
+public class ApiDestinationServiceTest {
 
     @InjectMocks
     private ApiDestinationService apiDestinationService;
     @Mock
     private ApiDestinationRepository apiDestinationRepository;
-    @Mock
-    private SecretManagerAPI secretManagerAPI;
-    @Mock
-    private NetworkServiceAPI networkServiceAPI;
 
     @Before
     public void testBefore() {

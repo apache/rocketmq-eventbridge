@@ -45,12 +45,12 @@ public class ApiDestinationService extends AbstractResourceService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public String createApiDestination(ApiDestinationDTO eventApiDestinationDTO) {
+        if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
+        }
+        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
+                ApiDestinationCountExceedLimit);
         try {
-            if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
-            }
-            super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
-                    ApiDestinationCountExceedLimit);
             final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
             if (apiDestination) {
                 return eventApiDestinationDTO.getName();
@@ -58,45 +58,28 @@ public class ApiDestinationService extends AbstractResourceService {
             return null;
         } catch (Exception e) {
             log.error("ApiDestinationService | createApiDestination | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean updateApiDestination(ApiDestinationDTO apiDestinationDTO) {
+        if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
+        }
         try {
-            if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
-            }
             return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
         } catch (Exception e) {
             log.error("ApiDestinationService | updateApiDestination | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
     }
 
     public ApiDestinationDTO getApiDestination(String accountId, String apiDestinationName) {
-        try {
-            if (checkApiDestination(accountId, apiDestinationName) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
-            }
-            return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
-        } catch (Exception e) {
-            log.error("ApiDestinationService | getApiDestination | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+        if (checkApiDestination(accountId, apiDestinationName) == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
         }
+        return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
     }
 
     public ApiDestinationDTO checkApiDestination(String accountId, String apiDestinationName) {
@@ -105,38 +88,25 @@ public class ApiDestinationService extends AbstractResourceService {
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean deleteApiDestination(String accountId, String apiDestinationName) {
+        if (checkApiDestination(accountId, apiDestinationName) == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
+        }
         try {
-            if (checkApiDestination(accountId, apiDestinationName) == null) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationName);
-            }
             return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
         } catch (Exception e) {
             log.error("ApiDestinationService | deleteApiDestination | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
         }
     }
 
     public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
                                                                          int maxResults) {
-        try {
-            final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
-            PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
-            result.setData(apiDestinationDTOS);
-            result.setTotal(this.getApiDestinationCount(accountId));
-            result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
-            return result;
-        } catch (Exception e) {
-            log.error("ApiDestinationService | listApiDestinations | error", e);
-            if (e instanceof EventBridgeException) {
-                EventBridgeException eventBridgeException = (EventBridgeException)e;
-                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
-            }
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
-        }
+        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
+        PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
+        result.setData(apiDestinationDTOS);
+        result.setTotal(this.getApiDestinationCount(accountId));
+        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        return result;
     }
 
     private int getApiDestinationCount(String accountId) {

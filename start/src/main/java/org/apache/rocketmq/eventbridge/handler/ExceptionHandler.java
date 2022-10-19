@@ -22,10 +22,11 @@ import java.nio.charset.StandardCharsets;
 import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -39,8 +40,10 @@ import reactor.ipc.netty.ByteBufMono;
 
 @Component
 @Order(-1)
-@Slf4j
 public class ExceptionHandler implements ErrorWebExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger("accessLog");
+
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable throwable) {
         ServerHttpResponse serverHttpResponse = exchange.getResponse();
@@ -60,7 +63,7 @@ public class ExceptionHandler implements ErrorWebExceptionHandler {
             httpStatus = HttpStatus.resolve(EventBridgeErrorCode.InternalError.getHttpCode());
             log.error("Catch unexpected exception.", throwable);
         }
-        System.out.println("Response:" + new Gson().toJson(baseResponse));
+        log.info("Response:" + new Gson().toJson(baseResponse));
         byte[] responseByte = new Gson().toJson(baseResponse)
             .getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = serverHttpResponse.bufferFactory()
