@@ -87,7 +87,7 @@
         <assertj.version>2.6.0</assertj.version>
         <common.net>3.3</common.net>
         <cloudevents.version>2.3.0</cloudevents.version>
-        <apache.commons-text.version>1.9</apache.commons-text.version>
+        <apache.commons-text.version>1.10.0</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
         <caffeine.version>2.9.3</caffeine.version>
         <fastjson.version>2.0.2</fastjson.version>
