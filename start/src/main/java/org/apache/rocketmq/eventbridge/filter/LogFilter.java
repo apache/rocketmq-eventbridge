@@ -14,65 +14,63 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package org.apache.rocketmq.eventbridge.filter;
+ package org.apache.rocketmq.eventbridge.filter;
 
-import com.google.gson.Gson;
-import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+ import com.google.gson.Gson;
+ import org.apache.rocketmq.eventbridge.config.EventBridgeConstants;
+ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.core.annotation.Order;
+ import org.springframework.core.io.buffer.DataBuffer;
+ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+ import org.springframework.stereotype.Component;
+ import org.springframework.util.CollectionUtils;
+ import org.springframework.web.server.ServerWebExchange;
+ import org.springframework.web.server.WebFilter;
+ import org.springframework.web.server.WebFilterChain;
+ import reactor.core.publisher.Flux;
+ import reactor.core.publisher.Mono;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+ import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
+ import java.nio.channels.Channels;
+ import java.nio.charset.StandardCharsets;
+ import java.util.List;
 
-@Component
-@Order(value = 1)
-public class LogFilter implements WebFilter {
-    private static final Logger log = LoggerFactory.getLogger("accessLog");
-    @Value("request.trace.id")
-    private String requestTraceId;
+ @Component
+ @Order(value = 1)
+ public class LogFilter implements WebFilter {
+     private static final Logger log = LoggerFactory.getLogger("accessLog");
 
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        ServerHttpRequestDecorator accessPermissionDecorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
-            @Override
-            public Flux<DataBuffer> getBody() {
-                return super.getBody().doOnNext(dataBuffer -> {
-                    try {
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        Channels.newChannel(byteArrayOutputStream).write(dataBuffer.asByteBuffer().asReadOnlyBuffer());
-                        String requestBody = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-                        List<String> requestTraceIds = exchange.getRequest().getHeaders().get(requestTraceId);
-                        String requestId = "";
-                        if (!CollectionUtils.isEmpty(requestTraceIds)) {
-                            requestId = requestTraceIds.get(0);
-                        }
-                        log.info("requestTraceId : {} | url : {} | requestParam : {} | requestMethod : {} | requestBody : {}",
-                                requestId,
-                                exchange.getRequest().getURI(),
-                                exchange.getRequest().getQueryParams(),
-                                exchange.getRequest().getMethodValue(),
-                                new Gson().toJson(requestBody));
-                    } catch (IOException e) {
-                        log.error("LoginFilter | filter => e ", e);
-                        throw new EventBridgeException(e);
-                    }
-                });
-            }
-        };
-        return chain.filter(exchange.mutate().request(accessPermissionDecorator).build());
-    }
-}
+     @Override
+     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+         ServerHttpRequestDecorator accessPermissionDecorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
+             @Override
+             public Flux<DataBuffer> getBody() {
+                 return super.getBody().doOnNext(dataBuffer -> {
+                     try {
+                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                         Channels.newChannel(byteArrayOutputStream).write(dataBuffer.asByteBuffer().asReadOnlyBuffer());
+                         String requestBody = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+                         List<String> requestTraceIds = exchange.getRequest().getHeaders().get(EventBridgeConstants.REQUEST_TRACE_ID);
+                         String requestId = "";
+                         if (!CollectionUtils.isEmpty(requestTraceIds)) {
+                             requestId = requestTraceIds.get(0);
+                         }
+                         log.info("requestTraceId : {} | url : {} | requestParam : {} | requestMethod : {} | requestBody : {}",
+                                 requestId,
+                                 exchange.getRequest().getURI(),
+                                 exchange.getRequest().getQueryParams(),
+                                 exchange.getRequest().getMethodValue(),
+                                 new Gson().toJson(requestBody));
+                     } catch (IOException e) {
+                         log.error("LoginFilter | filter => e ", e);
+                         throw new EventBridgeException(e);
+                     }
+                 });
+             }
+         };
+         return chain.filter(exchange.mutate().request(accessPermissionDecorator).build());
+     }
+ }
