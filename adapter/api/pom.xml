@@ -14,12 +14,12 @@
     <parent>
         <artifactId>rocketmq-eventbridge-adapter</artifactId>
         <groupId>org.apache.rocketmq</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rocketmq-eventbridge-adapter-api</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <jakarta.version>2.1.6</jakarta.version>

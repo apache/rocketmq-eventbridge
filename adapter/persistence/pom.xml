@@ -14,12 +14,12 @@
     <parent>
         <artifactId>rocketmq-eventbridge-adapter</artifactId>
         <groupId>org.apache.rocketmq</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <mysql-connector-java.version>8.0.28</mysql-connector-java.version>
