@@ -24,6 +24,7 @@ import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +58,11 @@ public class ApiDestinationService extends AbstractResourceService {
             return null;
         } catch (Exception e) {
             log.error("ApiDestinationService | createApiDestination | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -70,7 +75,11 @@ public class ApiDestinationService extends AbstractResourceService {
             return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
         } catch (Exception e) {
             log.error("ApiDestinationService | updateApiDestination | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -82,7 +91,11 @@ public class ApiDestinationService extends AbstractResourceService {
             return apiDestinationRepository.getApiDestination(accountId, apiDestinationName);
         } catch (Exception e) {
             log.error("ApiDestinationService | getApiDestination | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -99,7 +112,11 @@ public class ApiDestinationService extends AbstractResourceService {
             return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
         } catch (Exception e) {
             log.error("ApiDestinationService | deleteApiDestination | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -114,7 +131,11 @@ public class ApiDestinationService extends AbstractResourceService {
             return result;
         } catch (Exception e) {
             log.error("ApiDestinationService | listApiDestinations | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 

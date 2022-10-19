@@ -47,7 +47,7 @@ public class ExceptionHandler implements ErrorWebExceptionHandler {
         BaseResponse baseResponse = new BaseResponse();
         HttpStatus httpStatus = null;
         if (throwable instanceof EventBridgeException) {
-            EventBridgeException eventBridgeException = (EventBridgeException)throwable.getCause();
+            EventBridgeException eventBridgeException = (EventBridgeException)throwable;
             baseResponse.setCode(eventBridgeException.getCode());
             baseResponse.setMessage(eventBridgeException.getMessage());
             httpStatus = HttpStatus.resolve(eventBridgeException.getHttpCode());

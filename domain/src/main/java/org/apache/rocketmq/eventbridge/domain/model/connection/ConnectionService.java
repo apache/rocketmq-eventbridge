@@ -31,6 +31,7 @@ import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,7 +78,11 @@ public class ConnectionService extends AbstractResourceService {
             }
         } catch (Exception e) {
             log.error("ConnectionService | createConnection | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
         return null;
     }
@@ -102,7 +107,11 @@ public class ConnectionService extends AbstractResourceService {
             }
         } catch (Exception e) {
             log.error("ConnectionService | deleteConnection | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -119,7 +128,11 @@ public class ConnectionService extends AbstractResourceService {
             connectionRepository.updateConnection(connectionDTO);
         } catch (Exception e) {
             log.error("ConnectionService | updateConnection | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -132,7 +145,11 @@ public class ConnectionService extends AbstractResourceService {
             return connectionDTO;
         } catch (Exception e) {
             log.error("ConnectionService | getConnection | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
@@ -150,7 +167,11 @@ public class ConnectionService extends AbstractResourceService {
             return result;
         } catch (Exception e) {
             log.error("ConnectionService | listConnections | error", e);
-            throw new EventBridgeException(e);
+            if (e instanceof EventBridgeException) {
+                EventBridgeException eventBridgeException = (EventBridgeException)e;
+                throw new EventBridgeException(eventBridgeException.getCode(), eventBridgeException.getMessage());
+            }
+            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(),e.getMessage());
         }
     }
 
