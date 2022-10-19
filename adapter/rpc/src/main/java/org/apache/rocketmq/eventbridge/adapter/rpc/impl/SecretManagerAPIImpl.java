@@ -27,12 +27,12 @@ public class SecretManagerAPIImpl implements SecretManagerAPI {
 
 
     @Override
-    public String createSecretName(String accountId, String connectionName, String secretData) throws Exception {
+    public String createSecretName(String accountId, String connectionName, String secretData) {
         return null;
     }
 
     @Override
-    public void deleteSecretName(String secretName) throws Exception {
+    public void deleteSecretName(String secretName) {
 
     }
 
@@ -52,7 +52,7 @@ public class SecretManagerAPIImpl implements SecretManagerAPI {
     }
 
     @Override
-    public String updateSecretValue(String oldSecretName, String accountId, String connectionName, String key, String value) throws Exception {
+    public String updateSecretValue(String oldSecretName, String accountId, String connectionName, String key, String value) {
         return null;
     }
 }

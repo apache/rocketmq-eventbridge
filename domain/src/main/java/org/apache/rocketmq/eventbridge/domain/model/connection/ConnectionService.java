@@ -31,7 +31,6 @@ import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,19 +65,14 @@ public class ConnectionService extends AbstractResourceService {
         }
         super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
         checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
-        try {
-            if (connectionDTO.getAuthParameters() != null) {
-                connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
+        if (connectionDTO.getAuthParameters() != null) {
+            connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
+        }
+        if (connectionRepository.createConnection(connectionDTO)) {
+            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
+                networkServiceAPI.createPrivateNetwork();
             }
-            if (connectionRepository.createConnection(connectionDTO)) {
-                if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-                    networkServiceAPI.createPrivateNetwork();
-                }
-                return connectionDTO.getConnectionName();
-            }
-        } catch (Exception e) {
-            log.error("ConnectionService | createConnection | error", e);
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
+            return connectionDTO.getConnectionName();
         }
         return null;
     }
@@ -96,14 +90,9 @@ public class ConnectionService extends AbstractResourceService {
         if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
             networkServiceAPI.deletePrivateNetwork();
         }
-        try {
-            connectionRepository.deleteConnection(accountId, connectionName);
-            if (secretManagerAPI.querySecretName(secretManagerAPI.getSecretName(accountId, connectionName))) {
-                secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
-            }
-        } catch (Exception e) {
-            log.error("ConnectionService | deleteConnection | error", e);
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
+        connectionRepository.deleteConnection(accountId, connectionName);
+        if (secretManagerAPI.querySecretName(secretManagerAPI.getSecretName(accountId, connectionName))) {
+            secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
         }
     }
 
@@ -113,15 +102,10 @@ public class ConnectionService extends AbstractResourceService {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
         }
         checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
-        try {
-            if (connectionDTO.getAuthParameters() != null) {
-                connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
-            }
-            connectionRepository.updateConnection(connectionDTO);
-        } catch (Exception e) {
-            log.error("ConnectionService | updateConnection | error", e);
-            throw new EventBridgeException(DefaultErrorCode.InternalError.getCode(), e.getMessage());
+        if (connectionDTO.getAuthParameters() != null) {
+            connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
         }
+        connectionRepository.updateConnection(connectionDTO);
     }
 
     public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
@@ -149,7 +133,7 @@ public class ConnectionService extends AbstractResourceService {
         return connectionRepository.getConnectionCount(accountId);
     }
 
-    private AuthParameters setSecretData(AuthParameters authParameters, String accountId, String connectionName) throws Exception {
+    private AuthParameters setSecretData(AuthParameters authParameters, String accountId, String connectionName) {
         final BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
         final OAuthParameters oauthParameters = authParameters.getOauthParameters();
@@ -172,13 +156,13 @@ public class ConnectionService extends AbstractResourceService {
         return authParameters;
     }
 
-    private void saveClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters) throws Exception {
+    private void saveClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters) {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
         clientParameters.setClientSecret(secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters)));
         oauthParameters.setClientParameters(clientParameters);
     }
 
-    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) throws Exception {
+    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) {
         ConnectionDTO connection = connectionRepository.getConnectionByName(name);
         if (authParameters == null) {
             return null;
@@ -216,7 +200,7 @@ public class ConnectionService extends AbstractResourceService {
         return authParameters;
     }
 
-    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) throws Exception {
+    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
         String clientSecretSecretValue = null;
         if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
