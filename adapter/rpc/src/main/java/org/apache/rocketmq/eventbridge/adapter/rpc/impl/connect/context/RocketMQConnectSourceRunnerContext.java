@@ -19,8 +19,8 @@ package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context;
 
 import lombok.Data;
 
-public @Data
-class RocketMQConnectSourceRunnerContext {
+@Data
+public class RocketMQConnectSourceRunnerContext {
 
     private String connectorName;
 

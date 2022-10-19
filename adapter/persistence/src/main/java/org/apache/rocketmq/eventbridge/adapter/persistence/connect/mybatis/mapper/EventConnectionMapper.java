@@ -30,9 +30,9 @@ public interface EventConnectionMapper {
     int deleteByPrimaryKey(Integer id);
 
     /**
-     * 通过name进行删除
+     * Delete by the name and accountId
      *
-     * @param name 名称
+     * @param name
      * @return
      */
     int deleteByNameAndAccountId(@Param("accountId") String accountId, @Param("name") String name);
@@ -61,7 +61,7 @@ public interface EventConnectionMapper {
     ConnectionDO selectByName(String name);
 
     /**
-     * 分页查询
+     * List connection by page.
      *
      * @param accountId
      * @param name
@@ -87,7 +87,7 @@ public interface EventConnectionMapper {
     int updateByPrimaryKeySelective(ConnectionDO record);
 
     /**
-     * 通过用户id和名称更新
+     * update connection
      *
      * @param record
      * @return
@@ -109,7 +109,7 @@ public interface EventConnectionMapper {
     int updateByPrimaryKey(ConnectionDO record);
 
     /**
-     * 通过用户id和name获取总数
+     * Get connection count.
      *
      * @param accountId
      * @return

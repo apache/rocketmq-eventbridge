@@ -38,8 +38,9 @@ public class EventTargetConverter {
     }
 
     public static EventTarget convert(EventTargetDO eventTargetRunnerDO) {
-        Type mapType = new TypeToken<Map<String, Object>>() {
-        }.getType();
+        TypeToken typeToken = new TypeToken<Map<String, Object>>() {
+        };
+        Type mapType = typeToken.getType();
         Map<String, Object> config = new Gson().fromJson(eventTargetRunnerDO.getConfig(), mapType);
         RunOptions runOptions = new Gson().fromJson(eventTargetRunnerDO.getRunOptions(), RunOptions.class);
         return EventTarget.builder()

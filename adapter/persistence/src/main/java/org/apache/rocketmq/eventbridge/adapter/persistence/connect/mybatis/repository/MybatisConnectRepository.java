@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.persistence.connect.mybatis.repository;
 
-import com.google.gson.Gson;
 import java.util.Date;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +60,6 @@ public class MybatisConnectRepository implements ConnectionRepository {
     @Override
     public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
         final List<ConnectionDO> connectionDO = eventConnectionMapper.selectByNameAndAccountId(accountId, connectionName);
-        log.info("MybatisConnectRepository ｜ connectionDO ：{}", new Gson().toJson(connectionDO));
         return ConnectConverter.doListConvertDtoList(connectionDO);
     }
 

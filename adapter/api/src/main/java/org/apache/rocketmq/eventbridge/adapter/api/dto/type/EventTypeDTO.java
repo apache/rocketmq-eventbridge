@@ -23,8 +23,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
 @Builder
-public @Data
-class EventTypeDTO extends BaseDTO {
+@Data
+public class EventTypeDTO extends BaseDTO {
     @SerializedName("EventBusName")
     private String eventBusName;
 

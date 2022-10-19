@@ -20,8 +20,8 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseDTO;
 
-public @Data
-class EventDTO extends BaseDTO {
+@Data
+public class EventDTO extends BaseDTO {
     @SerializedName("Id")
     private String id;
 

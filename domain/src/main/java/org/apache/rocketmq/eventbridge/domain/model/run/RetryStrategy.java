@@ -22,8 +22,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.domain.common.enums.PushRetryStrategyEnum;
 
 @Builder
-public @Data
-class RetryStrategy {
+@Data
+public class RetryStrategy {
 
     private PushRetryStrategyEnum pushRetryStrategy;
 

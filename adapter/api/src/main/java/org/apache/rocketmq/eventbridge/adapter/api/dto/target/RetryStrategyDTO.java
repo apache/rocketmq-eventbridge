@@ -20,8 +20,8 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.target;
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
-public @Data
-class RetryStrategyDTO {
+@Data
+public class RetryStrategyDTO {
 
     @SerializedName("PushRetryStrategy")
     private String pushRetryStrategy;

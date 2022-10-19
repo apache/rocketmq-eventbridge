@@ -25,7 +25,8 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @Builder
 @AllArgsConstructor
-public @Data class GetEventBusResponse extends BaseResponse {
+@Data
+public class GetEventBusResponse extends BaseResponse {
 
     @SerializedName("EventBusName")
     private String eventBusName;

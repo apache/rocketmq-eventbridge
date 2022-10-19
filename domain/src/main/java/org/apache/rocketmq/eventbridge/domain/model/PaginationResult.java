@@ -19,8 +19,8 @@ package org.apache.rocketmq.eventbridge.domain.model;
 
 import lombok.Data;
 
-public @Data
-class PaginationResult<T> {
+@Data
+public class PaginationResult<T> {
     private T data;
 
     private String nextToken;

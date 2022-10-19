@@ -24,8 +24,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @AllArgsConstructor
-public @Data
-class ListEventBusesResponse extends BaseResponse {
+@Data
+public class ListEventBusesResponse extends BaseResponse {
     @SerializedName("EventBuses")
     private List<EventBusDTO> eventBuses;
 

@@ -42,11 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author jingluo.sl
- * <p>
- * 2020-08-14 10:57
- **/
+
 public class BatchedCloudEventDeserializer extends StdDeserializer<ArrayList<CloudEvent>> {
 
     protected BatchedCloudEventDeserializer() {

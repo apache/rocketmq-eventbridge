@@ -25,10 +25,7 @@ import org.apache.rocketmq.eventbridge.domain.rpc.HttpEventAPI;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 
-/**
- * @Author changfeng
- * @Date 2022/4/27 5:21 下午
- */
+
 @Service
 public class HttpEventAPIImpl implements HttpEventAPI {
 

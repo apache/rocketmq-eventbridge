@@ -26,8 +26,8 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.EventTargetDTO;
 
 @Builder
-public @Data
-class GetRuleResponse extends BaseResponse {
+@Data
+public class GetRuleResponse extends BaseResponse {
     @SerializedName("EventBusName")
     private String eventBusName;
 

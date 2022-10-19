@@ -21,8 +21,8 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 
-public @Data
-class ListTargetsRequest extends BaseRequest {
+@Data
+public class ListTargetsRequest extends BaseRequest {
     @SerializedName("EventBusName")
     private String eventBusName;
 

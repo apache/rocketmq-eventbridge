@@ -23,8 +23,8 @@ import lombok.Data;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @AllArgsConstructor
-public @Data
-class CreateEventSourceResponse extends BaseResponse {
+@Data
+public class CreateEventSourceResponse extends BaseResponse {
     @SerializedName("EventSourceName")
     private String eventSourceName;
 }

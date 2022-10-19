@@ -49,7 +49,7 @@ public class EventConverterAdapter {
     }
 
     /**
-     * The entry function：extract the event form body and {@link HttpHeaders}
+     * The entry function:extract the event form body and {@link HttpHeaders}
      *
      * @param headers
      * @param body

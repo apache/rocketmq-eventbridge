@@ -28,8 +28,8 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
-public @Data
-class EventRule {
+@Data
+public class EventRule {
     private String accountId;
     private String eventBusName;
     private String name;

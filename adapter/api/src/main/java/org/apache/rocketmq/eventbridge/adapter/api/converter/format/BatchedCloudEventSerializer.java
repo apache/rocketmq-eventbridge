@@ -32,11 +32,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import org.springframework.util.CollectionUtils;
 
-/**
- * @author jingluo.sl
- * <p>
- * 2020-08-14 10:57
- **/
+
 public class BatchedCloudEventSerializer extends StdSerializer<ArrayList<CloudEvent>> {
 
     private final boolean forceDataBase64Serialization;

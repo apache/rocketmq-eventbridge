@@ -23,8 +23,8 @@ import lombok.Builder;
 import lombok.Data;
 
 @Builder
-public @Data
-class EventTargetClass {
+@Data
+public class EventTargetClass {
     private String name;
     private Map<String, APIAttribute> apiParams;
     private Map<String, String> targetTransform;

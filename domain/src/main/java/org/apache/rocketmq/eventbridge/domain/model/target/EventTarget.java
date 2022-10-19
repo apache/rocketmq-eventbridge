@@ -25,8 +25,8 @@ import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
 
 @Builder
-public @Data
-class EventTarget {
+@Data
+public class EventTarget {
     private String accountId;
     private String eventBusName;
     private String eventRuleName;
