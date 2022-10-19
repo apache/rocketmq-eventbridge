@@ -36,6 +36,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.ipc.netty.ByteBufMono;
 
+import java.nio.charset.StandardCharsets;
+
 @Component
 @Order(-1)
 public class ExceptionHandler implements ErrorWebExceptionHandler {
