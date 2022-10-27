@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ALTER TABLE `rocketmq_eventbridge`.`event_connection`
+ALTER TABLE `event_connection`
 MODIFY COLUMN `authorization_type` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '' COMMENT '授权类型' AFTER `name`,
 MODIFY COLUMN `auth_parameters` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL AFTER `authorization_type`;
