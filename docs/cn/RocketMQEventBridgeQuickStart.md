@@ -26,7 +26,7 @@ Apache RocketMQ 是一个很棒的消息服务，我们默认选择它作为Even
 
 * 获取 EventBridge
 
-你可以从[这里]()下载EventBridge的二进制包：rocketmq-eventbridge-xxx-bin-release.zip,下载完毕后进行解压缩，你会得到一个如下目录：
+你可以从[这里](https://www.apache.org/dyn/closer.cgi?path=rocketmq/rocketmq-eventbridge/1.0.0/rocketmq-eventbridge-1.0.0-bin-release.zip)下载EventBridge的二进制包：rocketmq-eventbridge-xxx-bin-release.zip,下载完毕后进行解压缩，你会得到一个如下目录：
 ```text
 /rocketmq-eventbridge-xxx-bin-release/
 |——bin
