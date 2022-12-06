@@ -85,7 +85,7 @@
         <junit.version>4.13.1</junit.version>
         <json-path.version>2.4.0</json-path.version>
         <assertj.version>2.6.0</assertj.version>
-        <common.net>3.3</common.net>
+        <common.net>3.9.0</common.net>
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.10.0</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
