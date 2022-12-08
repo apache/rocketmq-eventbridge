@@ -17,9 +17,13 @@
 
 package org.apache.rocketmq.eventbridge.domain.rpc;
 
+import org.apache.rocketmq.eventbridge.domain.model.data.NetworkEntity;
+
 public interface NetworkServiceAPI {
 
-    Boolean createPrivateNetwork();
+    Boolean createPrivateNetwork(String accountId, String connectionId, String vpcId, String vSwitchIds, String securityGroupId);
 
-    Boolean deletePrivateNetwork();
+    Boolean deletePrivateNetwork(String accountId, String connectionId);
+
+    NetworkEntity getNetwork(String accountId, String connectionId);
 }

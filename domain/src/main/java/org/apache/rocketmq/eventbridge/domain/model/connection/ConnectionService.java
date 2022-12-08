@@ -29,8 +29,10 @@ import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.data.NetworkEntity;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
@@ -74,7 +76,12 @@ public class ConnectionService extends AbstractResourceService {
         }
         if (connectionRepository.createConnection(connectionDTO)) {
             if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-                networkServiceAPI.createPrivateNetwork();
+                List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());
+                if (!CollectionUtils.isEmpty(connection)) {
+                    NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
+                    networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(connection.get(0).getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
+                }
+
             }
             return connectionDTO.getConnectionName();
         }
@@ -92,7 +99,7 @@ public class ConnectionService extends AbstractResourceService {
         List<ConnectionDTO> connection = getConnection(accountId, connectionName);
         ConnectionDTO connectionDTO = connection.get(0);
         if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-            networkServiceAPI.deletePrivateNetwork();
+            networkServiceAPI.deletePrivateNetwork(accountId, Integer.toString(connectionDTO.getId()));
         }
         connectionRepository.deleteConnection(accountId, connectionName);
         if (secretManagerAPI.querySecretName(secretManagerAPI.getSecretName(accountId, connectionName))) {
@@ -116,6 +123,16 @@ public class ConnectionService extends AbstractResourceService {
         final List<ConnectionDTO> connectionDTO = connectionRepository.getConnection(accountId, connectionName);
         if (connectionDTO == null) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
+        }
+        for (ConnectionDTO connection : connectionDTO) {
+            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connection.getNetworkParameters().getNetworkType())) {
+                NetworkEntity network = networkServiceAPI.getNetwork(accountId, connection.getAccountId());
+                NetworkParameters networkParameters = connection.getNetworkParameters();
+                networkParameters.setSocks5UserName(network.getSocks5UserName());
+                networkParameters.setSocks5Password(network.getSocks5Password());
+                networkParameters.setSocks5Endpoint(network.getSocks5Endpoint());
+                connection.setNetworkParameters(networkParameters);
+            }
         }
         return connectionDTO;
     }
