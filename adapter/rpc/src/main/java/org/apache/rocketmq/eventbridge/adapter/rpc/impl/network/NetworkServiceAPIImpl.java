@@ -29,7 +29,7 @@ public class NetworkServiceAPIImpl implements NetworkServiceAPI {
     }
 
     @Override
-    public Boolean deletePrivateNetwork(String accountId, String networkServiceId) {
+    public Boolean deletePrivateNetwork(String accountId, String connectionId) {
         return null;
     }
 
