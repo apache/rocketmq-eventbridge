@@ -40,13 +40,4 @@ public class NetworkParameters {
 
     @SerializedName("SecurityGroupId")
     private String securityGroupId;
-
-    @SerializedName("Socks5UserName")
-    private String socks5UserName;
-
-    @SerializedName("Socks5Password")
-    private String socks5Password;
-
-    @SerializedName("Socks5Endpoint")
-    private String socks5Endpoint;
 }
