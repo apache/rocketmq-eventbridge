@@ -53,8 +53,9 @@ public class CreateSourceConnectorRequest extends BaseConnectorRequest {
 
     public Map<String, Object> getRequestObject() {
         Map<String, Object> config = Maps.newHashMap();
-        config.put("connector-class", connectorClass);
-        config.put("connect-topicname", topicName);
+        config.put("connector.class", connectorClass);
+        config.put("connect.topicname", topicName);
+        String sourcePrefix = ".";
         config.put("transforms", String.join(",", transforms.stream()
             .map(TransformRequest::getName)
             .collect(Collectors.toList())));
@@ -62,7 +63,7 @@ public class CreateSourceConnectorRequest extends BaseConnectorRequest {
             transform.getConfig()
                 .entrySet()
                 .forEach(entry -> {
-                    config.put("transforms" + "-" + transform.getName() + "-" + entry.getKey(), entry.getValue());
+                    config.put("transforms" + sourcePrefix + transform.getName() + sourcePrefix + entry.getKey(), entry.getValue());
                 });
         });
         config.putAll(connectorConfig);
