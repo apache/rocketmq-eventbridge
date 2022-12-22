@@ -53,8 +53,9 @@ public class CreateSinkConnectorRequest extends BaseConnectorRequest {
 
     public Map<String, Object> getRequestObject() {
         Map<String, Object> config = Maps.newHashMap();
-        config.put("connector-class", connectorClass);
-        config.put("connect-topicname", topicName);
+        config.put("connector.class", connectorClass);
+        config.put("connect.topicnames", topicName);
+        String sinPrefix = ".";
         config.put("transforms", String.join(",", transforms.stream()
             .map(TransformRequest::getName)
             .collect(Collectors.toList())));
@@ -62,7 +63,7 @@ public class CreateSinkConnectorRequest extends BaseConnectorRequest {
             transform.getConfig()
                 .entrySet()
                 .forEach(entry -> {
-                    config.put("transforms" + "-" + transform.getName() + "-" + entry.getKey(), entry.getValue());
+                    config.put("transforms" + sinPrefix + transform.getName() + sinPrefix + entry.getKey(), entry.getValue());
                 });
         });
         config.putAll(connectorConfig);
