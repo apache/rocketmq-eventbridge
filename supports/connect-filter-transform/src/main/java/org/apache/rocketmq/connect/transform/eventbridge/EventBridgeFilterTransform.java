@@ -16,17 +16,16 @@
  */
 package org.apache.rocketmq.connect.transform.eventbridge;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import io.cloudevents.SpecVersion;
 import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternEvaluator;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternEvaluatorBuilder;
+
+import java.util.Map;
 
 public class EventBridgeFilterTransform implements io.openmessaging.connector.api.component.Transform {
 
@@ -71,13 +70,8 @@ public class EventBridgeFilterTransform implements io.openmessaging.connector.ap
     }
 
     @Override
-    public void init(KeyValue config) {
+    public void start(KeyValue config) {
         this.evaluator = PatternEvaluatorBuilder.build(config.getString("filterPattern"));
-    }
-
-    @Override
-    public void start(ComponentContext componentContext) {
-
     }
 
     @Override
