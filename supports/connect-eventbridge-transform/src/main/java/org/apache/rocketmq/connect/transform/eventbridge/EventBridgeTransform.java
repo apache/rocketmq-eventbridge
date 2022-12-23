@@ -16,20 +16,14 @@
  */
 package org.apache.rocketmq.connect.transform.eventbridge;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.data.SchemaBuilder;
-import org.apache.rocketmq.eventbridge.tools.transform.Data;
-import org.apache.rocketmq.eventbridge.tools.transform.ObjectData;
-import org.apache.rocketmq.eventbridge.tools.transform.StringData;
-import org.apache.rocketmq.eventbridge.tools.transform.Transform;
-import org.apache.rocketmq.eventbridge.tools.transform.TransformBuilder;
-import org.apache.rocketmq.eventbridge.tools.transform.TransformParam;
+import org.apache.rocketmq.eventbridge.tools.transform.*;
+
+import java.util.Map;
 
 public class EventBridgeTransform implements io.openmessaging.connector.api.component.Transform {
 
@@ -60,17 +54,12 @@ public class EventBridgeTransform implements io.openmessaging.connector.api.comp
     }
 
     @Override
-    public void init(KeyValue config) {
+    public void start(KeyValue config) {
         config.keySet()
-            .forEach(key -> {
-                TransformParam transformParam = new Gson().fromJson(config.getString(key), TransformParam.class);
-                paramTransform.put(key, EventBridgeTransformBuilder.buildTransform(transformParam));
-            });
-    }
-
-    @Override
-    public void start(ComponentContext componentContext) {
-
+                .forEach(key -> {
+                    TransformParam transformParam = new Gson().fromJson(config.getString(key), TransformParam.class);
+                    paramTransform.put(key, EventBridgeTransformBuilder.buildTransform(transformParam));
+                });
     }
 
     @Override

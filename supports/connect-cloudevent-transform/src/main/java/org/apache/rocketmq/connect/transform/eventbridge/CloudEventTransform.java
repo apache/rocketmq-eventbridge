@@ -16,21 +16,16 @@
  */
 package org.apache.rocketmq.connect.transform.eventbridge;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.v1.CloudEventV1;
 import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import org.apache.rocketmq.eventbridge.tools.transform.Data;
-import org.apache.rocketmq.eventbridge.tools.transform.ObjectData;
-import org.apache.rocketmq.eventbridge.tools.transform.StringData;
-import org.apache.rocketmq.eventbridge.tools.transform.Transform;
-import org.apache.rocketmq.eventbridge.tools.transform.TransformParam;
+import org.apache.rocketmq.eventbridge.tools.transform.*;
+
+import java.time.Instant;
+import java.util.UUID;
 
 public class CloudEventTransform implements io.openmessaging.connector.api.component.Transform {
 
@@ -172,7 +167,7 @@ public class CloudEventTransform implements io.openmessaging.connector.api.compo
     }
 
     @Override
-    public void init(KeyValue config) {
+    public void start(KeyValue config) {
         this.idTransform = buildTransform(config, CloudEventV1.ID);
         this.sourceTransform = buildTransform(config, CloudEventV1.SOURCE);
         this.specversionTransform = buildTransform(config, CloudEventV1.SPECVERSION);
@@ -189,11 +184,6 @@ public class CloudEventTransform implements io.openmessaging.connector.api.compo
         }
         TransformParam transformParam = new Gson().fromJson(transformConfig, TransformParam.class);
         return EventBridgeTransformBuilder.buildTransform(transformParam);
-    }
-
-    @Override
-    public void start(ComponentContext componentContext) {
-
     }
 
     @Override

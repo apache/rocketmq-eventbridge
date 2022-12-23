@@ -37,7 +37,7 @@ public class CloudEventTransformTest {
         keyValue.put("subject", "{\"value\":\"$.data.subject\",\"form\":\"JSONPATH\"}");
         keyValue.put("type", "{\"value\":\"$.type\",\"form\":\"JSONPATH\"}");
         CloudEventTransform cloudEventTransform = new CloudEventTransform();
-        cloudEventTransform.init(keyValue);
+        cloudEventTransform.start(keyValue);
 
         ConnectRecord record = new ConnectRecord(null, null, System.currentTimeMillis());
         record.addExtension("type", "type");
