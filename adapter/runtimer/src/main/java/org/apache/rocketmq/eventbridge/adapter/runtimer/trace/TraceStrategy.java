@@ -20,8 +20,10 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.trace;
 
 /**
  * EventMeshTraceService
+ * SPI可扩展
+ * 基于OpenTelemetry实现封装不同追踪器
  */
-public interface TraceService {
+public interface TraceStrategy {
 
     void init() throws TraceException;
 
