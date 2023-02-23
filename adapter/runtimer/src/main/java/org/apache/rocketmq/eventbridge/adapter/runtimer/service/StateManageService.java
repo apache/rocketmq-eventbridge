@@ -3,6 +3,9 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.common.ChannelStatus;
 
+/**
+ * Runtimer 状态管理
+ */
 public interface StateManageService {
 
     void initialize(RuntimerConfig runtimerConfig);

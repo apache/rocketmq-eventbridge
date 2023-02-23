@@ -2,6 +2,9 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 
+/**
+ * RuntimerChannel Config Management
+ */
 public interface ConfigManageService {
 
     void start();
