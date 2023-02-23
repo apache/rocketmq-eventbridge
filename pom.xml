@@ -100,6 +100,7 @@
         <module>adapter</module>
         <module>domain</module>
         <module>common</module>
+        <module>runtimer</module>
     </modules>
 
     <dependencyManagement>

@@ -25,6 +25,7 @@
         <module>persistence</module>
         <module>api</module>
         <module>rpc</module>
+        <module>runtimer</module>
     </modules>
 
 </project>
