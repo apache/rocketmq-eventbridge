@@ -18,20 +18,21 @@
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.quota;
 
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QuotaServiceImpl implements QuotaService {
 
-    public Integer getApiDestinationTotalQuota(String accountId) {
-        return EventBridgeConstants.API_DESTINATION_COUNT_LIMIT;
-    }
-
     @Override
-    public Integer getConnectionTotalQuota(String accountId) {
-        return EventBridgeConstants.CONNECTION_COUNT_LIMIT;
+    public Integer getTotalQuota(String accountId, TotalQuotaEnum totalQuotaEnum) {
+        if (TotalQuotaEnum.API_DESTINATION_COUNT.name().equals(totalQuotaEnum.name())) {
+            return EventBridgeConstants.API_DESTINATION_COUNT_LIMIT;
+        }
+        if (TotalQuotaEnum.CONNECTION_COUNT.name().equals(totalQuotaEnum.name())) {
+            return EventBridgeConstants.CONNECTION_COUNT_LIMIT;
+        }
+        return null;
     }
-
-
 }

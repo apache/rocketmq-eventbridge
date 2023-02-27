@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
@@ -50,7 +51,7 @@ public class ApiDestinationService extends AbstractResourceService {
         if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
         }
-        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), quotaService.getApiDestinationTotalQuota(eventApiDestinationDTO.getAccountId()),
+        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), quotaService.getTotalQuota(eventApiDestinationDTO.getAccountId(), TotalQuotaEnum.API_DESTINATION_COUNT),
                 ApiDestinationCountExceedLimit);
         final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
         if (apiDestination) {

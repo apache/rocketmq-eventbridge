@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.quota;
+package org.apache.rocketmq.eventbridge.domain.common.enums;
 
-import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
-
-public interface QuotaService {
-
+public enum TotalQuotaEnum {
     /**
-     * Return the totalQuotaEnum match total quota.
-     * @param accountId
-     * @return
+     * API DESTINATION COUNT
      */
-    Integer getTotalQuota(String accountId, TotalQuotaEnum totalQuotaEnum);
+    API_DESTINATION_COUNT,
+    /**
+     * CONNECTION COUNT
+     */
+    CONNECTION_COUNT;
 }

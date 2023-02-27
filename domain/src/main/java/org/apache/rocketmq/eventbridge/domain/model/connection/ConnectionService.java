@@ -22,6 +22,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
@@ -71,7 +72,7 @@ public class ConnectionService extends AbstractResourceService {
         if (!CollectionUtils.isEmpty(checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()))) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
-        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), quotaService.getConnectionTotalQuota(connectionDTO.getAccountId()), ConnectionCountExceedLimit);
+        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), quotaService.getTotalQuota(connectionDTO.getAccountId(), TotalQuotaEnum.CONNECTION_COUNT), ConnectionCountExceedLimit);
         checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
         if (connectionDTO.getAuthParameters() != null) {
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
