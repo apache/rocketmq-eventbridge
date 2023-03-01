@@ -15,13 +15,13 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.store;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.common.store;
 
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MemoryBasedKeyValueStore<K, V> implements org.apache.rocketmq.eventbridge.adapter.runtimer.store.KeyValueStore<K, V> {
+public class MemoryBasedKeyValueStore<K, V> implements org.apache.rocketmq.eventbridge.adapter.runtimer.common.store.KeyValueStore<K, V> {
 
     protected Map<K, V> data;
 

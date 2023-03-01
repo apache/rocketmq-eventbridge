@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.store;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.common.store;
 
 import java.util.Map;
 

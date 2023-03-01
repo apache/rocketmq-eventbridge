@@ -20,6 +20,6 @@ OpenMessage as base
 
     Run mvp demo
 
-    next meeting: next week, 2.28 20:00
+    next meeting: next weekly, 3.5 20:00
 
 

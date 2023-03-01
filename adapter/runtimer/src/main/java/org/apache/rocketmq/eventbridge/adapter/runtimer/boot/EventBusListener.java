@@ -1,7 +1,8 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 /**
- * 运行器通道
+ * listen the event and offer to queue
+ * @author artisan
  */
 public class EventBusListener implements Runnable{
 

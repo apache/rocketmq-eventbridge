@@ -1,4 +1,4 @@
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.task.sink.SinkTaskContext;

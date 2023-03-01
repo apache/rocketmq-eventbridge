@@ -1,4 +1,4 @@
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 
