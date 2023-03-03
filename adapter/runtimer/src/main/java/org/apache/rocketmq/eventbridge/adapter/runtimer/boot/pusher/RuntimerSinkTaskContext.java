@@ -22,11 +22,6 @@ public class RuntimerSinkTaskContext implements SinkTaskContext {
     }
 
     @Override
-    public KeyValue configs() {
-        return null;
-    }
-
-    @Override
     public void resetOffset(RecordPartition recordPartition, RecordOffset recordOffset) {
 
     }

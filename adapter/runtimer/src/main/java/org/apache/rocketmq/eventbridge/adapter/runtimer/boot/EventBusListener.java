@@ -52,7 +52,9 @@ public class EventBusListener implements Runnable{
                     if(CollectionUtils.isEmpty(messageExts)){
                         return;
                     }
-                    listenerFactory.offerListenEvent(messageExts);
+                    for(MessageExt messageExt : messageExts){
+                        listenerFactory.offerListenEvent(messageExt);
+                    }
                 } catch (MQClientException e) {
                     e.printStackTrace();
                 }finally {

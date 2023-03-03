@@ -2,6 +2,9 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import io.openmessaging.connector.api.data.ConnectRecord;
+import io.openmessaging.connector.api.data.RecordOffset;
+import io.openmessaging.connector.api.data.RecordPartition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
@@ -13,7 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
@@ -25,7 +30,11 @@ public class ListenerFactory {
 
     private static final String SYS_DEFAULT_CONSUME_GROUP = "event-bridge-default-group";
 
+    public static final String QUEUE_OFFSET = "queueOffset";
+
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
+
+    private BlockingDeque<Map<ConnectKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingDeque<>(50000);
 
     @Value("rocketmq.namesrvAddr")
     private String namesrvAddr;
@@ -39,15 +48,11 @@ public class ListenerFactory {
 
     /**
      * Offer listener event
-     * @param messageExts
+     * @param messageExt
      * @return
      */
-    public boolean offerListenEvent(List<MessageExt> messageExts){
-        if(CollectionUtils.isEmpty(messageExts)){
-            return false;
-        }
-        messageExts.forEach(event->eventMessage.offer(event));
-        return true;
+    public boolean offerListenEvent(MessageExt messageExt){
+        return eventMessage.offer(messageExt);
     }
 
     public String createInstance(String servers) {
@@ -105,5 +110,46 @@ public class ListenerFactory {
             return null;
         }
         return new MessageQueue(messageQueueStrList.get(0), messageQueueStrList.get(1), Integer.valueOf(messageQueueStrList.get(2)));
+    }
+
+    public MessageExt takeListenerEvent() {
+        try {
+            return eventMessage.take();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
+    public RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {
+        Map<String, String> map = new HashMap<>();
+        map.put("topic", topic);
+        map.put("brokerName", brokerName);
+        map.put("queueId", queueId + "");
+        RecordPartition recordPartition = new RecordPartition(map);
+        return recordPartition;
+    }
+
+    public RecordOffset convertToRecordOffset(Long offset) {
+        Map<String, String> offsetMap = new HashMap<>();
+        offsetMap.put(QUEUE_OFFSET, offset + "");
+        RecordOffset recordOffset = new RecordOffset(offsetMap);
+        return recordOffset;
+    }
+
+    public boolean offerTargetTaskQueue(Map<ConnectKeyValue, ConnectRecord> targetMap){
+        return targetQueue.offer(targetMap);
+    }
+
+    public Map<ConnectKeyValue, ConnectRecord> takeTargetMap(){
+        if(targetQueue.isEmpty()){
+            return null;
+        }
+        try{
+            return targetQueue.take();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
     }
 }

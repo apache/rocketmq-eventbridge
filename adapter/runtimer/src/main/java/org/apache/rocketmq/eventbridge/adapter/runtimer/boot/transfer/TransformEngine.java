@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
@@ -122,6 +123,19 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
         Plugin.compareAndSwapLoaders(currentThreadLoader);
         return transform;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TransformEngine<?> that = (TransformEngine<?>) o;
+        return transformList.equals(that.transformList) && config.equals(that.config);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(transformList, config);
     }
 
     /**
