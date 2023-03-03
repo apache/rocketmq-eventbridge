@@ -1,6 +1,5 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
-import lombok.SneakyThrows;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
