@@ -44,4 +44,10 @@ public interface PusherConfigManageService {
      */
     Map<String, List<ConnectKeyValue>> getTaskConfigs();
 
+    /**
+     * Get all topics
+     * @return
+     */
+    List<String> getConnectTopics();
+
 }

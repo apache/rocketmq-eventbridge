@@ -1,5 +1,6 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
+import com.google.common.collect.Lists;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.connector.Connector;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
@@ -12,6 +13,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.JsonConverter;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.ListConverter;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -29,6 +31,8 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
      * Current task configs in the store.
      */
     private KeyValueStore<String, List<ConnectKeyValue>> taskKeyValueStore;
+
+    private Set<String> connectTopicNames;
 
     public DefaultPusherConfigManageService(RuntimerConfig runtimerConfig, Plugin plugin){
         this.connectorKeyValueStore = new FileBaseKeyValueStore<>(
@@ -101,8 +105,6 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
     @Override
     public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, ConnectKeyValue configs) {
         int maxTask = configs.getInt(RuntimeConfigDefine.MAX_TASK, 1);
-        ConnectKeyValue connectConfig = connectorKeyValueStore.get(connectorName);
-        boolean directEnable = Boolean.parseBoolean(connectConfig.getString(RuntimeConfigDefine.CONNECTOR_DIRECT_ENABLE));
         List<KeyValue> taskConfigs = connector.taskConfigs(maxTask);
         List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
         for (KeyValue keyValue : taskConfigs) {
@@ -122,6 +124,7 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
                 }
             }
             converterdConfigs.add(newKeyValue);
+            connectTopicNames.add(configs.getString(RuntimeConfigDefine.CONNECT_TOPICNAME));
         }
         putTaskConfigs(connectorName, converterdConfigs);
     }
@@ -149,6 +152,14 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
             result.put(connectorName, taskConfigs.get(connectorName));
         }
         return result;
+    }
+
+    @Override
+    public List<String> getConnectTopics(){
+        if(CollectionUtils.isEmpty(connectTopicNames)){
+            return Lists.newArrayList();
+        }
+        return Lists.newArrayList(connectTopicNames);
     }
 
     private void putTaskConfigs(String connectorName, List<ConnectKeyValue> configs) {

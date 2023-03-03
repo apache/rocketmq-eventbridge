@@ -3,6 +3,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.*;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -26,12 +27,14 @@ public class Runtimer extends ServiceThread {
 
     private Plugin plugin;
 
+    PusherConfigManageService pusherConfigManageService;
+
     Map<String, List<ConnectKeyValue>> latestTaskConfigs = new HashMap<>();
 
-
-    public Runtimer(RuntimerConfig runtimerConfig, Plugin plugin){
+    public Runtimer(RuntimerConfig runtimerConfig, Plugin plugin, PusherConfigManageService configManageService){
         this.runtimerConfig = runtimerConfig;
         this.plugin = plugin;
+        this.pusherConfigManageService = configManageService;
     }
 
     @Override
@@ -54,8 +57,9 @@ public class Runtimer extends ServiceThread {
         logger.info(">>>runtimer started!");
         while (!stopped){
             if(CollectionUtils.isEmpty(latestTaskConfigs)){
-
+                latestTaskConfigs = pusherConfigManageService.getTaskConfigs();
             }
+
         }
     }
 }
