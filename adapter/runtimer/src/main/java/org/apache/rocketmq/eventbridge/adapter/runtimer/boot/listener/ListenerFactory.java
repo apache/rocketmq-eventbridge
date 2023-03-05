@@ -26,15 +26,15 @@ public class ListenerFactory {
 
     private static final String SEMICOLON = ";";
 
-    private static final String SYS_TASK_CG_PREFIX = "listener-";
-
     private static final String SYS_DEFAULT_CONSUME_GROUP = "event-bridge-default-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
 
+    private BlockingQueue<Map<String, List<ConnectKeyValue>>> taskConfig = new LinkedBlockingQueue<>(1000);
+
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
 
-    private BlockingDeque<Map<ConnectKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingDeque<>(50000);
+    private BlockingQueue<Map<ConnectKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
 
     @Value("rocketmq.namesrvAddr")
     private String namesrvAddr;
@@ -46,6 +46,19 @@ public class ListenerFactory {
         return consumer;
     }
 
+    public boolean offerTaskConfig(Map<String, List<ConnectKeyValue>> newTaskConfig){
+        return taskConfig.offer(newTaskConfig);
+    }
+
+    public Map<String, List<ConnectKeyValue>> takeTaskConfig(){
+        try {
+            return taskConfig.take();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Offer listener event
      * @param messageExt
@@ -53,6 +66,15 @@ public class ListenerFactory {
      */
     public boolean offerListenEvent(MessageExt messageExt){
         return eventMessage.offer(messageExt);
+    }
+
+    public MessageExt takeListenerEvent() {
+        try {
+            return eventMessage.take();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+        return null;
     }
 
     public String createInstance(String servers) {
@@ -110,15 +132,6 @@ public class ListenerFactory {
             return null;
         }
         return new MessageQueue(messageQueueStrList.get(0), messageQueueStrList.get(1), Integer.valueOf(messageQueueStrList.get(2)));
-    }
-
-    public MessageExt takeListenerEvent() {
-        try {
-            return eventMessage.take();
-        }catch (Exception exception){
-            exception.printStackTrace();
-        }
-        return null;
     }
 
     public RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {

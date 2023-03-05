@@ -24,7 +24,6 @@ import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
@@ -37,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RuntimerSinkTaskContext implements SinkTaskContext {
+public class PusherTaskContext implements SinkTaskContext {
 
     /**
      * The configs of current sink task.
@@ -55,7 +54,7 @@ public class RuntimerSinkTaskContext implements SinkTaskContext {
     public static final String TOPIC = "topic";
     public static final String QUEUE_OFFSET = "queueOffset";
 
-    public RuntimerSinkTaskContext(ConnectKeyValue taskConfig) {
+    public PusherTaskContext(ConnectKeyValue taskConfig) {
         this.taskConfig = taskConfig;
     }
 

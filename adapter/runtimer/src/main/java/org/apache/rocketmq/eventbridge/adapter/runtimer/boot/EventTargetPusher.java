@@ -6,7 +6,7 @@ import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher.RuntimerSinkTaskContext;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher.PusherTaskContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
@@ -65,7 +65,7 @@ public class EventTargetPusher extends ServiceThread {
                 }
                 SinkTask sinkTask = (SinkTask) taskClazz.getDeclaredConstructor().newInstance();
                 sinkTask.init(connectKeyValue);
-                RuntimerSinkTaskContext sinkTaskContext = new RuntimerSinkTaskContext(connectKeyValue);
+                PusherTaskContext sinkTaskContext = new PusherTaskContext(connectKeyValue);
                 sinkTask.start(sinkTaskContext);
                 runTasks.add(sinkTask);
                 if (isolationFlag) {
