@@ -1,13 +1,20 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer;
 
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.*;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * EventBridge运行器
+ *
  * @author artisan
  */
+@Component
 public class Runtimer extends ServiceThread {
 
     private static final Logger logger = LoggerFactory.getLogger(Runtimer.class);
@@ -27,14 +36,35 @@ public class Runtimer extends ServiceThread {
 
     private Plugin plugin;
 
-    PusherConfigManageService pusherConfigManageService;
+    private ListenerFactory listenerFactory;
 
-    Map<String, List<ConnectKeyValue>> latestTaskConfigs = new HashMap<>();
+    private PusherConfigManageService pusherConfigManageService;
 
-    public Runtimer(RuntimerConfig runtimerConfig, Plugin plugin, PusherConfigManageService configManageService){
+    private Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
+
+    private EventBusListener listener;
+
+    private EventRuleTransfer transfer;
+
+    private EventTargetPusher pusher;
+
+    public Runtimer(RuntimerConfig runtimerConfig, Plugin plugin, ListenerFactory listenerFactory, PusherConfigManageService configManageService) {
         this.runtimerConfig = runtimerConfig;
         this.plugin = plugin;
+        this.listenerFactory = listenerFactory;
         this.pusherConfigManageService = configManageService;
+    }
+
+    @PostConstruct
+    public void initAndStart() {
+        this.taskConfigs = pusherConfigManageService.getTaskConfigs();
+        listener = new EventBusListener(listenerFactory);
+        listener.initOrUpdateListenConsumer(taskConfigs);
+        transfer = new EventRuleTransfer(plugin, listenerFactory);
+        transfer.initOrUpdateTaskTransform(taskConfigs);
+        pusher = new EventTargetPusher(plugin, listenerFactory);
+        pusher.initOrUpdatePusherTask(taskConfigs);
+        this.start();
     }
 
     @Override
@@ -42,24 +72,24 @@ public class Runtimer extends ServiceThread {
         return Runtimer.class.getSimpleName();
     }
 
-    public void start(){
+    public void start() {
         runtimerState = new AtomicReference<>(RuntimerState.START);
         super.start();
     }
 
-    public void stop(){
+    public void stop() {
 
     }
-
 
     @Override
     public void run() {
         logger.info(">>>runtimer started!");
-        while (!stopped){
-            if(CollectionUtils.isEmpty(latestTaskConfigs)){
-                latestTaskConfigs = pusherConfigManageService.getTaskConfigs();
-            }
+        while (!stopped) {
+            listener.start();
 
+            transfer.start();
+
+            pusher.start();
         }
     }
 }

@@ -21,10 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * receive event and transfer the rule to pusher
@@ -37,7 +34,7 @@ public class EventRuleTransfer extends ServiceThread {
 
     private Plugin plugin;
 
-    Map<ConnectKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap;
+    Map<ConnectKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
 
     private ExecutorService executorService = new ThreadPoolExecutor(20,60, 1000,TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
 
@@ -46,8 +43,8 @@ public class EventRuleTransfer extends ServiceThread {
         this.listenerFactory = listenerFactory;
     }
 
-    public void init(Map<String, List<ConnectKeyValue>> taskConfig){
-        this.taskTransformMap = initSinkTaskTransformInfo(taskConfig);
+    public void initOrUpdateTaskTransform(Map<String, List<ConnectKeyValue>> taskConfig){
+        this.taskTransformMap.putAll(initSinkTaskTransformInfo(taskConfig));
     }
 
     private static final Set<String> MQ_SYS_KEYS = new HashSet<String>() {
@@ -64,18 +61,18 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public String getServiceName() {
-        return null;
+        return this.getClass().getSimpleName();
     }
 
     @Override
     public void run() {
         while (!stopped){
-            MessageExt finalMessageExt = listenerFactory.takeListenerEvent();
-            if(Objects.isNull(finalMessageExt)){
+            MessageExt messageExt = listenerFactory.takeListenerEvent();
+            if(Objects.isNull(messageExt)){
                 continue;
             }
             executorService.submit(() -> {
-                ConnectRecord connectRecord = convertToSinkDataEntry(finalMessageExt);
+                ConnectRecord connectRecord = convertToSinkDataEntry(messageExt);
                 for (ConnectKeyValue connectKeyValue : taskTransformMap.keySet()){
                     TransformEngine<ConnectRecord> transformEngine = taskTransformMap.get(connectKeyValue);
                     ConnectRecord transformRecord = transformEngine.doTransforms(connectRecord);

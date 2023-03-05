@@ -2,6 +2,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
@@ -39,10 +40,16 @@ public class ListenerFactory {
     @Value("rocketmq.namesrvAddr")
     private String namesrvAddr;
 
-    public DefaultLitePullConsumer initDefaultMQPullConsumer() {
+    public DefaultLitePullConsumer initDefaultMQPullConsumer(String topic) {
         DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
-        consumer.setConsumerGroup(SYS_DEFAULT_CONSUME_GROUP);
-        consumer.setNamesrvAddr(namesrvAddr);
+        try {
+            consumer.setConsumerGroup(SYS_DEFAULT_CONSUME_GROUP);
+            consumer.setNamesrvAddr(namesrvAddr);
+            consumer.subscribe(topic, "*");
+            consumer.start();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
         return consumer;
     }
 
@@ -94,13 +101,13 @@ public class ListenerFactory {
      * @param taskConfig
      * @return
      */
-    public Set<String> parseTopicList(ConnectKeyValue taskConfig) {
+    public List<String> parseTopicList(ConnectKeyValue taskConfig) {
         String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
         if (StringUtils.isBlank(messageQueueStr)) {
             return null;
         }
         List<String> topicList = Splitter.on(SEMICOLON).omitEmptyStrings().trimResults().splitToList(messageQueueStr);
-        return new HashSet<>(topicList);
+        return Lists.newArrayList(new HashSet<>(topicList));
     }
 
     /**
@@ -108,8 +115,8 @@ public class ListenerFactory {
      * @param taskConfigs
      * @return
      */
-    public Set<String> parseTopicListByList(List<ConnectKeyValue> taskConfigs) {
-        List<String> allTopicList = Lists.newArrayList();
+    public List<String> parseTopicListByList(List<ConnectKeyValue> taskConfigs) {
+        Set<String> allTopicList = Sets.newHashSet();
         for(ConnectKeyValue taskConfig : taskConfigs){
             String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
             if (StringUtils.isBlank(messageQueueStr)) {
@@ -118,7 +125,7 @@ public class ListenerFactory {
             List<String> topicList = Splitter.on(SEMICOLON).omitEmptyStrings().trimResults().splitToList(messageQueueStr);
             allTopicList.addAll(topicList);
         }
-        return new HashSet<>(allTopicList);
+        return Lists.newArrayList(allTopicList);
     }
 
     /**

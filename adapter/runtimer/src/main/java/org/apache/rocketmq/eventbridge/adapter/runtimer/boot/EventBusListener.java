@@ -1,27 +1,37 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.QueueState;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
  * listen the event and offer to queue
  * @author artisan
  */
-public class EventBusListener implements Runnable{
+public class EventBusListener extends ServiceThread {
+
+    private Logger logger = LoggerFactory.getLogger(EventBusListener.class);
 
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
     private final ConcurrentHashMap<MessageQueue, QueueState> messageQueuesStateMap;
 
-    private List<String> topics;
+    private List<String> topics = new CopyOnWriteArrayList<>();
+
+    private List<DefaultLitePullConsumer> listenConsumer = new CopyOnWriteArrayList<>();
 
     private ListenerFactory listenerFactory;
 
@@ -35,32 +45,60 @@ public class EventBusListener implements Runnable{
         this.listenerFactory = listenerFactory;
     }
 
-    public void init(List<String> topics){
-        this.topics = topics;
+    /**
+     * init listen consumer
+     * @param taskConfig
+     */
+    public void initOrUpdateListenConsumer(Map<String, List<ConnectKeyValue>> taskConfig){
+        if(MapUtils.isEmpty(taskConfig)){
+            logger.warn("initListenConsumer by taskConfig param is empty");
+            return;
+        }
+        List<ConnectKeyValue> connectKeyValues = initTaskKeyInfo(taskConfig);
+        this.topics.addAll(listenerFactory.parseTopicListByList(connectKeyValues));
+        for (String topic : topics){
+            DefaultLitePullConsumer pullConsumer = listenerFactory.initDefaultMQPullConsumer(topic);
+            listenConsumer.add(pullConsumer);
+        }
+    }
+
+    /**
+     * init all task config info
+     * @param taskConfig
+     * @return
+     */
+    private List<ConnectKeyValue> initTaskKeyInfo(Map<String, List<ConnectKeyValue>> taskConfig) {
+        Set<ConnectKeyValue> connectKeyValues = new HashSet<>();
+        for(String connectName : taskConfig.keySet()){
+            connectKeyValues.addAll(taskConfig.get(connectName));
+        }
+        return Lists.newArrayList(connectKeyValues);
     }
 
     @Override
     public void run() {
-        for(String topic : topics){
-            executorService.submit(() -> {
-                DefaultLitePullConsumer pullConsumer = listenerFactory.initDefaultMQPullConsumer();
-                try {
-                    pullConsumer.subscribe(topic, "*");
-                    pullConsumer.start();
-                    List<MessageExt> messageExts = pullConsumer.poll(3000);
-                    if(CollectionUtils.isEmpty(messageExts)){
-                        return;
+        while (!stopped){
+            for(DefaultLitePullConsumer pullConsumer : listenConsumer) {
+                executorService.submit(() -> {
+                    try {
+                        List<MessageExt> messageExts = pullConsumer.poll(3000);
+                        if (CollectionUtils.isEmpty(messageExts)) {
+                            return;
+                        }
+                        for (MessageExt messageExt : messageExts) {
+                            listenerFactory.offerListenEvent(messageExt);
+                        }
+                    } finally {
+                        pullConsumer.commitSync();
+                        pullConsumer.shutdown();
                     }
-                    for(MessageExt messageExt : messageExts){
-                        listenerFactory.offerListenEvent(messageExt);
-                    }
-                } catch (MQClientException e) {
-                    e.printStackTrace();
-                }finally {
-                    pullConsumer.commitSync();
-                }
-            });
+                });
+            }
         }
     }
 
+    @Override
+    public String getServiceName() {
+        return this.getClass().getSimpleName();
+    }
 }

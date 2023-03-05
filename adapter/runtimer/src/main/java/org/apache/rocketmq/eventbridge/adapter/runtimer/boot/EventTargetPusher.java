@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * for event target push to sink task
@@ -34,7 +35,7 @@ public class EventTargetPusher extends ServiceThread {
 
     private ListenerFactory listenerFactory;
 
-    private List<SinkTask> runTasks = Lists.newArrayList();
+    private List<SinkTask> pusherTasks = new CopyOnWriteArrayList<>();
 
     public EventTargetPusher(Plugin plugin, ListenerFactory listenerFactory){
         this.plugin = plugin;
@@ -45,7 +46,7 @@ public class EventTargetPusher extends ServiceThread {
      * init running tasks
      * @param taskConfig
      */
-    public void init(Map<String, List<ConnectKeyValue>> taskConfig){
+    public void initOrUpdatePusherTask(Map<String, List<ConnectKeyValue>> taskConfig){
         Set<ConnectKeyValue> taskProperty = new HashSet<>();
         for(String connectName : taskConfig.keySet()){
             List<ConnectKeyValue> connectKeyValues = taskConfig.get(connectName);
@@ -67,7 +68,7 @@ public class EventTargetPusher extends ServiceThread {
                 sinkTask.init(connectKeyValue);
                 PusherTaskContext sinkTaskContext = new PusherTaskContext(connectKeyValue);
                 sinkTask.start(sinkTaskContext);
-                runTasks.add(sinkTask);
+                pusherTasks.add(sinkTask);
                 if (isolationFlag) {
                     Plugin.compareAndSwapLoaders(loader);
                 }
@@ -86,7 +87,7 @@ public class EventTargetPusher extends ServiceThread {
             }
             ConnectKeyValue connectKeyValue = taskPusher.keySet().iterator().next();
             String taskPushName = connectKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
-            for(SinkTask sinkTask : runTasks){
+            for(SinkTask sinkTask : pusherTasks){
                 if(sinkTask.getClass().getName().equals(taskPushName)){
                     sinkTask.put(Lists.newArrayList(taskPusher.get(connectKeyValue)));
                 }

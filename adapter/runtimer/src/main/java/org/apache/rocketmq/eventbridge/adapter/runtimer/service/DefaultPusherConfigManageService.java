@@ -12,6 +12,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefi
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.JsonConverter;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.ListConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -20,7 +21,7 @@ import java.util.*;
 @Component
 public class DefaultPusherConfigManageService implements PusherConfigManageService {
 
-    private final Plugin plugin;
+    private Plugin plugin;
 
     /**
      * Current connector configs in the store.

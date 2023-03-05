@@ -19,6 +19,8 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin;
 import io.openmessaging.connector.api.component.Transform;
 import io.openmessaging.connector.api.component.connector.Connector;
 import io.openmessaging.connector.api.component.task.Task;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
@@ -26,7 +28,9 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,26 +41,40 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
 
+@Component
 public class Plugin extends URLClassLoader {
     private static final Logger log = LoggerFactory.getLogger(Plugin.class);
 
-    private final List<String> pluginPaths;
+    private RuntimerConfig runtimerConfig;
+
+    private List<String> pluginPaths;
 
     private Map<String, PluginWrapper> classLoaderMap = new HashMap<>();
 
-    public Plugin(List<String> pluginPaths) {
-        this(pluginPaths, Plugin.class.getClassLoader());
+    public Plugin(RuntimerConfig runtimerConfig) {
+        super(new URL[0], Plugin.class.getClassLoader());
+        this.runtimerConfig = runtimerConfig;
     }
 
-    public Plugin(List<String> pluginPaths, ClassLoader parent) {
-        super(new URL[0], parent);
-        this.pluginPaths = pluginPaths;
-    }
-
+    @PostConstruct
     public void initPlugin() {
+        this.pluginPaths = initPluginPath(this.runtimerConfig.getPluginPath());
         for (String configPath : pluginPaths) {
             loadPlugin(configPath);
         }
+    }
+
+    private List<String> initPluginPath(String plugin){
+        List<String> pluginPaths = new ArrayList<>();
+        if (StringUtils.isNotEmpty(plugin)) {
+            String[] strArr = plugin.split(",");
+            for (String path : strArr) {
+                if (StringUtils.isNotEmpty(path)) {
+                    pluginPaths.add(path);
+                }
+            }
+        }
+        return pluginPaths;
     }
 
     private void loadPlugin(String path) {
