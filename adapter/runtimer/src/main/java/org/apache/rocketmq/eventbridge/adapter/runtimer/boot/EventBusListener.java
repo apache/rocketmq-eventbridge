@@ -90,6 +90,7 @@ public class EventBusListener extends ServiceThread {
                         }
                     } finally {
                         pullConsumer.commitSync();
+
                         pullConsumer.shutdown();
                     }
                 });

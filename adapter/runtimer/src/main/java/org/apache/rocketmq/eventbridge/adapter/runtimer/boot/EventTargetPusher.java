@@ -86,7 +86,11 @@ public class EventTargetPusher extends ServiceThread {
                 continue;
             }
             ConnectKeyValue connectKeyValue = taskPusher.keySet().iterator().next();
+            // task-id for unique-key at ConnectKeyValue
+            // ConnectKeyValue -> new class for name
+            // also add in ConnectRecord class system property
             String taskPushName = connectKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+            // add thread pool
             for(SinkTask sinkTask : pusherTasks){
                 if(sinkTask.getClass().getName().equals(taskPushName)){
                     sinkTask.put(Lists.newArrayList(taskPusher.get(connectKeyValue)));

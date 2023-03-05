@@ -73,15 +73,24 @@ public class EventRuleTransfer extends ServiceThread {
             }
             executorService.submit(() -> {
                 ConnectRecord connectRecord = convertToSinkDataEntry(messageExt);
+                // extension add sub
+                // rule - target
                 for (ConnectKeyValue connectKeyValue : taskTransformMap.keySet()){
+                    // add threadPool for cup task
+                    // attention coreSize
                     TransformEngine<ConnectRecord> transformEngine = taskTransformMap.get(connectKeyValue);
                     ConnectRecord transformRecord = transformEngine.doTransforms(connectRecord);
                     if(Objects.isNull(transformRecord)){
                         continue;
                     }
+                    // a bean for maintain
                     Map<ConnectKeyValue,ConnectRecord> targetMap = new HashMap<>();
                     targetMap.put(connectKeyValue, transformRecord);
                     listenerFactory.offerTargetTaskQueue(targetMap);
+                    // metrics
+                    // logger
+                    // key->connectKeyValue to simple name
+                    // connectRecord add system properties for taskClass info
                 }
             });
         }
