@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
@@ -37,6 +38,8 @@ public class EventRuleTransfer extends ServiceThread {
     Map<TargetKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
 
     private ExecutorService executorService = new ThreadPoolExecutor(20,60, 1000,TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
+
+    private ExecutorService singleExecutor = Executors.newSingleThreadScheduledExecutor();
 
     public EventRuleTransfer(Plugin plugin, ListenerFactory listenerFactory){
         this.plugin = plugin;
@@ -67,6 +70,7 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped){
+
 
             MessageExt messageExt = listenerFactory.takeListenerEvent();
             if(Objects.isNull(messageExt)){

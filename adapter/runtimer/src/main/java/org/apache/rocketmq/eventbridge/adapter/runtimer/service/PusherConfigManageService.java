@@ -1,10 +1,12 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
 import io.openmessaging.connector.api.component.connector.Connector;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * manage the pusher connector/task config info
@@ -43,6 +45,12 @@ public interface PusherConfigManageService {
      * @return
      */
     Map<String, List<TargetKeyValue>> getTaskConfigs();
+
+    /**
+     * get target info
+     * @return
+     */
+    Set<PusherTargetEntity> getTargetInfo();
 
     /**
      * Get all topics

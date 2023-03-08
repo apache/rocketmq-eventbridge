@@ -4,6 +4,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
@@ -18,6 +19,7 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -80,13 +82,22 @@ public class Runtimer extends ServiceThread {
     @Override
     public void run() {
         logger.info(">>>runtimer started!");
+
+        listener.start();
+
+        transfer.start();
+
+        pusher.start();
+
         while (!stopped) {
-
-            listener.start();
-
-            transfer.start();
-
-            pusher.start();
+            PusherTargetEntity pusherTargetEntity = listenerFactory.takeTaskConfig();
+            if (Objects.nonNull(pusherTargetEntity)) {
+                Map<String, List<TargetKeyValue>> curMap = new HashMap<>();
+                curMap.put(pusherTargetEntity.getConnectName(), pusherTargetEntity.getTargetKeyValues());
+                listener.initOrUpdateListenConsumer(curMap);
+                transfer.initOrUpdateTaskTransform(curMap);
+                pusher.initOrUpdatePusherTask(curMap);
+            }
         }
     }
 }

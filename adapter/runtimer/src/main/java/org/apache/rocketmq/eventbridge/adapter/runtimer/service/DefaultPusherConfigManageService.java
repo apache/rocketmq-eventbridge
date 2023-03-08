@@ -162,6 +162,23 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
     }
 
     @Override
+    public Set<PusherTargetEntity> getTargetInfo() {
+        Set<PusherTargetEntity> result = new HashSet<>();
+        Map<String, List<TargetKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
+        Map<String, TargetKeyValue> filteredConnector = getConnectorConfigs();
+        for (String connectorName : taskConfigs.keySet()) {
+            if (!filteredConnector.containsKey(connectorName)) {
+                continue;
+            }
+            PusherTargetEntity targetEntity = new PusherTargetEntity();
+            targetEntity.setConnectName(connectorName);
+            targetEntity.setTargetKeyValues(taskConfigs.get(connectorName));
+            result.add(targetEntity);
+        }
+        return result;
+    }
+
+    @Override
     public List<String> getConnectTopics(){
         if(CollectionUtils.isEmpty(connectTopicNames)){
             return Lists.newArrayList();
