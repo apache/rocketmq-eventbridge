@@ -22,7 +22,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.common;
  */
 public class LoggerName {
     public static final String EventBridge_RUNTIMER = "EventBridgeRuntimer";
-    public static final String BROKER_BASE_LOG = "BrokerBaseLog";
-    public static final String COMMON_LOGGER_NAME = "ConnectCommon";
-    public static final String ROCKETMQ_CONNECT_STATS = "RocketmqConnectStats";
+    public static final String EventBus_Listener = "EventBusListener";
+    public static final String EventRule_Transfer = "EventRuleTransfer";
+    public static final String EventTarget_Pusher = "EventTargetPusher";
 }

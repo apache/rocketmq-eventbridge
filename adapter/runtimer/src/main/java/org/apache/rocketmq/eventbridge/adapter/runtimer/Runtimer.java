@@ -4,7 +4,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
@@ -40,7 +40,7 @@ public class Runtimer extends ServiceThread {
 
     private PusherConfigManageService pusherConfigManageService;
 
-    private Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
+    private Map<String, List<TargetKeyValue>> taskConfigs = new HashMap<>();
 
     private EventBusListener listener;
 
@@ -77,14 +77,11 @@ public class Runtimer extends ServiceThread {
         super.start();
     }
 
-    public void stop() {
-
-    }
-
     @Override
     public void run() {
         logger.info(">>>runtimer started!");
         while (!stopped) {
+
             listener.start();
 
             transfer.start();

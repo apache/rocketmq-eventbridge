@@ -19,12 +19,19 @@ package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
+
 import lombok.SneakyThrows;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context.RocketMQConnectSourceRunnerContext;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context.RocketMQConnectTargetRunnerContext;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.ActionStatusResponseEnum;
+import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.CreateSinkConnectorRequest;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.TransformRequest;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
@@ -37,10 +44,13 @@ public class RocketMQConnectTargetRunnerAPIImpl extends RocketMQConverter implem
 
     private final RocketMQConnectClient rocketMQConnectClient;
 
+    private PusherConfigManageService pusherConfigManageService;
+
     public RocketMQConnectTargetRunnerAPIImpl(EventDataRepository eventDataRepository,
-        RocketMQConnectClient rocketMQConnectClient) {
+        RocketMQConnectClient rocketMQConnectClient, PusherConfigManageService pusherConfigManageService) {
         super(eventDataRepository);
         this.rocketMQConnectClient = rocketMQConnectClient;
+        this.pusherConfigManageService = pusherConfigManageService;
     }
 
     @SneakyThrows
@@ -52,11 +62,17 @@ public class RocketMQConnectTargetRunnerAPIImpl extends RocketMQConverter implem
         Map<String, Object> sinkConnectorConfig = this.parseConnectorConfig(target);
         TransformRequest filterTransform = this.buildEventBridgeFilterTransform(filterPattern);
         TransformRequest eventBridgeTransform = this.buildEventBridgeTransform(targetTransform);
-        String connectorName = rocketMQConnectClient.createSinkConnector(name, topicName, sinkConnectorClass,
-            sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
-        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(connectorName);
+        TargetKeyValue targetKeyValue = initSinkTaskConfig(name, topicName, sinkConnectorClass,
+                sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
+        if(Objects.nonNull(pusherConfigManageService)){
+            pusherConfigManageService.putConnectTargetConfig(name, targetKeyValue);
+        }else {
+            // todo delete
+            rocketMQConnectClient.createSinkConnector(name, topicName, sinkConnectorClass,
+                    sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
+        }
+        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(name);
         return new Gson().toJson(context);
-
     }
 
     @Override
@@ -103,5 +119,29 @@ public class RocketMQConnectTargetRunnerAPIImpl extends RocketMQConverter implem
         RocketMQConnectSourceRunnerContext context = new Gson().fromJson(runContext,
             RocketMQConnectSourceRunnerContext.class);
         return rocketMQConnectClient.start(context.getConnectorName());
+    }
+
+    /**
+     * init sink task config
+     * @param name
+     * @param topicName
+     * @param sinkClass
+     * @param sinkConfig
+     * @param transforms
+     * @return
+     */
+    private TargetKeyValue initSinkTaskConfig(String name, String topicName, String sinkClass, Map<String, Object> sinkConfig, ArrayList<TransformRequest> transforms) {
+        CreateSinkConnectorRequest request = new CreateSinkConnectorRequest();
+        request.setName(name);
+        request.setTopicName(topicName);
+        request.setConnectorClass(sinkClass);
+        request.setConnectorConfig(sinkConfig);
+        request.setTransforms(transforms);
+        Map<String, Object> sinkTaskMap = request.getRequestObject();
+        TargetKeyValue targetKeyValue = new TargetKeyValue();
+        for (String key : sinkTaskMap.keySet()) {
+            targetKeyValue.put(key, sinkTaskMap.get(key).toString());
+        }
+        return targetKeyValue;
     }
 }

@@ -3,7 +3,9 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 import com.google.common.collect.Lists;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.connector.Connector;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.FilePathConfigUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.store.FileBaseKeyValueStore;
@@ -12,39 +14,43 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefi
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.JsonConverter;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.ListConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 public class DefaultPusherConfigManageService implements PusherConfigManageService {
 
     private Plugin plugin;
 
+    private ListenerFactory listenerFactory;
+
     /**
      * Current connector configs in the store.
      */
-    private KeyValueStore<String, ConnectKeyValue> connectorKeyValueStore;
+    private KeyValueStore<String, TargetKeyValue> connectorKeyValueStore;
 
     /**
      * Current task configs in the store.
      */
-    private KeyValueStore<String, List<ConnectKeyValue>> taskKeyValueStore;
+    private KeyValueStore<String, List<TargetKeyValue>> taskKeyValueStore;
 
     private Set<String> connectTopicNames;
 
-    public DefaultPusherConfigManageService(RuntimerConfig runtimerConfig, Plugin plugin){
+    public DefaultPusherConfigManageService(RuntimerConfig runtimerConfig, Plugin plugin, ListenerFactory listenerFactory){
         this.connectorKeyValueStore = new FileBaseKeyValueStore<>(
                 FilePathConfigUtil.getConnectorConfigPath(runtimerConfig.getStorePathRootDir()),
                 new JsonConverter(),
-                new JsonConverter(ConnectKeyValue.class));
+                new JsonConverter(TargetKeyValue.class));
         this.taskKeyValueStore = new FileBaseKeyValueStore<>(
                 FilePathConfigUtil.getTaskConfigPath(runtimerConfig.getStorePathRootDir()),
                 new JsonConverter(),
-                new ListConverter(ConnectKeyValue.class));
+                new ListConverter(TargetKeyValue.class));
+        this.connectTopicNames = new CopyOnWriteArraySet<>();
         this.plugin = plugin;
+        this.listenerFactory = listenerFactory;
     }
 
     /**
@@ -53,11 +59,11 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
      * @return
      */
     @Override
-    public Map<String, ConnectKeyValue> getConnectorConfigs() {
-        Map<String, ConnectKeyValue> result = new HashMap<>();
-        Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
+    public Map<String, TargetKeyValue> getConnectorConfigs() {
+        Map<String, TargetKeyValue> result = new HashMap<>();
+        Map<String, TargetKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
-            ConnectKeyValue config = connectorConfigs.get(connectorName);
+            TargetKeyValue config = connectorConfigs.get(connectorName);
             if (0 != config.getInt(RuntimeConfigDefine.CONFIG_DELETED)) {
                 continue;
             }
@@ -67,8 +73,8 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
     }
 
     @Override
-    public String putConnectorConfig(String connectorName, ConnectKeyValue configs) throws Exception {
-        ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
+    public String putConnectTargetConfig(String connectorName, TargetKeyValue configs) throws Exception {
+        TargetKeyValue exist = connectorKeyValueStore.get(connectorName);
         if (null != exist) {
             Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
             if (null != updateTimestamp) {
@@ -104,12 +110,12 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
     }
 
     @Override
-    public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, ConnectKeyValue configs) {
+    public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, TargetKeyValue configs) {
         int maxTask = configs.getInt(RuntimeConfigDefine.MAX_TASK, 1);
         List<KeyValue> taskConfigs = connector.taskConfigs(maxTask);
-        List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
+        List<TargetKeyValue> converterdConfigs = new ArrayList<>();
         for (KeyValue keyValue : taskConfigs) {
-            ConnectKeyValue newKeyValue = new ConnectKeyValue();
+            TargetKeyValue newKeyValue = new TargetKeyValue();
             for (String key : keyValue.keySet()) {
                 newKeyValue.put(key, keyValue.getString(key));
             }
@@ -132,20 +138,20 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
 
     @Override
     public void removeConnectorConfig(String connectorName) {
-        ConnectKeyValue config = connectorKeyValueStore.get(connectorName);
+        TargetKeyValue config = connectorKeyValueStore.get(connectorName);
         config.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
-        List<ConnectKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
+        List<TargetKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
         taskConfigList.add(config);
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
     }
 
     @Override
-    public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
-        Map<String, List<ConnectKeyValue>> result = new HashMap<>();
-        Map<String, List<ConnectKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
-        Map<String, ConnectKeyValue> filteredConnector = getConnectorConfigs();
+    public Map<String, List<TargetKeyValue>> getTaskConfigs() {
+        Map<String, List<TargetKeyValue>> result = new HashMap<>();
+        Map<String, List<TargetKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
+        Map<String, TargetKeyValue> filteredConnector = getConnectorConfigs();
         for (String connectorName : taskConfigs.keySet()) {
             if (!filteredConnector.containsKey(connectorName)) {
                 continue;
@@ -163,12 +169,17 @@ public class DefaultPusherConfigManageService implements PusherConfigManageServi
         return Lists.newArrayList(connectTopicNames);
     }
 
-    private void putTaskConfigs(String connectorName, List<ConnectKeyValue> configs) {
-        List<ConnectKeyValue> exist = taskKeyValueStore.get(connectorName);
+
+    private void putTaskConfigs(String connectorName, List<TargetKeyValue> configs) {
+        List<TargetKeyValue> exist = taskKeyValueStore.get(connectorName);
         if (null != exist && exist.size() > 0) {
             taskKeyValueStore.remove(connectorName);
         }
         taskKeyValueStore.put(connectorName, configs);
+        PusherTargetEntity targetEntity = new PusherTargetEntity();
+        targetEntity.setConnectName(connectorName);
+        targetEntity.setTargetKeyValues(configs);
+        listenerFactory.offerTaskConfig(targetEntity);
     }
 
 }

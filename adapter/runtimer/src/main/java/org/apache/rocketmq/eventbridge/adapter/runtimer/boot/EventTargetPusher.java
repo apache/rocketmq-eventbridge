@@ -7,7 +7,7 @@ import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher.PusherTaskContext;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
@@ -46,15 +46,15 @@ public class EventTargetPusher extends ServiceThread {
      * init running tasks
      * @param taskConfig
      */
-    public void initOrUpdatePusherTask(Map<String, List<ConnectKeyValue>> taskConfig){
-        Set<ConnectKeyValue> taskProperty = new HashSet<>();
+    public void initOrUpdatePusherTask(Map<String, List<TargetKeyValue>> taskConfig){
+        Set<TargetKeyValue> taskProperty = new HashSet<>();
         for(String connectName : taskConfig.keySet()){
-            List<ConnectKeyValue> connectKeyValues = taskConfig.get(connectName);
-            taskProperty.addAll(new HashSet<>(connectKeyValues));
+            List<TargetKeyValue> targetKeyValues = taskConfig.get(connectName);
+            taskProperty.addAll(new HashSet<>(targetKeyValues));
         }
-        for(ConnectKeyValue connectKeyValue : taskProperty){
+        for(TargetKeyValue targetKeyValue : taskProperty){
             try{
-                String taskClass = connectKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+                String taskClass = targetKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
                 ClassLoader loader = plugin.getPluginClassLoader(taskClass);
                 Class taskClazz;
                 boolean isolationFlag = false;
@@ -65,8 +65,8 @@ public class EventTargetPusher extends ServiceThread {
                     taskClazz = Class.forName(taskClass);
                 }
                 SinkTask sinkTask = (SinkTask) taskClazz.getDeclaredConstructor().newInstance();
-                sinkTask.init(connectKeyValue);
-                PusherTaskContext sinkTaskContext = new PusherTaskContext(connectKeyValue);
+                sinkTask.init(targetKeyValue);
+                PusherTaskContext sinkTaskContext = new PusherTaskContext(targetKeyValue);
                 sinkTask.start(sinkTaskContext);
                 pusherTasks.add(sinkTask);
                 if (isolationFlag) {
@@ -81,19 +81,19 @@ public class EventTargetPusher extends ServiceThread {
     @Override
     public void run() {
         while (!stopped){
-            Map<ConnectKeyValue, ConnectRecord> taskPusher = listenerFactory.takeTargetMap();
+            Map<TargetKeyValue, ConnectRecord> taskPusher = listenerFactory.takeTargetMap();
             if(MapUtils.isEmpty(taskPusher)){
                 continue;
             }
-            ConnectKeyValue connectKeyValue = taskPusher.keySet().iterator().next();
+            TargetKeyValue targetKeyValue = taskPusher.keySet().iterator().next();
             // task-id for unique-key at ConnectKeyValue
             // ConnectKeyValue -> new class for name
             // also add in ConnectRecord class system property
-            String taskPushName = connectKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+            String taskPushName = targetKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
             // add thread pool
             for(SinkTask sinkTask : pusherTasks){
                 if(sinkTask.getClass().getName().equals(taskPushName)){
-                    sinkTask.put(Lists.newArrayList(taskPusher.get(connectKeyValue)));
+                    sinkTask.put(Lists.newArrayList(taskPusher.get(targetKeyValue)));
                 }
             }
         }

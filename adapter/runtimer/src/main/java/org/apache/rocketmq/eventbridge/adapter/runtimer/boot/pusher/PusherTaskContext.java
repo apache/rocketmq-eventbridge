@@ -25,7 +25,7 @@ import io.openmessaging.connector.api.data.RecordPartition;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.QueueState;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class PusherTaskContext implements SinkTaskContext {
     /**
      * The configs of current sink task.
      */
-    private final ConnectKeyValue taskConfig;
+    private final TargetKeyValue taskConfig;
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
 
@@ -54,7 +54,7 @@ public class PusherTaskContext implements SinkTaskContext {
     public static final String TOPIC = "topic";
     public static final String QUEUE_OFFSET = "queueOffset";
 
-    public PusherTaskContext(ConnectKeyValue taskConfig) {
+    public PusherTaskContext(TargetKeyValue taskConfig) {
         this.taskConfig = taskConfig;
     }
 

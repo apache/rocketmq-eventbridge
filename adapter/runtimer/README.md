@@ -14,7 +14,7 @@
 
 TODO:
 OpenMessage as base
-    Record
+Record
 
     MVP edition
 
@@ -23,8 +23,8 @@ OpenMessage as base
     next meeting: next weekly, 3.5 20:00
 
 TODO:
-    metrics, logger, exception
-    detail
+metrics, logger, exception
+detail
 
 
 

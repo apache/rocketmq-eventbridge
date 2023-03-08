@@ -3,11 +3,10 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.QueueState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.slf4j.Logger;
@@ -49,13 +48,13 @@ public class EventBusListener extends ServiceThread {
      * init listen consumer
      * @param taskConfig
      */
-    public void initOrUpdateListenConsumer(Map<String, List<ConnectKeyValue>> taskConfig){
+    public void initOrUpdateListenConsumer(Map<String, List<TargetKeyValue>> taskConfig){
         if(MapUtils.isEmpty(taskConfig)){
             logger.warn("initListenConsumer by taskConfig param is empty");
             return;
         }
-        List<ConnectKeyValue> connectKeyValues = initTaskKeyInfo(taskConfig);
-        this.topics.addAll(listenerFactory.parseTopicListByList(connectKeyValues));
+        List<TargetKeyValue> targetKeyValues = initTaskKeyInfo(taskConfig);
+        this.topics.addAll(listenerFactory.parseTopicListByList(targetKeyValues));
         for (String topic : topics){
             DefaultLitePullConsumer pullConsumer = listenerFactory.initDefaultMQPullConsumer(topic);
             listenConsumer.add(pullConsumer);
@@ -67,12 +66,12 @@ public class EventBusListener extends ServiceThread {
      * @param taskConfig
      * @return
      */
-    private List<ConnectKeyValue> initTaskKeyInfo(Map<String, List<ConnectKeyValue>> taskConfig) {
-        Set<ConnectKeyValue> connectKeyValues = new HashSet<>();
+    private List<TargetKeyValue> initTaskKeyInfo(Map<String, List<TargetKeyValue>> taskConfig) {
+        Set<TargetKeyValue> targetKeyValues = new HashSet<>();
         for(String connectName : taskConfig.keySet()){
-            connectKeyValues.addAll(taskConfig.get(connectName));
+            targetKeyValues.addAll(taskConfig.get(connectName));
         }
-        return Lists.newArrayList(connectKeyValues);
+        return Lists.newArrayList(targetKeyValues);
     }
 
     @Override

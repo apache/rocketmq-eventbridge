@@ -11,31 +11,35 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Component
 public class ListenerFactory {
 
+    private final static Logger logger = LoggerFactory.getLogger(LoggerName.EventBus_Listener);
+
     private static final String SEMICOLON = ";";
 
-    private static final String SYS_DEFAULT_CONSUME_GROUP = "event-bridge-default-group";
+    private static final String SYS_DEFAULT_GROUP = "default-%s-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
 
-    private BlockingQueue<Map<String, List<ConnectKeyValue>>> taskConfig = new LinkedBlockingQueue<>(1000);
+    private BlockingQueue<PusherTargetEntity> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
 
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
 
-    private BlockingQueue<Map<ConnectKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
+    private BlockingQueue<Map<TargetKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
 
     @Value("rocketmq.namesrvAddr")
     private String namesrvAddr;
@@ -43,23 +47,23 @@ public class ListenerFactory {
     public DefaultLitePullConsumer initDefaultMQPullConsumer(String topic) {
         DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
         try {
-            consumer.setConsumerGroup(SYS_DEFAULT_CONSUME_GROUP);
+            consumer.setConsumerGroup(String.format(SYS_DEFAULT_GROUP, topic));
             consumer.setNamesrvAddr(namesrvAddr);
             consumer.subscribe(topic, "*");
             consumer.start();
         }catch (Exception exception){
-            exception.printStackTrace();
+            logger.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
         }
         return consumer;
     }
 
-    public boolean offerTaskConfig(Map<String, List<ConnectKeyValue>> newTaskConfig){
-        return taskConfig.offer(newTaskConfig);
+    public boolean offerTaskConfig(PusherTargetEntity pusherTargetEntity){
+        return pusherTargetQueue.offer(pusherTargetEntity);
     }
 
-    public Map<String, List<ConnectKeyValue>> takeTaskConfig(){
+    public PusherTargetEntity takeTaskConfig(){
         try {
-            return taskConfig.take();
+            return pusherTargetQueue.take();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -101,7 +105,7 @@ public class ListenerFactory {
      * @param taskConfig
      * @return
      */
-    public List<String> parseTopicList(ConnectKeyValue taskConfig) {
+    public List<String> parseTopicList(TargetKeyValue taskConfig) {
         String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
         if (StringUtils.isBlank(messageQueueStr)) {
             return null;
@@ -115,9 +119,9 @@ public class ListenerFactory {
      * @param taskConfigs
      * @return
      */
-    public List<String> parseTopicListByList(List<ConnectKeyValue> taskConfigs) {
+    public List<String> parseTopicListByList(List<TargetKeyValue> taskConfigs) {
         Set<String> allTopicList = Sets.newHashSet();
-        for(ConnectKeyValue taskConfig : taskConfigs){
+        for(TargetKeyValue taskConfig : taskConfigs){
             String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
             if (StringUtils.isBlank(messageQueueStr)) {
                 continue;
@@ -157,11 +161,11 @@ public class ListenerFactory {
         return recordOffset;
     }
 
-    public boolean offerTargetTaskQueue(Map<ConnectKeyValue, ConnectRecord> targetMap){
+    public boolean offerTargetTaskQueue(Map<TargetKeyValue, ConnectRecord> targetMap){
         return targetQueue.offer(targetMap);
     }
 
-    public Map<ConnectKeyValue, ConnectRecord> takeTargetMap(){
+    public Map<TargetKeyValue, ConnectRecord> takeTargetMap(){
         if(targetQueue.isEmpty()){
             return null;
         }

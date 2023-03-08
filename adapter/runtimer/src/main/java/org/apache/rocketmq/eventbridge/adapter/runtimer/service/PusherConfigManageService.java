@@ -1,7 +1,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
 import io.openmessaging.connector.api.component.connector.Connector;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ public interface PusherConfigManageService {
      *
      * @return
      */
-    Map<String, ConnectKeyValue> getConnectorConfigs();
+    Map<String, TargetKeyValue> getConnectorConfigs();
 
     /**
      * Put the configs.
@@ -26,7 +26,7 @@ public interface PusherConfigManageService {
      * @return
      * @throws Exception
      */
-    String putConnectorConfig(String connectorName, ConnectKeyValue configs) throws Exception;
+    String putConnectTargetConfig(String connectorName, TargetKeyValue configs) throws Exception;
 
     /**
      * Remove the connector
@@ -35,14 +35,14 @@ public interface PusherConfigManageService {
      */
     void removeConnectorConfig(String connectorName);
 
-    void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, ConnectKeyValue configs);
+    void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, TargetKeyValue configs);
 
     /**
      * Get all Task configs.
      *
      * @return
      */
-    Map<String, List<ConnectKeyValue>> getTaskConfigs();
+    Map<String, List<TargetKeyValue>> getTaskConfigs();
 
     /**
      * Get all topics

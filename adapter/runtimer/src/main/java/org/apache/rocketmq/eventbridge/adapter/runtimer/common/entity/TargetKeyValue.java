@@ -15,27 +15,36 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.common;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity;
 
 import io.openmessaging.KeyValue;
+import org.springframework.util.IdGenerator;
+import org.springframework.util.SimpleIdGenerator;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Default Implements of {@link KeyValue} for runtime, which can be parsed by fastJson.
+ * Default Implements of {@link KeyValue} for runtimer, which can be parsed by fastJson.
  */
-public class ConnectKeyValue implements KeyValue, Serializable {
+public class TargetKeyValue implements KeyValue, Serializable {
+
+    /**
+     * unique id
+     */
+    private String targetKeyId;
 
     /**
      * All data are reserved in this map.
      */
     private Map<String, String> properties;
 
-    public ConnectKeyValue() {
+    public TargetKeyValue() {
         properties = new ConcurrentHashMap<>();
+        targetKeyId = UUID.randomUUID().toString();
     }
 
     @Override
@@ -130,7 +139,7 @@ public class ConnectKeyValue implements KeyValue, Serializable {
     public boolean equals(Object obj) {
 
         if (obj != null && obj.getClass() == this.getClass()) {
-            ConnectKeyValue keyValue = (ConnectKeyValue) obj;
+            TargetKeyValue keyValue = (TargetKeyValue) obj;
             return this.properties.equals(keyValue.getProperties());
         }
         return false;
@@ -145,5 +154,9 @@ public class ConnectKeyValue implements KeyValue, Serializable {
         return "ConnectKeyValue{" +
             "properties=" + properties +
             '}';
+    }
+
+    public String getTargetKeyId() {
+        return targetKeyId;
     }
 }

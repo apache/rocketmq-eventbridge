@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ConnectKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
@@ -34,7 +34,7 @@ public class EventRuleTransfer extends ServiceThread {
 
     private Plugin plugin;
 
-    Map<ConnectKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
+    Map<TargetKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
 
     private ExecutorService executorService = new ThreadPoolExecutor(20,60, 1000,TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
 
@@ -43,7 +43,7 @@ public class EventRuleTransfer extends ServiceThread {
         this.listenerFactory = listenerFactory;
     }
 
-    public void initOrUpdateTaskTransform(Map<String, List<ConnectKeyValue>> taskConfig){
+    public void initOrUpdateTaskTransform(Map<String, List<TargetKeyValue>> taskConfig){
         this.taskTransformMap.putAll(initSinkTaskTransformInfo(taskConfig));
     }
 
@@ -67,6 +67,7 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped){
+
             MessageExt messageExt = listenerFactory.takeListenerEvent();
             if(Objects.isNull(messageExt)){
                 continue;
@@ -75,17 +76,17 @@ public class EventRuleTransfer extends ServiceThread {
                 ConnectRecord connectRecord = convertToSinkDataEntry(messageExt);
                 // extension add sub
                 // rule - target
-                for (ConnectKeyValue connectKeyValue : taskTransformMap.keySet()){
+                for (TargetKeyValue targetKeyValue : taskTransformMap.keySet()){
                     // add threadPool for cup task
                     // attention coreSize
-                    TransformEngine<ConnectRecord> transformEngine = taskTransformMap.get(connectKeyValue);
+                    TransformEngine<ConnectRecord> transformEngine = taskTransformMap.get(targetKeyValue);
                     ConnectRecord transformRecord = transformEngine.doTransforms(connectRecord);
                     if(Objects.isNull(transformRecord)){
                         continue;
                     }
                     // a bean for maintain
-                    Map<ConnectKeyValue,ConnectRecord> targetMap = new HashMap<>();
-                    targetMap.put(connectKeyValue, transformRecord);
+                    Map<TargetKeyValue,ConnectRecord> targetMap = new HashMap<>();
+                    targetMap.put(targetKeyValue, transformRecord);
                     listenerFactory.offerTargetTaskQueue(targetMap);
                     // metrics
                     // logger
@@ -103,14 +104,14 @@ public class EventRuleTransfer extends ServiceThread {
      * @param taskConfig
      * @return
      */
-    private Map<ConnectKeyValue, TransformEngine<ConnectRecord>> initSinkTaskTransformInfo(Map<String, List<ConnectKeyValue>> taskConfig) {
-        Map<ConnectKeyValue, TransformEngine<ConnectRecord>> curTaskTransformMap = new HashMap<>();
-        Set<ConnectKeyValue> allTaskKeySet = new HashSet<>();
+    private Map<TargetKeyValue, TransformEngine<ConnectRecord>> initSinkTaskTransformInfo(Map<String, List<TargetKeyValue>> taskConfig) {
+        Map<TargetKeyValue, TransformEngine<ConnectRecord>> curTaskTransformMap = new HashMap<>();
+        Set<TargetKeyValue> allTaskKeySet = new HashSet<>();
         for(String connectName : taskConfig.keySet()){
-            List<ConnectKeyValue> taskKeyList = taskConfig.get(connectName);
+            List<TargetKeyValue> taskKeyList = taskConfig.get(connectName);
             allTaskKeySet.addAll(new HashSet<>(taskKeyList));
         }
-        for(ConnectKeyValue keyValue : allTaskKeySet){
+        for(TargetKeyValue keyValue : allTaskKeySet){
             TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(keyValue, plugin);
             curTaskTransformMap.put(keyValue, transformChain);
         }
