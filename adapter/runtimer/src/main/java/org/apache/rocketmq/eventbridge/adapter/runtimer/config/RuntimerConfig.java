@@ -8,13 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 @Configurable
 public class RuntimerConfig {
 
-    @Value("rumtimer.name")
+    @Value("${rumtimer.name:}")
     private String runtimeName;
 
-    @Value("runtimer.pluginpath")
+    @Value("${runtimer.pluginpath:}")
     private String pluginPath;
 
-    @Value("runtimer.storePathRootDir")
+    @Value("${runtimer.storePathRootDir:}")
     private String storePathRootDir;
 
 }

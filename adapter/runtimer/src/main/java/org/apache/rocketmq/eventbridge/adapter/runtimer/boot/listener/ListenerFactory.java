@@ -41,7 +41,7 @@ public class ListenerFactory {
 
     private BlockingQueue<Map<TargetKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
 
-    @Value("rocketmq.namesrvAddr")
+    @Value("${rocketmq.namesrvAddr:}")
     private String namesrvAddr;
 
     public DefaultLitePullConsumer initDefaultMQPullConsumer(String topic) {
@@ -57,11 +57,10 @@ public class ListenerFactory {
         return consumer;
     }
 
-    public boolean offerTaskConfig(PusherTargetEntity pusherTargetEntity){
-        return pusherTargetQueue.offer(pusherTargetEntity);
-    }
-
     public PusherTargetEntity takeTaskConfig(){
+        if(pusherTargetQueue.isEmpty()){
+            return null;
+        }
         try {
             return pusherTargetQueue.take();
         } catch (InterruptedException e) {
@@ -80,6 +79,9 @@ public class ListenerFactory {
     }
 
     public MessageExt takeListenerEvent() {
+        if(eventMessage.isEmpty()){
+            return null;
+        }
         try {
             return eventMessage.take();
         }catch (Exception exception){

@@ -58,4 +58,24 @@ public interface PusherConfigManageService {
      */
     List<String> getConnectTopics();
 
+    /**
+     * Persist all the configs in a store.
+     */
+    void persist();
+
+    /**
+     * Register a listener to listen all config update operations.
+     *
+     * @param listener
+     */
+    void registerListener(TargetConfigUpdateListener listener);
+
+    interface TargetConfigUpdateListener {
+
+        /**
+         * Invoke while connector config changed.
+         */
+        void onConfigUpdate(PusherTargetEntity targetEntity);
+    }
+
 }

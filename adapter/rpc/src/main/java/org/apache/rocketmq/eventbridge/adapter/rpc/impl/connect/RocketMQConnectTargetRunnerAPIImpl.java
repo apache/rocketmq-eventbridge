@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
@@ -71,11 +72,12 @@ public class RocketMQConnectTargetRunnerAPIImpl extends RocketMQConverter implem
             rocketMQConnectClient.createSinkConnector(name, topicName, sinkConnectorClass,
                     sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
         }
-        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(name);
+        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(name, JSON.toJSONString(targetKeyValue));
         return new Gson().toJson(context);
     }
 
     @Override
+    @SneakyThrows
     public String updateEventTargetRunner(String accountId, String name, Component source, Component target,
         String filterPattern, Map<String, TransformParam> targetTransform, RunOptions runOptions, String runContext) {
         String topicName = this.parseTopicName(source);
@@ -83,12 +85,20 @@ public class RocketMQConnectTargetRunnerAPIImpl extends RocketMQConverter implem
         Map<String, Object> sinkConnectorConfig = this.parseConnectorConfig(target);
         TransformRequest filterTransform = this.buildEventBridgeFilterTransform(filterPattern);
         TransformRequest eventBridgeTransform = this.buildEventBridgeTransform(targetTransform);
-        //stop
-        this.delete(runContext);
         //create
-        String connectorName = rocketMQConnectClient.createSinkConnector(name, topicName, sinkConnectorClass,
-            sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
-        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(connectorName);
+        TargetKeyValue targetKeyValue = initSinkTaskConfig(name, topicName, sinkConnectorClass,
+                sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
+        if(Objects.nonNull(pusherConfigManageService)){
+            pusherConfigManageService.putConnectTargetConfig(name, targetKeyValue);
+        }else {
+            // todo delete
+            //stop
+            this.delete(runContext);
+
+            rocketMQConnectClient.createSinkConnector(name, topicName, sinkConnectorClass,
+                    sinkConnectorConfig, Lists.newArrayList(filterTransform, eventBridgeTransform));
+        }
+        RocketMQConnectTargetRunnerContext context = new RocketMQConnectTargetRunnerContext(name, JSON.toJSONString(targetKeyValue));
         return new Gson().toJson(context);
     }
 

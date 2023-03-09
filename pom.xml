@@ -100,7 +100,6 @@
         <module>adapter</module>
         <module>domain</module>
         <module>common</module>
-        <module>runtimer</module>
     </modules>
 
     <dependencyManagement>
@@ -129,6 +128,11 @@
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-rpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-eventbridge-adapter-runtimer</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

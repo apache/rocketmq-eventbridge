@@ -20,7 +20,6 @@ import io.openmessaging.connector.api.component.Transform;
 import io.openmessaging.connector.api.component.connector.Connector;
 import io.openmessaging.connector.api.component.task.Task;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfig;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
@@ -28,6 +27,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -45,20 +45,18 @@ import java.util.*;
 public class Plugin extends URLClassLoader {
     private static final Logger log = LoggerFactory.getLogger(Plugin.class);
 
-    private RuntimerConfig runtimerConfig;
-
-    private List<String> pluginPaths;
+    @Value("${runtimer.pluginpath:}")
+    private String pluginPath;
 
     private Map<String, PluginWrapper> classLoaderMap = new HashMap<>();
 
-    public Plugin(RuntimerConfig runtimerConfig) {
+    public Plugin() {
         super(new URL[0], Plugin.class.getClassLoader());
-        this.runtimerConfig = runtimerConfig;
     }
 
     @PostConstruct
     public void initPlugin() {
-        this.pluginPaths = initPluginPath(this.runtimerConfig.getPluginPath());
+        List<String> pluginPaths = initPluginPath(this.pluginPath);
         for (String configPath : pluginPaths) {
             loadPlugin(configPath);
         }

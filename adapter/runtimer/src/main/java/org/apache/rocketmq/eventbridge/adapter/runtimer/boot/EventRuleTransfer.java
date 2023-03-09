@@ -17,6 +17,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyV
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ public class EventRuleTransfer extends ServiceThread {
 
     private ListenerFactory listenerFactory;
 
+    private PusherConfigManageService pusherConfigManageService;
+
     private Plugin plugin;
 
     Map<TargetKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
@@ -41,9 +44,11 @@ public class EventRuleTransfer extends ServiceThread {
 
     private ExecutorService singleExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    public EventRuleTransfer(Plugin plugin, ListenerFactory listenerFactory){
+    public EventRuleTransfer(Plugin plugin, ListenerFactory listenerFactory, PusherConfigManageService pusherConfigManageService){
         this.plugin = plugin;
         this.listenerFactory = listenerFactory;
+        this.pusherConfigManageService = pusherConfigManageService;
+        this.pusherConfigManageService.registerListener(new TransformUpdateListenerImpl());
     }
 
     public void initOrUpdateTaskTransform(Map<String, List<TargetKeyValue>> taskConfig){
@@ -70,10 +75,10 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped){
-
-
             MessageExt messageExt = listenerFactory.takeListenerEvent();
             if(Objects.isNull(messageExt)){
+                logger.info("listen message is empty, continue by curTime - {}", System.currentTimeMillis());
+                this.waitForRunning(1000);
                 continue;
             }
             executorService.submit(() -> {
@@ -92,6 +97,8 @@ public class EventRuleTransfer extends ServiceThread {
                     Map<TargetKeyValue,ConnectRecord> targetMap = new HashMap<>();
                     targetMap.put(targetKeyValue, transformRecord);
                     listenerFactory.offerTargetTaskQueue(targetMap);
+
+                    logger.debug("offer target task queue succeed, targetMap - {}", JSON.toJSONString(targetMap));
                     // metrics
                     // logger
                     // key->connectKeyValue to simple name
@@ -119,6 +126,7 @@ public class EventRuleTransfer extends ServiceThread {
             TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(keyValue, plugin);
             curTaskTransformMap.put(keyValue, transformChain);
         }
+        logger.info("init sink task transform info succeed, transform map - {}", JSON.toJSONString(curTaskTransformMap));
         return curTaskTransformMap;
     }
 
@@ -155,5 +163,19 @@ public class EventRuleTransfer extends ServiceThread {
         }
         sinkDataEntry.addExtension(keyValue);
         return sinkDataEntry;
+    }
+
+    /**
+     * transform update listener
+     */
+    class TransformUpdateListenerImpl implements PusherConfigManageService.TargetConfigUpdateListener {
+
+        @Override
+        public void onConfigUpdate(PusherTargetEntity targetEntity) {
+            logger.info("transform update by new target config changed, target info -{}", JSON.toJSONString(targetEntity));
+            Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
+            lastTargetMap.put(targetEntity.getConnectName(), targetEntity.getTargetKeyValues());
+            initOrUpdateTaskTransform(lastTargetMap);
+        }
     }
 }

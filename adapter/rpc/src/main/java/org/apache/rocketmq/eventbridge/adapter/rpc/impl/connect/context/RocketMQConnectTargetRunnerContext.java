@@ -25,4 +25,9 @@ public @Data class RocketMQConnectTargetRunnerContext {
 
     private String connectorName;
 
+    private String targetRunnerConfig;
+
+    public RocketMQConnectTargetRunnerContext(String connectorName) {
+        this.connectorName = connectorName;
+    }
 }
