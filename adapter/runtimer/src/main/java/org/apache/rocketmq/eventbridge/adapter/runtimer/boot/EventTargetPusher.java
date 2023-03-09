@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * for event target push to sink task
+ * event target push to sink task
  * @author artisan
  */
 public class EventTargetPusher extends ServiceThread {

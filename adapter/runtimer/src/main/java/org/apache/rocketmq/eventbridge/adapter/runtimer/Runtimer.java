@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * EventBridge运行器
+ * event bridge runtimer
  *
  * @author artisan
  */
