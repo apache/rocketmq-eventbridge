@@ -13,21 +13,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@AllArgsConstructor
-public @Data class RocketMQConnectTargetRunnerContext {
-
-    private String connectorName;
-
-    private String targetRunnerConfig;
-
-    public RocketMQConnectTargetRunnerContext(String connectorName) {
-        this.connectorName = connectorName;
-    }
+public enum QueueState {
+    PAUSE;
 }

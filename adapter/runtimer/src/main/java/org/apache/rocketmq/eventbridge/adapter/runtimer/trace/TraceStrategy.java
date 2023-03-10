@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.context;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.trace;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
-@AllArgsConstructor
-public @Data class RocketMQConnectTargetRunnerContext {
+/**
+ * EventMeshTraceService
+ * SPI可扩展
+ * 基于OpenTelemetry实现封装不同追踪器
+ */
+public interface TraceStrategy {
 
-    private String connectorName;
+    void init() throws TraceException;
 
-    private String targetRunnerConfig;
+    void createSpan(String spanName) throws TraceException;
 
-    public RocketMQConnectTargetRunnerContext(String connectorName) {
-        this.connectorName = connectorName;
-    }
+    void shutdown() throws TraceException;
 }
