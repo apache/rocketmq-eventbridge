@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Define keys for connector and task configs.
+ * Define keys for target runner configs.
  */
-public class RuntimeConfigDefine {
+public class RuntimerConfigDefine {
 
     /**
      * The full class name of a specific connector implements.

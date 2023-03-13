@@ -20,14 +20,13 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 import com.google.common.collect.Lists;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.connector.Connector;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.FilePathConfigUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.store.KeyValueStore;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.JsonConverter;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.converter.ListConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,7 +96,7 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
         Map<String, TargetKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
             TargetKeyValue config = connectorConfigs.get(connectorName);
-            if (0 != config.getInt(RuntimeConfigDefine.CONFIG_DELETED)) {
+            if (0 != config.getInt(RuntimerConfigDefine.CONFIG_DELETED)) {
                 continue;
             }
             result.put(connectorName, config);
@@ -109,9 +108,9 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
     public String putConnectTargetConfig(String connectorName, TargetKeyValue configs) throws Exception {
         TargetKeyValue exist = connectorKeyValueStore.get(connectorName);
         if (null != exist) {
-            Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
+            Long updateTimestamp = exist.getLong(RuntimerConfigDefine.UPDATE_TIMESTAMP);
             if (null != updateTimestamp) {
-                configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, updateTimestamp);
+                configs.put(RuntimerConfigDefine.UPDATE_TIMESTAMP, updateTimestamp);
             }
         }
         if (configs.equals(exist)) {
@@ -119,14 +118,14 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
         }
 
         Long currentTimestamp = System.currentTimeMillis();
-        configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
-        for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
+        configs.put(RuntimerConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
+        for (String requireConfig : RuntimerConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
             }
         }
 
-        String connectorClass = configs.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
+        String connectorClass = configs.getString(RuntimerConfigDefine.CONNECTOR_CLASS);
         ClassLoader classLoader = plugin.getPluginClassLoader(connectorClass);
         Class clazz;
         if (null != classLoader) {
@@ -144,7 +143,7 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
 
     @Override
     public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp, TargetKeyValue configs) {
-        int maxTask = configs.getInt(RuntimeConfigDefine.MAX_TASK, 1);
+        int maxTask = configs.getInt(RuntimerConfigDefine.MAX_TASK, 1);
         List<KeyValue> taskConfigs = connector.taskConfigs(maxTask);
         List<TargetKeyValue> converterdConfigs = new ArrayList<>();
         for (KeyValue keyValue : taskConfigs) {
@@ -152,19 +151,19 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
             for (String key : keyValue.keySet()) {
                 newKeyValue.put(key, keyValue.getString(key));
             }
-            newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
-            newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
+            newKeyValue.put(RuntimerConfigDefine.TASK_CLASS, connector.taskClass().getName());
+            newKeyValue.put(RuntimerConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
 
-            newKeyValue.put(RuntimeConfigDefine.CONNECT_TOPICNAME, configs.getString(RuntimeConfigDefine.CONNECT_TOPICNAME));
-            newKeyValue.put(RuntimeConfigDefine.CONNECT_TOPICNAMES, configs.getString(RuntimeConfigDefine.CONNECT_TOPICNAMES));
+            newKeyValue.put(RuntimerConfigDefine.CONNECT_TOPICNAME, configs.getString(RuntimerConfigDefine.CONNECT_TOPICNAME));
+            newKeyValue.put(RuntimerConfigDefine.CONNECT_TOPICNAMES, configs.getString(RuntimerConfigDefine.CONNECT_TOPICNAMES));
             Set<String> connectConfigKeySet = configs.keySet();
             for (String connectConfigKey : connectConfigKeySet) {
-                if (connectConfigKey.startsWith(RuntimeConfigDefine.TRANSFORMS)) {
+                if (connectConfigKey.startsWith(RuntimerConfigDefine.TRANSFORMS)) {
                     newKeyValue.put(connectConfigKey, configs.getString(connectConfigKey));
                 }
             }
             converterdConfigs.add(newKeyValue);
-            connectTopicNames.add(configs.getString(RuntimeConfigDefine.CONNECT_TOPICNAME));
+            connectTopicNames.add(configs.getString(RuntimerConfigDefine.CONNECT_TOPICNAME));
         }
         putTaskConfigs(connectorName, converterdConfigs);
     }
@@ -175,8 +174,8 @@ public class PusherConfigManageServiceImpl implements PusherConfigManageService 
         if(Objects.isNull(config)){
             return;
         }
-        config.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, System.currentTimeMillis());
-        config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
+        config.put(RuntimerConfigDefine.UPDATE_TIMESTAMP, System.currentTimeMillis());
+        config.put(RuntimerConfigDefine.CONFIG_DELETED, 1);
         List<TargetKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
         taskConfigList.add(config);
         connectorKeyValueStore.put(connectorName, config);
