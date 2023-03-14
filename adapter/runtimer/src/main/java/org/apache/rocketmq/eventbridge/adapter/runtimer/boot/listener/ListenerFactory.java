@@ -31,7 +31,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +55,8 @@ public class ListenerFactory {
     private BlockingQueue<PusherTargetEntity> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
 
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
+
+    private BlockingQueue<ConnectRecord> eventRecord = new LinkedBlockingQueue<>(50000);
 
     private BlockingQueue<Map<TargetKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
 
@@ -107,6 +109,31 @@ public class ListenerFactory {
         return null;
     }
 
+    /**
+     * offer event record
+     * @param connectRecord
+     * @return
+     */
+    public boolean offerEventRecord(ConnectRecord connectRecord){
+        return eventRecord.offer(connectRecord);
+    }
+
+    /**
+     * take event record
+     * @return
+     */
+    public ConnectRecord takeEventRecord() {
+        if(eventRecord.isEmpty()){
+            return null;
+        }
+        try {
+            return eventRecord.take();
+        }catch (Exception exception){
+            logger.error("take event record exception - stack-> ", exception);
+        }
+        return null;
+    }
+
     public String createInstance(String servers) {
         String[] serversArray = servers.split(";");
         List<String> serversList = new ArrayList<String>();
@@ -125,7 +152,7 @@ public class ListenerFactory {
      * @return
      */
     public List<String> parseTopicList(TargetKeyValue taskConfig) {
-        String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
+        String messageQueueStr = taskConfig.getString(RuntimerConfigDefine.CONNECT_TOPICNAME);
         if (StringUtils.isBlank(messageQueueStr)) {
             return null;
         }
@@ -141,7 +168,7 @@ public class ListenerFactory {
     public List<String> parseTopicListByList(List<TargetKeyValue> taskConfigs) {
         Set<String> allTopicList = Sets.newHashSet();
         for(TargetKeyValue taskConfig : taskConfigs){
-            String messageQueueStr = taskConfig.getString(RuntimeConfigDefine.CONNECT_TOPICNAME);
+            String messageQueueStr = taskConfig.getString(RuntimerConfigDefine.CONNECT_TOPICNAME);
             if (StringUtils.isBlank(messageQueueStr)) {
                 continue;
             }

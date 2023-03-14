@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import io.netty.util.internal.ConcurrentSet;
 import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import lombok.SneakyThrows;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher.PusherTaskContext;
@@ -31,14 +30,13 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyV
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * event target push to sink task
@@ -81,7 +79,7 @@ public class EventTargetPusher extends ServiceThread {
         }
         for(TargetKeyValue targetKeyValue : taskProperty){
             try{
-                String taskClass = targetKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+                String taskClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
                 ClassLoader loader = plugin.getPluginClassLoader(taskClass);
                 Class taskClazz;
                 boolean isolationFlag = false;
@@ -121,7 +119,7 @@ public class EventTargetPusher extends ServiceThread {
             // task-id for unique-key at ConnectKeyValue
             // ConnectKeyValue -> new class for name
             // also add in ConnectRecord class system property
-            String taskPushName = targetKeyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+            String taskPushName = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
             // add thread pool
             for(SinkTask sinkTask : pusherTasks){
                 if(sinkTask.getClass().getName().equals(taskPushName)){

@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     private static final String COMMA = ",";
 
-    private static final String PREFIX = RuntimeConfigDefine.TRANSFORMS + "-";
+    private static final String PREFIX = RuntimerConfigDefine.TRANSFORMS + "-";
 
     public TransformEngine(KeyValue config, Plugin plugin) {
         this.config = config;
@@ -59,7 +59,7 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
     }
 
     private void init() {
-        String transformsStr = config.getString(RuntimeConfigDefine.TRANSFORMS);
+        String transformsStr = config.getString(RuntimerConfigDefine.TRANSFORMS);
         if (StringUtils.isBlank(transformsStr)) {
             log.warn("no transforms config, {}", JSON.toJSONString(config));
             return;
