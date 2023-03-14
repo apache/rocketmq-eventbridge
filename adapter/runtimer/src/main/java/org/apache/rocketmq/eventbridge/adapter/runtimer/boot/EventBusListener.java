@@ -19,7 +19,14 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.data.ConnectRecord;
+import io.openmessaging.connector.api.data.RecordOffset;
+import io.openmessaging.connector.api.data.RecordPartition;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
@@ -28,11 +35,13 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTarg
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.QueueState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -116,8 +125,9 @@ public class EventBusListener extends ServiceThread {
                             return;
                         }
                         for (MessageExt messageExt : messageExts) {
-                            listenerFactory.offerListenEvent(messageExt);
-                            logger.debug("consumer - {} - offer listen event -  {}", JSON.toJSONString(pullConsumer), JSON.toJSON(messageExt));
+                            ConnectRecord eventRecord = convertToSinkRecord(messageExt);
+                            listenerFactory.offerEventRecord(eventRecord);
+                            logger.debug("consumer - {} - offer listen event record -  {} - by - message event- {}", JSON.toJSONString(pullConsumer), eventRecord, messageExt);
                         }
                     } finally {
                         pullConsumer.commitSync();
@@ -130,6 +140,36 @@ public class EventBusListener extends ServiceThread {
     @Override
     public String getServiceName() {
         return this.getClass().getSimpleName();
+    }
+
+    /**
+     * MessageExt convert to connect record
+     * @param messageExt
+     * @return
+     */
+    private ConnectRecord convertToSinkRecord(MessageExt messageExt) {
+        Map<String, String> properties = messageExt.getProperties();
+        Schema schema;
+        Long timestamp;
+        ConnectRecord sinkRecord;
+        String connectTimestamp = properties.get(RuntimerConfigDefine.CONNECT_TIMESTAMP);
+        timestamp = StringUtils.isNotEmpty(connectTimestamp) ? Long.valueOf(connectTimestamp) : null;
+        String connectSchema = properties.get(RuntimerConfigDefine.CONNECT_SCHEMA);
+        schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
+        byte[] body = messageExt.getBody();
+        RecordPartition recordPartition = listenerFactory.convertToRecordPartition(messageExt.getTopic(), messageExt.getBrokerName(), messageExt.getQueueId());
+        RecordOffset recordOffset = listenerFactory.convertToRecordOffset(messageExt.getQueueOffset());
+        String bodyStr = new String(body, StandardCharsets.UTF_8);
+        sinkRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, schema, bodyStr);
+        KeyValue keyValue = new DefaultKeyValue();
+        keyValue.put(RuntimerConfigDefine.CONNECT_TOPICNAME, messageExt.getTopic());
+        if (MapUtils.isNotEmpty(properties)) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                keyValue.put(entry.getKey(), entry.getValue());
+            }
+        }
+        sinkRecord.addExtension(keyValue);
+        return sinkRecord;
     }
 
     /**
