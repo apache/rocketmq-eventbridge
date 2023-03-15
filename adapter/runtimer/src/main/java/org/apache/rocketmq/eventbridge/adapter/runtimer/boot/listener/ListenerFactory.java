@@ -17,32 +17,42 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 @Component
-public class ListenerFactory {
+public class ListenerFactory implements TargetRunnerListener {
 
     private final static Logger logger = LoggerFactory.getLogger(LoggerName.EventBus_Listener);
 
@@ -52,13 +62,19 @@ public class ListenerFactory {
 
     public static final String QUEUE_OFFSET = "queueOffset";
 
-    private BlockingQueue<PusherTargetEntity> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
+    private Plugin plugin;
+
+    private BlockingQueue<TargetRunnerConfig> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
 
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
 
     private BlockingQueue<ConnectRecord> eventRecord = new LinkedBlockingQueue<>(50000);
 
-    private BlockingQueue<Map<TargetKeyValue, ConnectRecord>> targetQueue = new LinkedBlockingQueue<>(50000);
+    private BlockingQueue<ConnectRecord> targetQueue = new LinkedBlockingQueue<>(50000);
+
+    private Map<String/*TargetRunnerName*/, TransformEngine<ConnectRecord>> taskTransformMap = new ConcurrentHashMap<>(20);
+    private Map<String/*TargetRunnerName*/, SinkTask> pusherTaskMap = new ConcurrentHashMap<>(20);
+    private Map<String/*TargetRunnerName*/, TargetRunnerConfig> targetRunnerConfigMap = new ConcurrentHashMap<>(20);
 
     @Value("${rocketmq.namesrvAddr:}")
     private String namesrvAddr;
@@ -70,14 +86,14 @@ public class ListenerFactory {
             consumer.setNamesrvAddr(namesrvAddr);
             consumer.subscribe(topic, "*");
             consumer.start();
-        }catch (Exception exception){
+        } catch (Exception exception) {
             logger.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
         }
         return consumer;
     }
 
-    public PusherTargetEntity takeTaskConfig(){
-        if(pusherTargetQueue.isEmpty()){
+    public TargetRunnerConfig takeTaskConfig() {
+        if (pusherTargetQueue.isEmpty()) {
             return null;
         }
         try {
@@ -90,45 +106,47 @@ public class ListenerFactory {
 
     /**
      * Offer listener event
+     *
      * @param messageExt
      * @return
      */
-    public boolean offerListenEvent(MessageExt messageExt){
+    public boolean offerListenEvent(MessageExt messageExt) {
         return eventMessage.offer(messageExt);
     }
 
     public MessageExt takeListenerEvent() {
-        if(eventMessage.isEmpty()){
+        if (eventMessage.isEmpty()) {
             return null;
         }
         try {
             return eventMessage.take();
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
     /**
-     * offer event record
-     * @param connectRecord
-     * @return
+     * offer event records
+     *
+     * @param connectRecords
      */
-    public boolean offerEventRecord(ConnectRecord connectRecord){
-        return eventRecord.offer(connectRecord);
+   public boolean  offerEventRecords(List<ConnectRecord> connectRecords) {
+        return eventRecord.addAll(connectRecords);
     }
 
     /**
      * take event record
+     *
      * @return
      */
     public ConnectRecord takeEventRecord() {
-        if(eventRecord.isEmpty()){
+        if (eventRecord.isEmpty()) {
             return null;
         }
         try {
             return eventRecord.take();
-        }catch (Exception exception){
+        } catch (Exception exception) {
             logger.error("take event record exception - stack-> ", exception);
         }
         return null;
@@ -148,6 +166,7 @@ public class ListenerFactory {
 
     /**
      * parse topic list by task config
+     *
      * @param taskConfig
      * @return
      */
@@ -162,12 +181,13 @@ public class ListenerFactory {
 
     /**
      * parse topic list by task config list
+     *
      * @param taskConfigs
      * @return
      */
     public List<String> parseTopicListByList(List<TargetKeyValue> taskConfigs) {
         Set<String> allTopicList = Sets.newHashSet();
-        for(TargetKeyValue taskConfig : taskConfigs){
+        for (TargetKeyValue taskConfig : taskConfigs) {
             String messageQueueStr = taskConfig.getString(RuntimerConfigDefine.CONNECT_TOPICNAME);
             if (StringUtils.isBlank(messageQueueStr)) {
                 continue;
@@ -180,6 +200,7 @@ public class ListenerFactory {
 
     /**
      * parse msg queue by queue json
+     *
      * @param messageQueueStr
      * @return
      */
@@ -207,19 +228,67 @@ public class ListenerFactory {
         return recordOffset;
     }
 
-    public boolean offerTargetTaskQueue(Map<TargetKeyValue, ConnectRecord> targetMap){
-        return targetQueue.offer(targetMap);
+    public boolean offerTargetTaskQueue(ConnectRecord connectRecord) {
+        return targetQueue.offer(connectRecord);
     }
 
-    public Map<TargetKeyValue, ConnectRecord> takeTargetMap(){
-        if(targetQueue.isEmpty()){
+    public ConnectRecord takeTargetMap() {
+        if (targetQueue.isEmpty()) {
             return null;
         }
-        try{
+        try {
             return targetQueue.take();
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
     }
+
+    /**
+     * Init sink task transform map key: task config value: transformEngine
+     *
+     * @param taskConfig
+     * @return
+     */
+    private Map<TargetKeyValue, TransformEngine<ConnectRecord>> initSinkTaskTransformInfo(
+        Map<String, List<TargetKeyValue>> taskConfig) {
+        Map<TargetKeyValue, TransformEngine<ConnectRecord>> curTaskTransformMap = new HashMap<>();
+        Set<TargetKeyValue> allTaskKeySet = new HashSet<>();
+        for (String connectName : taskConfig.keySet()) {
+            List<TargetKeyValue> taskKeyList = taskConfig.get(connectName);
+            allTaskKeySet.addAll(new HashSet<>(taskKeyList));
+        }
+        for (TargetKeyValue keyValue : allTaskKeySet) {
+            TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(keyValue, plugin);
+            curTaskTransformMap.put(keyValue, transformChain);
+        }
+        logger.info("init sink task transform info succeed, transform map - {}", JSON.toJSONString(curTaskTransformMap));
+        return curTaskTransformMap;
+    }
+
+
+    @Override public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+        // refresh taskTransformMap & pusherTaskMap & targetRunnerConfigMap
+    }
+
+    @Override public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+
+    }
+
+    @Override public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+
+    }
+
+    public Map<String, TransformEngine<ConnectRecord>> getTaskTransformMap() {
+        return taskTransformMap;
+    }
+
+    public Map<String, SinkTask> getPusherTaskMap() {
+        return pusherTaskMap;
+    }
+
+    public Map<String, TargetRunnerConfig> getTargetRunnerConfigMap() {
+        return targetRunnerConfigMap;
+    }
+
 }

@@ -80,6 +80,8 @@ public class RuntimerConfigDefine {
 
     public static final String CONNECT_TOPICNAME = "connect-topicname";
 
+    public static final String CONNECT_RULE_NAME = "connect-rule-name";
+
     public static final String CONNECT_TOPICNAMES = "connect-topicnames";
 
     public static final String CONNECT_SOURCE_PARTITION = "connect-source-partition";
