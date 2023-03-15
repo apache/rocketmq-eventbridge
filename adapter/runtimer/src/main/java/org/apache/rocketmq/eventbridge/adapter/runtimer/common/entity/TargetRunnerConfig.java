@@ -17,34 +17,45 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity;
 
-import lombok.Data;
-
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import lombok.Data;
 
 /**
  * pusher target key config
  */
 @Data
-public class PusherTargetEntity implements Serializable {
+public class TargetRunnerConfig implements Serializable {
 
-    private String connectName;
+    private String name;
 
-    private List<TargetKeyValue> targetKeyValues;
+    /**
+     * All data are reserved in this map.
+     */
+    private Map<String, String> properties;
 
     @Override
-    public boolean equals(Object object){
-        if (object != null && object.getClass() == this.getClass()) {
-            PusherTargetEntity targetEntity = (PusherTargetEntity) object;
-            return this.connectName.equals(targetEntity.getConnectName())
-                    && this.targetKeyValues.size() == targetEntity.getTargetKeyValues().size()
-                    && this.targetKeyValues.containsAll(targetEntity.getTargetKeyValues());
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        TargetRunnerConfig config = (TargetRunnerConfig) o;
+        return Objects.equals(name, config.name) && Objects.equals(properties, config.properties);
     }
 
     @Override
-    public int hashCode(){
-        return this.connectName.hashCode() + this.targetKeyValues.hashCode();
+    public int hashCode() {
+        return Objects.hash(name, properties);
+    }
+
+    @Override
+    public String toString() {
+        //TODO
+        return "TargetRunnerConfig{" +
+            "connectName='" + name + '\'' +
+            ", properties=" + properties +
+            '}';
     }
 }
