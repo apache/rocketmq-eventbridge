@@ -25,7 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -55,7 +55,7 @@ public class Runtimer extends ServiceThread{
 
     private ListenerFactory listenerFactory;
 
-    private PusherConfigManageService pusherConfigManageService;
+    private TargetRunnerConfigObserver targetRunnerConfigObserver;
 
     private Map<String, List<TargetKeyValue>> taskConfigs = new HashMap<>();
 
@@ -67,21 +67,21 @@ public class Runtimer extends ServiceThread{
 
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "RuntimerScheduledThread"));
 
-    public Runtimer(Plugin plugin, ListenerFactory listenerFactory, PusherConfigManageService configManageService) {
+    public Runtimer(Plugin plugin, ListenerFactory listenerFactory, TargetRunnerConfigObserver configManageService) {
         this.plugin = plugin;
         this.listenerFactory = listenerFactory;
-        this.pusherConfigManageService = configManageService;
+        this.targetRunnerConfigObserver = configManageService;
     }
 
     @PostConstruct
     public void initAndStart() {
         logger.info("init runtimer task config");
-        this.taskConfigs = pusherConfigManageService.getTaskConfigs();
-        listener = new EventBusListener(listenerFactory, pusherConfigManageService);
+        this.taskConfigs = targetRunnerConfigObserver.getTaskConfigs();
+        listener = new EventBusListener(listenerFactory, targetRunnerConfigObserver);
         listener.initOrUpdateListenConsumer(taskConfigs);
-        transfer = new EventRuleTransfer(plugin, listenerFactory, pusherConfigManageService);
+        transfer = new EventRuleTransfer(plugin, listenerFactory, targetRunnerConfigObserver);
         transfer.initOrUpdateTaskTransform(taskConfigs);
-        pusher = new EventTargetPusher(plugin, listenerFactory, pusherConfigManageService);
+        pusher = new EventTargetPusher(plugin, listenerFactory, targetRunnerConfigObserver);
         pusher.initOrUpdatePusherTask(taskConfigs);
         startRuntimer();
     }
@@ -104,14 +104,6 @@ public class Runtimer extends ServiceThread{
         transfer.start();
 
         pusher.start();
-
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                this.pusherConfigManageService.persist();
-            } catch (Exception e) {
-                logger.error("schedule persist config error.", e);
-            }
-        }, 500, 500, TimeUnit.MILLISECONDS);
 
     }
 }

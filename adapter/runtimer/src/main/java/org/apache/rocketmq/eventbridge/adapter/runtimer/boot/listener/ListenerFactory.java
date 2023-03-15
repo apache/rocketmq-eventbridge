@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
@@ -52,7 +52,7 @@ public class ListenerFactory {
 
     public static final String QUEUE_OFFSET = "queueOffset";
 
-    private BlockingQueue<PusherTargetEntity> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
+    private BlockingQueue<TargetRunnerConfig> pusherTargetQueue = new LinkedBlockingQueue<>(1000);
 
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
 
@@ -76,7 +76,7 @@ public class ListenerFactory {
         return consumer;
     }
 
-    public PusherTargetEntity takeTaskConfig(){
+    public TargetRunnerConfig takeTaskConfig(){
         if(pusherTargetQueue.isEmpty()){
             return null;
         }

@@ -26,7 +26,7 @@ import java.util.List;
  * pusher target key config
  */
 @Data
-public class PusherTargetEntity implements Serializable {
+public class TargetRunnerConfig implements Serializable {
 
     private String connectName;
 
@@ -35,7 +35,7 @@ public class PusherTargetEntity implements Serializable {
     @Override
     public boolean equals(Object object){
         if (object != null && object.getClass() == this.getClass()) {
-            PusherTargetEntity targetEntity = (PusherTargetEntity) object;
+            TargetRunnerConfig targetEntity = (TargetRunnerConfig) object;
             return this.connectName.equals(targetEntity.getConnectName())
                     && this.targetKeyValues.size() == targetEntity.getTargetKeyValues().size()
                     && this.targetKeyValues.containsAll(targetEntity.getTargetKeyValues());

@@ -25,31 +25,43 @@ import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.QueueState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.*;
-
 /**
  * listen the event and offer to queue
+ *
  * @author artisan
  */
-public class EventBusListener extends ServiceThread {
+public class EventBusListener extends ServiceThread implements TargetRunnerListener {
 
     private Logger logger = LoggerFactory.getLogger(EventBusListener.class);
 
@@ -63,32 +75,33 @@ public class EventBusListener extends ServiceThread {
 
     private ListenerFactory listenerFactory;
 
-    private PusherConfigManageService pusherConfigManageService;
+    private TargetRunnerConfigObserver targetRunnerConfigObserver;
 
-    private ExecutorService executorService = new ThreadPoolExecutor(20,60, 1000,TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
+    private ExecutorService executorService = new ThreadPoolExecutor(20, 60, 1000, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
 
     private BlockingQueue<MessageExt> eventMessage = new LinkedBlockingQueue(50000);
 
-    public EventBusListener(ListenerFactory listenerFactory, PusherConfigManageService pusherConfigManageService){
+    public EventBusListener(ListenerFactory listenerFactory, TargetRunnerConfigObserver targetRunnerConfigObserver) {
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
         this.listenerFactory = listenerFactory;
-        this.pusherConfigManageService = pusherConfigManageService;
-        this.pusherConfigManageService.registerListener(new ConsumerUpdateListenerImpl());
+        this.targetRunnerConfigObserver = targetRunnerConfigObserver;
+        this.targetRunnerConfigObserver.registerListener(this);
     }
 
     /**
      * init listen consumer
+     *
      * @param taskConfig
      */
-    public void initOrUpdateListenConsumer(Map<String, List<TargetKeyValue>> taskConfig){
-        if(MapUtils.isEmpty(taskConfig)){
+    public void initOrUpdateListenConsumer(Map<String, List<TargetKeyValue>> taskConfig) {
+        if (MapUtils.isEmpty(taskConfig)) {
             logger.warn("initListenConsumer by taskConfig param is empty");
             return;
         }
         List<TargetKeyValue> targetKeyValues = initTaskKeyInfo(taskConfig);
         this.topics.addAll(listenerFactory.parseTopicListByList(targetKeyValues));
-        for (String topic : topics){
+        for (String topic : topics) {
             DefaultLitePullConsumer pullConsumer = listenerFactory.initDefaultMQPullConsumer(topic);
             listenConsumer.add(pullConsumer);
         }
@@ -97,12 +110,13 @@ public class EventBusListener extends ServiceThread {
 
     /**
      * init all task config info
+     *
      * @param taskConfig
      * @return
      */
     private List<TargetKeyValue> initTaskKeyInfo(Map<String, List<TargetKeyValue>> taskConfig) {
         Set<TargetKeyValue> targetKeyValues = new HashSet<>();
-        for(String connectName : taskConfig.keySet()){
+        for (String connectName : taskConfig.keySet()) {
             targetKeyValues.addAll(taskConfig.get(connectName));
         }
         return Lists.newArrayList(targetKeyValues);
@@ -110,13 +124,13 @@ public class EventBusListener extends ServiceThread {
 
     @Override
     public void run() {
-        while (!stopped){
-            if(CollectionUtils.isEmpty(listenConsumer)){
+        while (!stopped) {
+            if (CollectionUtils.isEmpty(listenConsumer)) {
                 logger.info("current listen consumer is empty");
                 this.waitForRunning(1000);
                 continue;
             }
-            for(DefaultLitePullConsumer pullConsumer : listenConsumer) {
+            for (DefaultLitePullConsumer pullConsumer : listenConsumer) {
                 executorService.submit(() -> {
                     try {
                         List<MessageExt> messageExts = pullConsumer.poll(3000);
@@ -144,6 +158,7 @@ public class EventBusListener extends ServiceThread {
 
     /**
      * MessageExt convert to connect record
+     *
      * @param messageExt
      * @return
      */
@@ -175,14 +190,21 @@ public class EventBusListener extends ServiceThread {
     /**
      * consumer update listener
      */
-    class ConsumerUpdateListenerImpl implements PusherConfigManageService.TargetConfigUpdateListener {
-
-        @Override
-        public void onConfigUpdate(PusherTargetEntity targetEntity) {
-            logger.info("consumer update by new target config changed, target info -{}", JSON.toJSONString(targetEntity));
-            Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
-            lastTargetMap.put(targetEntity.getConnectName(), targetEntity.getTargetKeyValues());
-            initOrUpdateListenConsumer(lastTargetMap);
-        }
+    @Override
+    public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+        logger.info("consumer update by new target config changed, target info -{}", JSON.toJSONString(targetRunnerConfig));
+        Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
+        lastTargetMap.put(targetRunnerConfig.getConnectName(), targetRunnerConfig.getTargetKeyValues());
+        initOrUpdateListenConsumer(lastTargetMap);
     }
+
+    @Override
+    public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+    }
+
+    @Override
+    public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+
+    }
+
 }

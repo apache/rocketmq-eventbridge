@@ -19,44 +19,54 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.data.ConnectRecord;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.PusherTargetEntity;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.PusherConfigManageService;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * receive event and transfer the rule to pusher
  */
-public class EventRuleTransfer extends ServiceThread {
+public class EventRuleTransfer extends ServiceThread implements TargetRunnerListener {
 
     private static final Logger logger = LoggerFactory.getLogger(EventRuleTransfer.class);
 
     private ListenerFactory listenerFactory;
 
-    private PusherConfigManageService pusherConfigManageService;
+    private TargetRunnerConfigObserver targetRunnerConfigObserver;
 
     private Plugin plugin;
 
     Map<TargetKeyValue/*taskConfig*/, TransformEngine<ConnectRecord>/*taskTransform*/> taskTransformMap = new ConcurrentHashMap<>(20);
 
-    private ExecutorService executorService = new ThreadPoolExecutor(20,60, 1000,TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
+    private ExecutorService executorService = new ThreadPoolExecutor(20, 60, 1000, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
 
-    public EventRuleTransfer(Plugin plugin, ListenerFactory listenerFactory, PusherConfigManageService pusherConfigManageService){
+    public EventRuleTransfer(Plugin plugin, ListenerFactory listenerFactory,
+        TargetRunnerConfigObserver targetRunnerConfigObserver) {
         this.plugin = plugin;
         this.listenerFactory = listenerFactory;
-        this.pusherConfigManageService = pusherConfigManageService;
-        this.pusherConfigManageService.registerListener(new TransformUpdateListenerImpl());
+        this.targetRunnerConfigObserver = targetRunnerConfigObserver;
+        this.targetRunnerConfigObserver.registerListener(this);
     }
 
-    public void initOrUpdateTaskTransform(Map<String, List<TargetKeyValue>> taskConfig){
+    public void initOrUpdateTaskTransform(Map<String, List<TargetKeyValue>> taskConfig) {
         this.taskTransformMap.putAll(initSinkTaskTransformInfo(taskConfig));
     }
 
@@ -67,9 +77,9 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public void run() {
-        while (!stopped){
+        while (!stopped) {
             ConnectRecord eventRecord = listenerFactory.takeEventRecord();
-            if(Objects.isNull(eventRecord)){
+            if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);
                 continue;
@@ -77,16 +87,16 @@ public class EventRuleTransfer extends ServiceThread {
             executorService.submit(() -> {
                 // extension add sub
                 // rule - target
-                for (TargetKeyValue targetKeyValue : taskTransformMap.keySet()){
+                for (TargetKeyValue targetKeyValue : taskTransformMap.keySet()) {
                     // add threadPool for cup task
                     // attention coreSize
                     TransformEngine<ConnectRecord> transformEngine = taskTransformMap.get(targetKeyValue);
                     ConnectRecord transformRecord = transformEngine.doTransforms(eventRecord);
-                    if(Objects.isNull(transformRecord)){
+                    if (Objects.isNull(transformRecord)) {
                         continue;
                     }
                     // a bean for maintain
-                    Map<TargetKeyValue,ConnectRecord> targetMap = new HashMap<>();
+                    Map<TargetKeyValue, ConnectRecord> targetMap = new HashMap<>();
                     targetMap.put(targetKeyValue, transformRecord);
                     listenerFactory.offerTargetTaskQueue(targetMap);
 
@@ -101,20 +111,20 @@ public class EventRuleTransfer extends ServiceThread {
     }
 
     /**
-     * Init sink task transform map
-     * key: task config
-     * value: transformEngine
+     * Init sink task transform map key: task config value: transformEngine
+     *
      * @param taskConfig
      * @return
      */
-    private Map<TargetKeyValue, TransformEngine<ConnectRecord>> initSinkTaskTransformInfo(Map<String, List<TargetKeyValue>> taskConfig) {
+    private Map<TargetKeyValue, TransformEngine<ConnectRecord>> initSinkTaskTransformInfo(
+        Map<String, List<TargetKeyValue>> taskConfig) {
         Map<TargetKeyValue, TransformEngine<ConnectRecord>> curTaskTransformMap = new HashMap<>();
         Set<TargetKeyValue> allTaskKeySet = new HashSet<>();
-        for(String connectName : taskConfig.keySet()){
+        for (String connectName : taskConfig.keySet()) {
             List<TargetKeyValue> taskKeyList = taskConfig.get(connectName);
             allTaskKeySet.addAll(new HashSet<>(taskKeyList));
         }
-        for(TargetKeyValue keyValue : allTaskKeySet){
+        for (TargetKeyValue keyValue : allTaskKeySet) {
             TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(keyValue, plugin);
             curTaskTransformMap.put(keyValue, transformChain);
         }
@@ -125,14 +135,20 @@ public class EventRuleTransfer extends ServiceThread {
     /**
      * transform update listener
      */
-    class TransformUpdateListenerImpl implements PusherConfigManageService.TargetConfigUpdateListener {
+    @Override
+    public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+        logger.info("transform update by new target config changed, target info -{}", JSON.toJSONString(targetRunnerConfig));
+        Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
+        lastTargetMap.put(targetRunnerConfig.getConnectName(), targetRunnerConfig.getTargetKeyValues());
+        initOrUpdateTaskTransform(lastTargetMap);
+    }
 
-        @Override
-        public void onConfigUpdate(PusherTargetEntity targetEntity) {
-            logger.info("transform update by new target config changed, target info -{}", JSON.toJSONString(targetEntity));
-            Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
-            lastTargetMap.put(targetEntity.getConnectName(), targetEntity.getTargetKeyValues());
-            initOrUpdateTaskTransform(lastTargetMap);
-        }
+    @Override
+    public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+    }
+
+    @Override
+    public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
+
     }
 }
