@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author artisan
  */
-public class EventTargetPusher extends ServiceThread implements TargetRunnerListener {
+public class EventTargetPusher extends ServiceThread{
 
     private static final Logger logger = LoggerFactory.getLogger(EventTargetPusher.class);
 
@@ -65,12 +65,8 @@ public class EventTargetPusher extends ServiceThread implements TargetRunnerList
 
     private List<SinkTask> pusherTasks = new CopyOnWriteArrayList<>();
 
-    public EventTargetPusher(Plugin plugin, ListenerFactory listenerFactory,
-        TargetRunnerConfigObserver targetRunnerConfigObserver) {
-        this.plugin = plugin;
+    public EventTargetPusher(ListenerFactory listenerFactory) {
         this.listenerFactory = listenerFactory;
-        this.targetRunnerConfigObserver = targetRunnerConfigObserver;
-        this.targetRunnerConfigObserver.registerListener(this);
     }
 
     /**
@@ -114,25 +110,25 @@ public class EventTargetPusher extends ServiceThread implements TargetRunnerList
     @Override
     public void run() {
         while (!stopped) {
-            Map<TargetKeyValue, ConnectRecord> taskPusher = listenerFactory.takeTargetMap();
-            if (MapUtils.isEmpty(taskPusher)) {
-                logger.info("current target pusher is empty");
-                this.waitForRunning(1000);
-                continue;
-            }
-            logger.info("start push content by pusher - {}", JSON.toJSONString(taskPusher));
-
-            TargetKeyValue targetKeyValue = taskPusher.keySet().iterator().next();
-            // task-id for unique-key at ConnectKeyValue
-            // ConnectKeyValue -> new class for name
-            // also add in ConnectRecord class system property
-            String taskPushName = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
-            // add thread pool
-            for (SinkTask sinkTask : pusherTasks) {
-                if (sinkTask.getClass().getName().equals(taskPushName)) {
-                    sinkTask.put(Lists.newArrayList(taskPusher.get(targetKeyValue)));
-                }
-            }
+//            Map<TargetKeyValue, ConnectRecord> taskPusher = listenerFactory.takeTargetMap();
+//            if (MapUtils.isEmpty(taskPusher)) {
+//                logger.info("current target pusher is empty");
+//                this.waitForRunning(1000);
+//                continue;
+//            }
+//            logger.info("start push content by pusher - {}", JSON.toJSONString(taskPusher));
+//
+//            TargetKeyValue targetKeyValue = taskPusher.keySet().iterator().next();
+//            // task-id for unique-key at ConnectKeyValue
+//            // ConnectKeyValue -> new class for name
+//            // also add in ConnectRecord class system property
+//            String taskPushName = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+//            // add thread pool
+//            for (SinkTask sinkTask : pusherTasks) {
+//                if (sinkTask.getClass().getName().equals(taskPushName)) {
+//                    sinkTask.put(Lists.newArrayList(taskPusher.get(targetKeyValue)));
+//                }
+//            }
         }
     }
 
@@ -141,25 +137,5 @@ public class EventTargetPusher extends ServiceThread implements TargetRunnerList
         return EventTargetPusher.class.getSimpleName();
     }
 
-    /**
-     * target update listener
-     */
-
-    @Override
-    public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        logger.info("transform update by new target config changed, target info -{}", JSON.toJSONString(targetRunnerConfig));
-        Map<String, List<TargetKeyValue>> lastTargetMap = new HashMap<>();
-        lastTargetMap.put(targetRunnerConfig.getConnectName(), targetRunnerConfig.getTargetKeyValues());
-        initOrUpdatePusherTask(lastTargetMap);
-    }
-
-    @Override
-    public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-    }
-
-    @Override
-    public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-
-    }
 
 }
