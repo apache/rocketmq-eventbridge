@@ -249,8 +249,10 @@ public class ConnectionController {
         }
         if (oauthParameters != null) {
             OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
-            clientParameters.setClientSecret("**");
-            oauthParameters.setClientParameters(clientParameters);
+            if (clientParameters != null) {
+                clientParameters.setClientSecret("**");
+                oauthParameters.setClientParameters(clientParameters);
+            }
         }
         return connectionResponse;
     }

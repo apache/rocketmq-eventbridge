@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.connection;
 
 import com.google.gson.annotations.SerializedName;
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import lombok.Getter;
@@ -34,7 +33,7 @@ import org.hibernate.validator.constraints.Length;
 @ToString
 public class CreateConnectionRequest extends BaseRequest {
 
-    @Pattern(regexp = "^[A-Za-z|0-9][A-Za-z|0-9|_|-]+$", message = "The Connection name is invalid! Which should match the pattern.")
+    @Pattern(regexp = "^[A-Za-z|0-9][A-Za-z|0-9|_|-]+$", message = "The Connection name is invalid! Only letters a~z or A~Z, numbers 0~9, underscore (_) and dash (-) are supported.")
     @Length(min = 1, max = 127, message = "The Connection name Exceeded length.")
     @NotBlank(message = "ConnectionName is blank.")
     @SerializedName("ConnectionName")
@@ -43,7 +42,6 @@ public class CreateConnectionRequest extends BaseRequest {
     @SerializedName("Description")
     private String description;
 
-    @Valid
     @SerializedName("NetworkParameters")
     private NetworkParameters networkParameters;
 

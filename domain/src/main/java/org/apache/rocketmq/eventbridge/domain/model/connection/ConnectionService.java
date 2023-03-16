@@ -69,7 +69,7 @@ public class ConnectionService extends AbstractResourceService {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
         super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
-        checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
+        checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
         }
@@ -110,7 +110,7 @@ public class ConnectionService extends AbstractResourceService {
         if (CollectionUtils.isEmpty(checkConnection(accountId, connectionDTO.getConnectionName()))) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
         }
-        checkNetworkType(connectionDTO.getNetworkParameters().getNetworkType());
+        checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
         }
@@ -178,8 +178,10 @@ public class ConnectionService extends AbstractResourceService {
 
     private void saveClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters) {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
-        clientParameters.setClientSecret(secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters)));
-        oauthParameters.setClientParameters(clientParameters);
+        if (clientParameters != null) {
+            clientParameters.setClientSecret(secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters)));
+            oauthParameters.setClientParameters(clientParameters);
+        }
     }
 
     private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) {
@@ -222,12 +224,17 @@ public class ConnectionService extends AbstractResourceService {
 
     private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
+        if (clientParameters == null) {
+            return;
+        }
         String clientSecretSecretValue = null;
-        if (connection.getAuthParameters() != null && connection.getAuthParameters().getOauthParameters() != null) {
+        if (connection.getAuthParameters() != null
+                && connection.getAuthParameters().getOauthParameters() != null
+                && connection.getAuthParameters().getOauthParameters().getClientParameters() != null) {
             OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
             clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
-                accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
-                connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
+                    accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
+                    connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
         } else {
             clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
         }
@@ -235,9 +242,13 @@ public class ConnectionService extends AbstractResourceService {
         oauthParameters.setClientParameters(clientParameters);
     }
 
-    private void checkNetworkType(String type) {
+    private void checkNetworkType(NetworkParameters networkParameters) {
+        if (networkParameters == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.NetworkParametersIsNull);
+        }
+        String type = networkParameters.getNetworkType();
         if (StringUtils.isBlank(type)) {
-            return;
+            throw new EventBridgeException(EventBridgeErrorCode.NetworkTypeIsBlank);
         }
         boolean check = true;
         for (NetworkTypeEnum networkTypeEnum : NetworkTypeEnum.values()) {
