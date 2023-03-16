@@ -141,12 +141,6 @@ public class ConnectionService extends AbstractResourceService {
     }
 
     public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, Integer maxResults) {
-        if (StringUtils.isBlank(nextToken)) {
-            nextToken = "10";
-        }
-        if (maxResults == null) {
-            maxResults = 0;
-        }
         List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
         PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
         result.setData(connectionDTOS);

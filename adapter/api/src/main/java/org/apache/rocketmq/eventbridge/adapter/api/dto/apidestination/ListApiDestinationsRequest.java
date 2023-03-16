@@ -19,10 +19,10 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
 
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @Getter
@@ -40,4 +40,12 @@ public class ListApiDestinationsRequest extends BaseResponse {
     @SerializedName("NextToken")
     private String nextToken;
 
+    public void checkMaxResultsAndNextToken() {
+        if (StringUtils.isBlank(this.getNextToken())) {
+            this.setNextToken("0");
+        }
+        if (this.getMaxResults() == null) {
+            this.setMaxResults(10);
+        }
+    }
 }

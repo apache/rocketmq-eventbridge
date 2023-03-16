@@ -42,7 +42,7 @@ public class ListApiDestinationsResponse extends BaseResponse {
     private Integer total;
 
     @SerializedName("MaxResults")
-    private int maxResults;
+    private Integer maxResults;
 
     public ListApiDestinationsResponse success() {
         setCode(EventBridgeErrorCode.Success.getCode());

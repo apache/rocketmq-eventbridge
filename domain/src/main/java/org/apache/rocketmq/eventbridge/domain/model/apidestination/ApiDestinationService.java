@@ -101,12 +101,6 @@ public class ApiDestinationService extends AbstractResourceService {
 
     public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
                                                                          Integer maxResults) {
-        if (StringUtils.isBlank(nextToken)) {
-            nextToken = "10";
-        }
-        if (maxResults == null) {
-            maxResults = 0;
-        }
         final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
         result.setData(apiDestinationDTOS);

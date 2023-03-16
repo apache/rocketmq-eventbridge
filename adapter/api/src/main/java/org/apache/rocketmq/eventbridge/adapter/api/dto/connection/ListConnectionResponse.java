@@ -42,7 +42,7 @@ public class ListConnectionResponse extends BaseResponse {
     private Integer total;
 
     @SerializedName("MaxResults")
-    private int maxResults;
+    private Integer maxResults;
 
     public ListConnectionResponse success() {
         setCode(EventBridgeErrorCode.Success.getCode());
