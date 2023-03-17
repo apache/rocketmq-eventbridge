@@ -40,6 +40,7 @@ public class CreateConnectionRequest extends BaseRequest {
     private String connectionName;
 
     @SerializedName("Description")
+    @Length(max = 255, message = "The ApiDestination description Exceeded length.")
     private String description;
 
     @SerializedName("NetworkParameters")

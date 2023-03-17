@@ -39,9 +39,11 @@ public class CreateApiDestinationRequest extends BaseResponse {
     private String apiDestinationName;
 
     @SerializedName("ConnectionName")
+    @Length(max = 127, message = "The connectionName Exceeded length.")
     private String connectionName;
 
     @SerializedName("Description")
+    @Length(max = 255, message = "The ApiDestination description Exceeded length.")
     private String description;
 
     @SerializedName("HttpApiParameters")

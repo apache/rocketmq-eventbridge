@@ -18,30 +18,35 @@
 package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
 
 import com.google.gson.annotations.SerializedName;
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
 @ToString
 public class UpdateApiDestinationRequest extends BaseResponse {
 
+    @Pattern(regexp = "^[A-Za-z|0-9][A-Za-z|0-9|_|-]+$", message = "The ApiDestination name is invalid! Only letters a~z or A~Z, numbers 0~9, underscore (_) and dash (-) are supported.")
+    @Length(min = 1, max = 127, message = "The ApiDestination name Exceeded length.")
     @NotBlank(message = "ApiDestinationName is blank")
     @SerializedName("ApiDestinationName")
     private String apiDestinationName;
 
     @SerializedName("ConnectionName")
+    @Length(max = 127, message = "The connectionName Exceeded length.")
     private String connectionName;
 
     @SerializedName("Description")
+    @Length(max = 255, message = "The ApiDestination description Exceeded length.")
     private String description;
 
-    @Valid
     @SerializedName("HttpApiParameters")
     private HttpApiParameters httpApiParameters;
 
