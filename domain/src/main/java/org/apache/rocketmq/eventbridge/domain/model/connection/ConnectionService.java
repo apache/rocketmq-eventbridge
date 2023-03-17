@@ -22,6 +22,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
+import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
@@ -71,6 +72,7 @@ public class ConnectionService extends AbstractResourceService {
         super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
         checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
+            checkAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
         }
         if (connectionRepository.createConnection(connectionDTO)) {
@@ -84,6 +86,29 @@ public class ConnectionService extends AbstractResourceService {
             return connectionDTO.getConnectionName();
         }
         return null;
+    }
+
+    private void checkAuthParameters(AuthParameters authParameters) {
+        if (authParameters != null) {
+            BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
+            if (basicAuthParameters != null && AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType())) {
+                if (StringUtils.isBlank(basicAuthParameters.getUsername()) || StringUtils.isBlank(basicAuthParameters.getPassword())) {
+                    throw new EventBridgeException(EventBridgeErrorCode.BasicRequiredParameterIsEmpty);
+                }
+            }
+            ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
+            if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
+                if (StringUtils.isBlank(apiKeyAuthParameters.getApiKeyName()) || StringUtils.isBlank(apiKeyAuthParameters.getApiKeyValue())) {
+                    throw new EventBridgeException(EventBridgeErrorCode.ApiKeyRequiredParameterIsEmpty);
+                }
+            }
+            OAuthParameters oauthParameters = authParameters.getOauthParameters();
+            if (oauthParameters != null && AuthorizationTypeEnum.OAUTH_AUTH.getType().equals(authParameters.getAuthorizationType())) {
+                if (StringUtils.isBlank(oauthParameters.getAuthorizationEndpoint()) || StringUtils.isBlank(oauthParameters.getHttpMethod())) {
+                    throw new EventBridgeException(EventBridgeErrorCode.OAuthRequiredParameterIsEmpty);
+                }
+            }
+        }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -112,6 +137,7 @@ public class ConnectionService extends AbstractResourceService {
         }
         checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
+            checkAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
         }
         List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());

@@ -98,6 +98,9 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     LimitSizeInvalid(409, "LimitSizeInvalid", "The limit size of page is invalid, which must greater than 0 and less than [{0}]."),
     NextTokenInvalid(409, "NextTokenInvalid", "The next token of page is invalid. which should be {[0]}."),
     OauthHttpParametersEmpty(409, "OauthHttpParametersEmpty", "OauthHttpParameters is Empty."),
+    BasicRequiredParameterIsEmpty(409, "BasicRequiredParameterIsEmpty", "Basic required parameters are empty, the required parameters are username and password !"),
+    ApiKeyRequiredParameterIsEmpty(409, "ApiKeyRequiredParameterIsEmpty", "Api Key required parameters are empty, the required parameters are apiKeyName and apiKeyValue !"),
+    OAuthRequiredParameterIsEmpty(409, "OAuthRequiredParameterIsEmpty", "OAuth required parameters are empty, the required parameters are authorizationEndpoint and httpMethod !"),
 
     //API Destination
     ApiDestinationNameInvalid(409, "ApiDestinationNameInvalid", "The api-destination name [{0}] is invalid! Which should match the pattern [{1}]."),
