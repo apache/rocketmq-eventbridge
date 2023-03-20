@@ -33,17 +33,17 @@ import org.hibernate.validator.constraints.Length;
 public class CreateApiDestinationRequest extends BaseResponse {
 
     @Pattern(regexp = "^[A-Za-z|0-9][A-Za-z|0-9|_|-]+$", message = "The ApiDestination name is invalid! Only letters a~z or A~Z, numbers 0~9, underscore (_) and dash (-) are supported.")
-    @Length(min = 1, max = 127, message = "The ApiDestination name Exceeded length.")
+    @Length(min = 1, max = 127, message = "The ApiDestination name length cannot exceed 127.")
     @NotBlank(message = "ApiDestinationName is blank")
     @SerializedName("ApiDestinationName")
     private String apiDestinationName;
 
     @SerializedName("ConnectionName")
-    @Length(max = 127, message = "The connectionName Exceeded length.")
+    @Length(max = 127, message = "The connectionName length cannot exceed 127.")
     private String connectionName;
 
     @SerializedName("Description")
-    @Length(max = 255, message = "The ApiDestination description Exceeded length.")
+    @Length(max = 255, message = "The ApiDestination description length cannot exceed 255.")
     private String description;
 
     @SerializedName("HttpApiParameters")
