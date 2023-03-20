@@ -95,17 +95,49 @@ public class ConnectionService extends AbstractResourceService {
                 if (StringUtils.isBlank(basicAuthParameters.getUsername()) || StringUtils.isBlank(basicAuthParameters.getPassword())) {
                     throw new EventBridgeException(EventBridgeErrorCode.BasicRequiredParameterIsEmpty);
                 }
+                String username = basicAuthParameters.getUsername();
+                String password = basicAuthParameters.getPassword();
+                if (username.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || username.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                    throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
+                }
+                if (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                    throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
+                }
             }
             ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
             if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
                 if (StringUtils.isBlank(apiKeyAuthParameters.getApiKeyName()) || StringUtils.isBlank(apiKeyAuthParameters.getApiKeyValue())) {
                     throw new EventBridgeException(EventBridgeErrorCode.ApiKeyRequiredParameterIsEmpty);
                 }
+                String apiKeyName = apiKeyAuthParameters.getApiKeyName();
+                String apiKeyValue = apiKeyAuthParameters.getApiKeyValue();
+                if (apiKeyName.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || apiKeyName.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                    throw new EventBridgeException(EventBridgeErrorCode.ApiKeyNameLengthExceed);
+                }
+                if (apiKeyValue.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || apiKeyValue.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                    throw new EventBridgeException(EventBridgeErrorCode.ApiKeyValueLengthExceed);
+                }
             }
             OAuthParameters oauthParameters = authParameters.getOauthParameters();
             if (oauthParameters != null && AuthorizationTypeEnum.OAUTH_AUTH.getType().equals(authParameters.getAuthorizationType())) {
                 if (StringUtils.isBlank(oauthParameters.getAuthorizationEndpoint()) || StringUtils.isBlank(oauthParameters.getHttpMethod())) {
                     throw new EventBridgeException(EventBridgeErrorCode.OAuthRequiredParameterIsEmpty);
+                }
+                if (oauthParameters.getAuthorizationEndpoint().length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || oauthParameters.getAuthorizationEndpoint().length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                    throw new EventBridgeException(EventBridgeErrorCode.AuthorizationEndpointLengthExceed);
+                }
+                if (oauthParameters.getClientParameters() != null) {
+                    OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
+                    if (StringUtils.isNotBlank(clientParameters.getClientID())
+                            && (clientParameters.getClientID().length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                            || clientParameters.getClientID().length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
+                        throw new EventBridgeException(EventBridgeErrorCode.ClientIDLengthExceed);
+                    }
+                    if (StringUtils.isNotBlank(clientParameters.getClientSecret())
+                            && (clientParameters.getClientSecret().length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                            || clientParameters.getClientSecret().length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
+                        throw new EventBridgeException(EventBridgeErrorCode.ClientSecretLengthExceed);
+                    }
                 }
             }
         }

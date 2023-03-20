@@ -99,6 +99,14 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     NextTokenInvalid(409, "NextTokenInvalid", "The next token of page is invalid. which should be {[0]}."),
     OauthHttpParametersEmpty(409, "OauthHttpParametersEmpty", "OauthHttpParameters is Empty."),
     BasicRequiredParameterIsEmpty(409, "BasicRequiredParameterIsEmpty", "Basic required parameters are empty, the required parameters are username and password !"),
+
+    BasicUserNameLengthExceed(409, "BasicUserNameLengthExceed", "Basic username length cannot exceed 127 !"),
+
+    BasicPassWordLengthExceed(409, "BasicPassWordLengthExceed", "Basic password length cannot exceed 127 !"),
+
+    ApiKeyNameLengthExceed(409, "ApiKeyNameLengthExceed", "Api key name length cannot exceed 127 !"),
+
+    ApiKeyValueLengthExceed(409, "ApiKeyValueLengthExceed", "Api key value length cannot exceed 127 !"),
     ApiKeyRequiredParameterIsEmpty(409, "ApiKeyRequiredParameterIsEmpty", "Api Key required parameters are empty, the required parameters are apiKeyName and apiKeyValue !"),
     OAuthRequiredParameterIsEmpty(409, "OAuthRequiredParameterIsEmpty", "OAuth required parameters are empty, the required parameters are authorizationEndpoint and httpMethod !"),
 
@@ -118,7 +126,15 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     EndpointIsBlank(409, "EndpointIsBlank", "Endpoint is blank !"),
     MethodIsBlank(409, "Method", "Method is blank !"),
     NetworkParametersIsNull(409, "NetworkParametersIsNull", "NetworkParameters is null !"),
-    NetworkTypeIsBlank(409, "NetworkTypeIsBlank", "NetworkType is blank !");
+    NetworkTypeIsBlank(409, "NetworkTypeIsBlank", "NetworkType is blank !"),
+    EndpointLengthExceed(409, "EndpointLengthExceed", "Endpoint length cannot exceed 127 !"),
+
+    LengthExceed(409, "EndpointLengthExceed", "Endpoint length cannot exceed 127 !"),
+
+    ClientIDLengthExceed(409, "ClientIDLengthExceed", "ClientID length cannot exceed 127 !"),
+
+    ClientSecretLengthExceed(409, "ClientSecretLengthExceed", "ClientSecret length cannot exceed 127 !"),
+    AuthorizationEndpointLengthExceed(409, "AuthorizationEndpointLengthExceed", "Authorization endpoint length cannot exceed 127 !");
 
     private final int httpCode;
     private final String code;

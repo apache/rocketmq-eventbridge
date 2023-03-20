@@ -69,6 +69,10 @@ public class ApiDestinationService extends AbstractResourceService {
         if (StringUtils.isBlank(httpApiParameters.getMethod())) {
             throw new EventBridgeException(EventBridgeErrorCode.MethodIsBlank);
         }
+        int len = httpApiParameters.getEndpoint().length();
+        if (len > EventBridgeConstants.EVENT_ENDPOINT_MAX_LENGTH || len < EventBridgeConstants.EVENT_ENDPOINT_MIN_LENGTH) {
+            throw new EventBridgeException(EventBridgeErrorCode.EndpointLengthExceed);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
