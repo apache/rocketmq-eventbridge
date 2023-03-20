@@ -129,8 +129,6 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     NetworkTypeIsBlank(409, "NetworkTypeIsBlank", "NetworkType is blank !"),
     EndpointLengthExceed(409, "EndpointLengthExceed", "Endpoint length cannot exceed 127 !"),
 
-    LengthExceed(409, "EndpointLengthExceed", "Endpoint length cannot exceed 127 !"),
-
     ClientIDLengthExceed(409, "ClientIDLengthExceed", "ClientID length cannot exceed 127 !"),
 
     ClientSecretLengthExceed(409, "ClientSecretLengthExceed", "ClientSecret length cannot exceed 127 !"),
