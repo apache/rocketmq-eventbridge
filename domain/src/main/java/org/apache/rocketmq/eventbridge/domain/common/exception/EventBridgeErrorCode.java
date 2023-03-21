@@ -132,7 +132,8 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     ClientIDLengthExceed(409, "ClientIDLengthExceed", "ClientID length cannot exceed 127 !"),
 
     ClientSecretLengthExceed(409, "ClientSecretLengthExceed", "ClientSecret length cannot exceed 127 !"),
-    AuthorizationEndpointLengthExceed(409, "AuthorizationEndpointLengthExceed", "Authorization endpoint length cannot exceed 127 !");
+    AuthorizationEndpointLengthExceed(409, "AuthorizationEndpointLengthExceed", "Authorization endpoint length cannot exceed 127 !"),
+    RequestParameterInvalid(409, "RequestParameterInvalid", "Request parameter Invalid ！");
 
     private final int httpCode;
     private final String code;
