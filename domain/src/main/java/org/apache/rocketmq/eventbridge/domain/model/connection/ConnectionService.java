@@ -318,5 +318,12 @@ public class ConnectionService extends AbstractResourceService {
         if (check) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNetworkParametersInvalid);
         }
+        if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(type)) {
+            if (StringUtils.isBlank(networkParameters.getVpcId())
+                    || StringUtils.isBlank(networkParameters.getVswitcheId())
+                    || StringUtils.isBlank(networkParameters.getSecurityGroupId())) {
+                throw new EventBridgeException(EventBridgeErrorCode.NetworkParametersIsEmpty);
+            }
+        }
     }
 }
