@@ -18,10 +18,12 @@
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ public class ApiDestinationService extends AbstractResourceService {
         }
         super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
                 ApiDestinationCountExceedLimit);
+        checkHttpApiParameters(eventApiDestinationDTO.getApiParams());
         final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
         if (apiDestination) {
             return eventApiDestinationDTO.getName();
@@ -56,11 +59,28 @@ public class ApiDestinationService extends AbstractResourceService {
         return null;
     }
 
+    private void checkHttpApiParameters(HttpApiParameters httpApiParameters) {
+        if (httpApiParameters == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.HttpApiParametersIsNull);
+        }
+        if (StringUtils.isBlank(httpApiParameters.getEndpoint())) {
+            throw new EventBridgeException(EventBridgeErrorCode.EndpointIsBlank);
+        }
+        if (StringUtils.isBlank(httpApiParameters.getMethod())) {
+            throw new EventBridgeException(EventBridgeErrorCode.MethodIsBlank);
+        }
+        int len = httpApiParameters.getEndpoint().length();
+        if (len > EventBridgeConstants.EVENT_ENDPOINT_MAX_LENGTH || len < EventBridgeConstants.EVENT_ENDPOINT_MIN_LENGTH) {
+            throw new EventBridgeException(EventBridgeErrorCode.EndpointLengthExceed);
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean updateApiDestination(ApiDestinationDTO apiDestinationDTO) {
         if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
         }
+        checkHttpApiParameters(apiDestinationDTO.getApiParams());
         return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
     }
 
@@ -84,7 +104,7 @@ public class ApiDestinationService extends AbstractResourceService {
     }
 
     public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                                         int maxResults) {
+                                                                         Integer maxResults) {
         final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
         result.setData(apiDestinationDTOS);
