@@ -18,7 +18,9 @@
 package org.apache.rocketmq.eventbridge.domain.model.connection;
 
 import com.google.gson.Gson;
+
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
@@ -243,15 +245,15 @@ public class ConnectionService extends AbstractResourceService {
             updateCheckAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), oldConnection));
         }
-        if (oldConnection != null) {
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(oldConnection.getNetworkParameters().getNetworkType())) {
-                networkServiceAPI.deletePrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()));
-            }
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-                NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
-                networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
-            }
+
+        if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(oldConnection.getNetworkParameters().getNetworkType())) {
+            networkServiceAPI.deletePrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()));
         }
+        if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
+            NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
+            networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
+        }
+
         connectionRepository.updateConnection(connectionDTO);
     }
 
