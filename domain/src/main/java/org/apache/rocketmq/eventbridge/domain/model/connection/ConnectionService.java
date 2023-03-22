@@ -56,8 +56,8 @@ public class ConnectionService extends AbstractResourceService {
     protected ApiDestinationRepository apiDestinationRepository;
 
     public ConnectionService(ConnectionRepository connectionRepository,
-        SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
-        ApiDestinationRepository apiDestinationRepository) {
+                             SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
+                             ApiDestinationRepository apiDestinationRepository) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
@@ -233,19 +233,23 @@ public class ConnectionService extends AbstractResourceService {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionDTO.getConnectionName());
         }
         checkNetworkType(connectionDTO.getNetworkParameters());
+        ConnectionDTO oldConnection = connectionRepository.getConnectionByNameAccountId(connectionDTO.getConnectionName(), accountId);
+        if (connectionDTO.getAuthParameters() == null
+                && oldConnection.getAuthParameters() != null
+                && StringUtils.isNotBlank(oldConnection.getAuthParameters().getAuthorizationType())) {
+            secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, oldConnection.getConnectionName()));
+        }
         if (connectionDTO.getAuthParameters() != null) {
             updateCheckAuthParameters(connectionDTO.getAuthParameters());
-            connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
+            connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), oldConnection));
         }
-        List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());
-        if (!CollectionUtils.isEmpty(connection)) {
-            ConnectionDTO dto = connection.get(0);
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(dto.getNetworkParameters().getNetworkType())) {
-                networkServiceAPI.deletePrivateNetwork(connectionDTO.getAccountId(), Integer.toString(dto.getId()));
+        if (oldConnection != null) {
+            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(oldConnection.getNetworkParameters().getNetworkType())) {
+                networkServiceAPI.deletePrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()));
             }
             if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
                 NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
-                networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(dto.getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
+                networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(oldConnection.getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
             }
         }
         connectionRepository.updateConnection(connectionDTO);
@@ -307,24 +311,20 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) {
-        ConnectionDTO connection = connectionRepository.getConnectionByName(name);
+    private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, ConnectionDTO oldConnection) {
         if (authParameters == null) {
-            if (connection.getAuthParameters() != null && StringUtils.isNotBlank(connection.getAuthParameters().getAuthorizationType())) {
-                secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
-            }
             return null;
         }
         final BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         if (basicAuthParameters != null) {
             String secretName = null;
-            if (connection.getAuthParameters() != null
-                    && connection.getAuthParameters().getBasicAuthParameters() != null) {
+            if (oldConnection.getAuthParameters() != null
+                    && oldConnection.getAuthParameters().getBasicAuthParameters() != null) {
                 if (StringUtils.isBlank(basicAuthParameters.getUsername())
                         || StringUtils.isBlank(basicAuthParameters.getPassword())) {
-                    secretName = connection.getAuthParameters().getBasicAuthParameters().getPassword();
+                    secretName = oldConnection.getAuthParameters().getBasicAuthParameters().getPassword();
                 } else {
-                    BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
+                    BasicAuthParameters oldBasicAuthParameters = oldConnection.getAuthParameters().getBasicAuthParameters();
                     secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName, basicAuthParameters.getUsername(), basicAuthParameters.getPassword());
                 }
             } else {
@@ -337,12 +337,12 @@ public class ConnectionService extends AbstractResourceService {
         final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
         if (apiKeyAuthParameters != null) {
             String secretName = null;
-            if (connection.getAuthParameters() != null
-                    && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
+            if (oldConnection.getAuthParameters() != null
+                    && oldConnection.getAuthParameters().getApiKeyAuthParameters() != null) {
                 if (StringUtils.isBlank(apiKeyAuthParameters.getApiKeyName()) || StringUtils.isBlank(apiKeyAuthParameters.getApiKeyValue())) {
-                    secretName = connection.getAuthParameters().getApiKeyAuthParameters().getApiKeyValue();
+                    secretName = oldConnection.getAuthParameters().getApiKeyAuthParameters().getApiKeyValue();
                 } else {
-                    ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
+                    ApiKeyAuthParameters oldApiKeyAuthParameters = oldConnection.getAuthParameters().getApiKeyAuthParameters();
                     secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName, apiKeyAuthParameters.getApiKeyName(), apiKeyAuthParameters.getApiKeyValue());
                 }
             } else {
@@ -356,26 +356,25 @@ public class ConnectionService extends AbstractResourceService {
         if (oauthParameters == null) {
             return authParameters;
         }
-        updateClientByKms(accountId, connectionName, oauthParameters, connection);
+        updateClientByKms(accountId, connectionName, oauthParameters, oldConnection);
         return authParameters;
     }
 
-    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO connection) {
+    private void updateClientByKms(String accountId, String connectionName, OAuthParameters oauthParameters, ConnectionDTO oldConnection) {
         OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
         if (clientParameters == null) {
             return;
         }
         String clientSecretSecretValue = null;
-        if (connection.getAuthParameters() != null
-                && connection.getAuthParameters().getOauthParameters() != null
-                && connection.getAuthParameters().getOauthParameters().getClientParameters() != null) {
+        if (oldConnection.getAuthParameters() != null
+                && oldConnection.getAuthParameters().getOauthParameters() != null
+                && oldConnection.getAuthParameters().getOauthParameters().getClientParameters() != null) {
             if (StringUtils.isBlank(clientParameters.getClientID()) || StringUtils.isBlank(clientParameters.getClientSecret())) {
-                clientSecretSecretValue = connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret();
+                clientSecretSecretValue = oldConnection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret();
             } else {
-                OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
+                OAuthParameters.ClientParameters oldClientParameters = oldConnection.getAuthParameters().getOauthParameters().getClientParameters();
                 clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
-                        accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
-                        connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
+                        accountId, connectionName, clientParameters.getClientID(), clientParameters.getClientSecret());
             }
         } else {
             clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
