@@ -18,7 +18,6 @@
 package org.apache.rocketmq.eventbridge.domain.model.connection.parameter;
 
 import com.google.gson.annotations.SerializedName;
-import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -28,7 +27,6 @@ import lombok.ToString;
 @ToString
 public class NetworkParameters {
 
-    @NotBlank(message = "NetworkType is blank")
     @SerializedName("NetworkType")
     private String networkType;
 

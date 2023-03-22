@@ -192,6 +192,7 @@ public class ConnectionController {
                 if (!CollectionUtils.isEmpty(errMessage)) {
                     return new ListConnectionResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
                 }
+                listConnectionRequest.checkMaxResultsAndNextToken();
                 final PaginationResult<List<ConnectionDTO>> listPaginationResult = connectionService.listConnections(
                     accountAPI.getResourceOwnerAccountId(ctx), listConnectionRequest.getConnectionNamePrefix(),
                     listConnectionRequest.getNextToken(), listConnectionRequest.getMaxResults());
@@ -249,8 +250,10 @@ public class ConnectionController {
         }
         if (oauthParameters != null) {
             OAuthParameters.ClientParameters clientParameters = oauthParameters.getClientParameters();
-            clientParameters.setClientSecret("**");
-            oauthParameters.setClientParameters(clientParameters);
+            if (clientParameters != null) {
+                clientParameters.setClientSecret("**");
+                oauthParameters.setClientParameters(clientParameters);
+            }
         }
         return connectionResponse;
     }

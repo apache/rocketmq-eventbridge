@@ -72,7 +72,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <spring.version>5.0.6.RELEASE</spring.version>
+        <spring.version>6.0.0</spring.version>
         <spring-boot.version>2.0.2.RELEASE</spring-boot.version>
         <spring.webflux.version>2.6.6</spring.webflux.version>
         <springfox-swagger-ui.version>2.7.0</springfox-swagger-ui.version>
@@ -85,12 +85,12 @@
         <junit.version>4.13.1</junit.version>
         <json-path.version>2.4.0</json-path.version>
         <assertj.version>2.6.0</assertj.version>
-        <common.net>3.3</common.net>
+        <common.net>3.9.0</common.net>
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.10.0</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
         <caffeine.version>2.9.3</caffeine.version>
-        <fastjson.version>1.2.76</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
     </properties>
