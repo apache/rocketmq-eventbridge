@@ -96,6 +96,14 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
+    private void updateCheckAuthParameters(AuthParameters authParameters) {
+        if (authParameters != null) {
+            updateCheckBasicAuthParameters(authParameters);
+            updateCheckApiKeyAuthParameters(authParameters);
+            checkOAuthParameters(authParameters);
+        }
+    }
+
     private void checkOAuthParameters(AuthParameters authParameters) {
         OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (AuthorizationTypeEnum.OAUTH_AUTH.getType().equals(authParameters.getAuthorizationType()) && oauthParameters == null) {
@@ -144,6 +152,24 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
+    private void updateCheckApiKeyAuthParameters(AuthParameters authParameters) {
+        ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
+        if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
+            String apiKeyName = apiKeyAuthParameters.getApiKeyName();
+            String apiKeyValue = apiKeyAuthParameters.getApiKeyValue();
+            if (StringUtils.isNotBlank(apiKeyName)
+                    && (apiKeyName.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                    || apiKeyName.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
+                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyNameLengthExceed);
+            }
+            if (StringUtils.isNotBlank(apiKeyValue)
+                    && (apiKeyValue.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                    || apiKeyValue.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
+                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyValueLengthExceed);
+            }
+        }
+    }
+
     private void checkBasicAuthParameters(AuthParameters authParameters) {
         BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters == null) {
@@ -159,6 +185,24 @@ public class ConnectionService extends AbstractResourceService {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
             }
             if (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
+                throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
+            }
+        }
+    }
+
+    private void updateCheckBasicAuthParameters(AuthParameters authParameters) {
+        BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
+        if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters != null) {
+            String username = basicAuthParameters.getUsername();
+            String password = basicAuthParameters.getPassword();
+            if (StringUtils.isNotBlank(username) &&
+                    (username.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                            || username.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
+                throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
+            }
+            if (StringUtils.isNotBlank(password)
+                    && (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
+                    || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
             }
         }
@@ -190,7 +234,7 @@ public class ConnectionService extends AbstractResourceService {
         }
         checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
-            checkAuthParameters(connectionDTO.getAuthParameters());
+            updateCheckAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), connectionDTO.getConnectionName()));
         }
         List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());
@@ -266,34 +310,49 @@ public class ConnectionService extends AbstractResourceService {
     private AuthParameters updateSecretData(AuthParameters authParameters, String accountId, String connectionName, String name) {
         ConnectionDTO connection = connectionRepository.getConnectionByName(name);
         if (authParameters == null) {
+            if (connection.getAuthParameters() != null && StringUtils.isNotBlank(connection.getAuthParameters().getAuthorizationType())) {
+                secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, connectionName));
+            }
             return null;
         }
         final BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
-        final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
-        final OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (basicAuthParameters != null) {
             String secretName = null;
-            if (connection.getAuthParameters() != null && connection.getAuthParameters().getBasicAuthParameters() != null) {
-                BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
-                secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName, basicAuthParameters.getUsername(), basicAuthParameters.getPassword());
+            if (connection.getAuthParameters() != null
+                    && connection.getAuthParameters().getBasicAuthParameters() != null) {
+                if (StringUtils.isBlank(basicAuthParameters.getUsername())
+                        || StringUtils.isBlank(basicAuthParameters.getPassword())) {
+                    secretName = connection.getAuthParameters().getBasicAuthParameters().getPassword();
+                } else {
+                    BasicAuthParameters oldBasicAuthParameters = connection.getAuthParameters().getBasicAuthParameters();
+                    secretName = secretManagerAPI.updateSecretValue(oldBasicAuthParameters.getPassword(), accountId, connectionName, basicAuthParameters.getUsername(), basicAuthParameters.getPassword());
+                }
             } else {
+                // old auth not basic
                 secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(basicAuthParameters));
             }
-
             basicAuthParameters.setPassword(secretName);
             return authParameters;
         }
+        final ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
         if (apiKeyAuthParameters != null) {
             String secretName = null;
-            if (connection.getAuthParameters() != null && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
-                ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
-                secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName, apiKeyAuthParameters.getApiKeyName(), apiKeyAuthParameters.getApiKeyValue());
+            if (connection.getAuthParameters() != null
+                    && connection.getAuthParameters().getApiKeyAuthParameters() != null) {
+                if (StringUtils.isBlank(apiKeyAuthParameters.getApiKeyName()) || StringUtils.isBlank(apiKeyAuthParameters.getApiKeyValue())) {
+                    secretName = connection.getAuthParameters().getApiKeyAuthParameters().getApiKeyValue();
+                } else {
+                    ApiKeyAuthParameters oldApiKeyAuthParameters = connection.getAuthParameters().getApiKeyAuthParameters();
+                    secretName = secretManagerAPI.updateSecretValue(oldApiKeyAuthParameters.getApiKeyValue(), accountId, connectionName, apiKeyAuthParameters.getApiKeyName(), apiKeyAuthParameters.getApiKeyValue());
+                }
             } else {
+                // old auth not api key
                 secretName = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(apiKeyAuthParameters));
             }
             apiKeyAuthParameters.setApiKeyValue(secretName);
             return authParameters;
         }
+        final OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (oauthParameters == null) {
             return authParameters;
         }
@@ -310,10 +369,14 @@ public class ConnectionService extends AbstractResourceService {
         if (connection.getAuthParameters() != null
                 && connection.getAuthParameters().getOauthParameters() != null
                 && connection.getAuthParameters().getOauthParameters().getClientParameters() != null) {
-            OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
-            clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
-                    accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
-                    connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
+            if (StringUtils.isBlank(clientParameters.getClientID()) || StringUtils.isBlank(clientParameters.getClientSecret())) {
+                clientSecretSecretValue = connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret();
+            } else {
+                OAuthParameters.ClientParameters oldClientParameters = connection.getAuthParameters().getOauthParameters().getClientParameters();
+                clientSecretSecretValue = secretManagerAPI.updateSecretValue(oldClientParameters.getClientSecret(),
+                        accountId, connectionName, connection.getAuthParameters().getOauthParameters().getClientParameters().getClientID(),
+                        connection.getAuthParameters().getOauthParameters().getClientParameters().getClientSecret());
+            }
         } else {
             clientSecretSecretValue = secretManagerAPI.createSecretName(accountId, connectionName, new Gson().toJson(clientParameters));
         }
