@@ -64,8 +64,6 @@ public class ConnectionService extends AbstractResourceService {
     public ConnectionService(ConnectionRepository connectionRepository,
         SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
         ApiDestinationRepository apiDestinationRepository, QuotaService quotaService) {
-                             SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
-                             ApiDestinationRepository apiDestinationRepository) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
@@ -78,7 +76,7 @@ public class ConnectionService extends AbstractResourceService {
         if (!CollectionUtils.isEmpty(checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()))) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
-            super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), quotaService.getTotalQuota(connectionDTO.getAccountId(), TotalQuotaEnum.CONNECTION_COUNT), ConnectionCountExceedLimit);
+        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), quotaService.getTotalQuota(connectionDTO.getAccountId(), TotalQuotaEnum.CONNECTION_COUNT), ConnectionCountExceedLimit);
         checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
             checkAuthParameters(connectionDTO.getAuthParameters());
