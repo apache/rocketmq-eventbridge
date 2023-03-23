@@ -111,8 +111,6 @@ public class ConnectionServiceTest {
 
     @Test
     public void testUpdateConnection() {
-        Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
-        Mockito.when(connectionRepository.getConnectionByName(anyString())).thenReturn(new ConnectionDTO());
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         NetworkParameters networkParameters = new NetworkParameters();
@@ -128,6 +126,8 @@ public class ConnectionServiceTest {
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
+        Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
+        Mockito.when(connectionRepository.getConnectionByNameAccountId(anyString(), anyString())).thenReturn(connectionDTO);
         connectionService.updateConnection(connectionDTO, UUID.randomUUID().toString());
     }
 
