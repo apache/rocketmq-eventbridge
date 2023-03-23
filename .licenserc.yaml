@@ -24,6 +24,7 @@ header:
   paths-ignore:
     - 'dist'
     - 'config'
+    - '*.json'
     - 'licenses'
     - '**/*.md'
     - 'LICENSE'
