@@ -29,6 +29,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
+import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
@@ -59,6 +60,8 @@ public class ConnectionServiceTest {
     private NetworkServiceAPI networkServiceAPI;
     @Mock
     private ApiDestinationRepository apiDestinationRepository;
+    @Mock
+    private QuotaService quotaService;
 
     @Before
     public void testBefore() throws Exception {
@@ -73,6 +76,7 @@ public class ConnectionServiceTest {
         List<ConnectionDTO> connectionDTOS = Lists.newArrayList();
         connectionDTOS.add(connectionDTO);
         Mockito.when(connectionRepository.getConnection(any(), any())).thenReturn(connectionDTOS);
+        Mockito.when(quotaService.getTotalQuota(any(), any())).thenReturn(10);
     }
 
     @Test
@@ -107,8 +111,6 @@ public class ConnectionServiceTest {
 
     @Test
     public void testUpdateConnection() {
-        Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
-        Mockito.when(connectionRepository.getConnectionByName(anyString())).thenReturn(new ConnectionDTO());
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setConnectionName(UUID.randomUUID().toString());
         NetworkParameters networkParameters = new NetworkParameters();
@@ -124,6 +126,8 @@ public class ConnectionServiceTest {
         authParameters.setBasicAuthParameters(basicAuthParameters);
         authParameters.setAuthorizationType(AuthorizationTypeEnum.BASIC_AUTH.getType());
         connectionDTO.setAuthParameters(authParameters);
+        Mockito.when(connectionRepository.updateConnection(any())).thenReturn(Boolean.TRUE);
+        Mockito.when(connectionRepository.getConnectionByNameAccountId(anyString(), anyString())).thenReturn(connectionDTO);
         connectionService.updateConnection(connectionDTO, UUID.randomUUID().toString());
     }
 

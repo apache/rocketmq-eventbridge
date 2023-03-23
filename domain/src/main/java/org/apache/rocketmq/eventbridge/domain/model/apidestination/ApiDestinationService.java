@@ -18,11 +18,13 @@
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
@@ -40,8 +42,11 @@ public class ApiDestinationService extends AbstractResourceService {
 
     private final ApiDestinationRepository apiDestinationRepository;
 
-    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository) {
+    private final QuotaService quotaService;
+
+    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository, QuotaService quotaService) {
         this.apiDestinationRepository = apiDestinationRepository;
+        this.quotaService = quotaService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -49,7 +54,7 @@ public class ApiDestinationService extends AbstractResourceService {
         if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
         }
-        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
+        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), quotaService.getTotalQuota(eventApiDestinationDTO.getAccountId(), TotalQuotaEnum.API_DESTINATION_COUNT),
                 ApiDestinationCountExceedLimit);
         checkHttpApiParameters(eventApiDestinationDTO.getApiParams());
         final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
