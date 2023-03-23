@@ -23,6 +23,7 @@ import java.util.UUID;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
+import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +44,8 @@ public class ApiDestinationServiceTest {
     private ApiDestinationService apiDestinationService;
     @Mock
     private ApiDestinationRepository apiDestinationRepository;
+    @Mock
+    private QuotaService quotaService;
 
     @Before
     public void testBefore() {
@@ -53,6 +56,7 @@ public class ApiDestinationServiceTest {
         apiDestinationDTO.setName(UUID.randomUUID().toString());
         Mockito.when(apiDestinationRepository.getApiDestinationCount(any())).thenReturn(8);
         Mockito.when(apiDestinationRepository.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(new ArrayList<>());
+        Mockito.when(quotaService.getTotalQuota(any(), any())).thenReturn(10);
     }
 
     @Test

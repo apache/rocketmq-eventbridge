@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
@@ -35,6 +36,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAu
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
@@ -57,13 +59,16 @@ public class ConnectionService extends AbstractResourceService {
 
     protected ApiDestinationRepository apiDestinationRepository;
 
+    protected QuotaService quotaService;
+
     public ConnectionService(ConnectionRepository connectionRepository,
-                             SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
-                             ApiDestinationRepository apiDestinationRepository) {
+        SecretManagerAPI secretManagerAPI, NetworkServiceAPI networkServiceAPI,
+        ApiDestinationRepository apiDestinationRepository, QuotaService quotaService) {
         this.connectionRepository = connectionRepository;
         this.secretManagerAPI = secretManagerAPI;
         this.networkServiceAPI = networkServiceAPI;
         this.apiDestinationRepository = apiDestinationRepository;
+        this.quotaService = quotaService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -71,7 +76,7 @@ public class ConnectionService extends AbstractResourceService {
         if (!CollectionUtils.isEmpty(checkConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName()))) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
-        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), EventBridgeConstants.CONNECTION_COUNT_LIMIT, ConnectionCountExceedLimit);
+        super.checkQuota(this.getConnectionCount(connectionDTO.getAccountId()), quotaService.getTotalQuota(connectionDTO.getAccountId(), TotalQuotaEnum.CONNECTION_COUNT), ConnectionCountExceedLimit);
         checkNetworkType(connectionDTO.getNetworkParameters());
         if (connectionDTO.getAuthParameters() != null) {
             checkAuthParameters(connectionDTO.getAuthParameters());
