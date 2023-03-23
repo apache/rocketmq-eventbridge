@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Data;
@@ -33,7 +34,7 @@ public class TargetRunnerConfig implements Serializable {
     /**
      * All data are reserved in this map.
      */
-    private Map<String, String> properties;
+    private List<Map<String, String>> components;
 
     @Override
     public boolean equals(Object o) {
@@ -42,12 +43,12 @@ public class TargetRunnerConfig implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         TargetRunnerConfig config = (TargetRunnerConfig) o;
-        return Objects.equals(name, config.name) && Objects.equals(properties, config.properties);
+        return Objects.equals(name, config.name) && isEqualsComponents(components, config.getComponents());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, properties);
+        return Objects.hash(name, components);
     }
 
     @Override
@@ -55,7 +56,47 @@ public class TargetRunnerConfig implements Serializable {
         //TODO
         return "TargetRunnerConfig{" +
             "connectName='" + name + '\'' +
-            ", properties=" + properties +
+            ", properties=" + components +
             '}';
+    }
+
+    private boolean isEqualsComponents(List<Map<String, String>> source, List<Map<String, String>> target) {
+        if (source == null || target == null) {
+            if (source != target) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        if (source.isEmpty() || target.isEmpty()) {
+            if (source.isEmpty() && target.isEmpty()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (source.size() != target.size()) {
+            return false;
+        }
+        for (int index = 0; index < source.size(); index++) {
+            Map<String, String> sourceComponent = source.get(index);
+            Map<String, String> targetComponent = target.get(index);
+            if (sourceComponent.size() != targetComponent.size()) {
+                return false;
+            }
+            for (Map.Entry<String, String> entry : sourceComponent.entrySet()) {
+                String element = targetComponent.get(entry.getKey());
+                if (element == null && entry.getValue() == null) {
+                    return true;
+                } else if (element.equals(entry.getValue())) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
