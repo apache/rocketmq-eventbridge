@@ -265,7 +265,7 @@ public class ConnectionService extends AbstractResourceService {
 
     public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
         final List<ConnectionDTO> connectionDTO = connectionRepository.getConnection(accountId, connectionName);
-        if (connectionDTO == null) {
+        if (CollectionUtils.isEmpty(connectionDTO)) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
         }
         return connectionDTO;
