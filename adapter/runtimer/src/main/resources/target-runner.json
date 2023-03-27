@@ -1,0 +1,23 @@
+[
+    {
+
+        "name":"xxxxx",
+        "components":[ {
+          "class" : "org.apache.rocketmq.connect.FileStream",
+          "path" : "xxxxxxxx",
+          "name" : "demo"
+        },
+        {
+          "class" : "org.apache.rocketmq.connect.transforms.PatternRename",
+          "pattern" : "company",
+          "replacement": "company02"
+        },
+       {
+          "class" : "org.apache.rocketmq.connect.HttpSinkTask",
+          "url" : "http://xxxxx/demo"
+        } ],
+        "runOptions":{
+            "taskSize":1
+        }
+    }
+]
