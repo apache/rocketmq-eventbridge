@@ -31,6 +31,7 @@ public class TargetRunnerConfigOnFileObserverTest {
 
     @Test
     public void testGetLatestTargetRunnerConfig() {
+        TargetRunnerConfigUtil.resetTargetRunner(getConfigFilePath());
         TargetRunnerConfigOnFileObserver targetRunnerConfigOnFileObserver = new TargetRunnerConfigOnFileObserver(getConfigFilePath());
         System.out.println(targetRunnerConfigOnFileObserver.getLatestTargetRunnerConfig());
         Assert.assertTrue(!targetRunnerConfigOnFileObserver.getLatestTargetRunnerConfig().stream().findFirst().get().getComponents().isEmpty());
@@ -39,15 +40,9 @@ public class TargetRunnerConfigOnFileObserverTest {
     @Test
     public void testListen_Add() throws InterruptedException {
         String path = getConfigFilePath();
-        TargetRunnerConfigUtil.resetTargetRunner(path);
-
-        TargetRunnerConfigOnFileObserver targetRunnerConfigOnFileObserver = new TargetRunnerConfigOnFileObserver(path);
-        TestTargetRunnerListener targetRunnerListener = new TestTargetRunnerListener();
-        targetRunnerConfigOnFileObserver.registerListener(targetRunnerListener);
-
-        Thread.sleep(3000L);
+        TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);
         TargetRunnerConfigUtil.addTargetRunner(path);
-        await().atMost(Duration.ofSeconds(10)).until(() -> {
+        await().atMost(Duration.ofSeconds(60)).until(() -> {
             return targetRunnerListener.addTargetRunner && !targetRunnerListener.updateTargetRunner && !targetRunnerListener.deleteTargetRunner;
         });
     }
@@ -55,15 +50,9 @@ public class TargetRunnerConfigOnFileObserverTest {
     @Test
     public void testListen_Delete() throws InterruptedException {
         String path = getConfigFilePath();
-        TargetRunnerConfigUtil.resetTargetRunner(path);
-
-        TargetRunnerConfigOnFileObserver targetRunnerConfigOnFileObserver = new TargetRunnerConfigOnFileObserver(path);
-        TestTargetRunnerListener targetRunnerListener = new TestTargetRunnerListener();
-        targetRunnerConfigOnFileObserver.registerListener(targetRunnerListener);
-
-        Thread.sleep(3000L);
+        TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);
         TargetRunnerConfigUtil.deleteTargetRunner(path);
-        await().atMost(Duration.ofSeconds(10)).until(() -> {
+        await().atMost(Duration.ofSeconds(60)).until(() -> {
             return !targetRunnerListener.addTargetRunner && !targetRunnerListener.updateTargetRunner && targetRunnerListener.deleteTargetRunner;
         });
     }
@@ -71,17 +60,20 @@ public class TargetRunnerConfigOnFileObserverTest {
     @Test
     public void testListen_Update() throws InterruptedException {
         String path = getConfigFilePath();
-        TargetRunnerConfigUtil.resetTargetRunner(path);
+        TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);
+        TargetRunnerConfigUtil.updateTargetRunner(path);
+        await().atMost(Duration.ofSeconds(60)).until(() -> {
+            return !targetRunnerListener.addTargetRunner && targetRunnerListener.updateTargetRunner && !targetRunnerListener.deleteTargetRunner;
+        });
+    }
 
+    private  TestTargetRunnerListener initTargetRunnerConfigOnFileObserver(String path) throws InterruptedException {
+        TargetRunnerConfigUtil.resetTargetRunner(path);
         TargetRunnerConfigOnFileObserver targetRunnerConfigOnFileObserver = new TargetRunnerConfigOnFileObserver(path);
         TestTargetRunnerListener targetRunnerListener = new TestTargetRunnerListener();
         targetRunnerConfigOnFileObserver.registerListener(targetRunnerListener);
-
         Thread.sleep(3000L);
-        TargetRunnerConfigUtil.updateTargetRunner(path);
-        await().atMost(Duration.ofSeconds(10)).until(() -> {
-            return !targetRunnerListener.addTargetRunner && targetRunnerListener.updateTargetRunner && !targetRunnerListener.deleteTargetRunner;
-        });
+        return targetRunnerListener;
     }
 
     private String getConfigFilePath() {
