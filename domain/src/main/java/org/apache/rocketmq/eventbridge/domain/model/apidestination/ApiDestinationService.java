@@ -28,6 +28,7 @@ import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,13 +109,13 @@ public class ApiDestinationService extends AbstractResourceService {
         return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
     }
 
-    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String connectionName, String nextToken,
                                                                          Integer maxResults) {
-        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
+        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, connectionName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
         result.setData(apiDestinationDTOS);
         result.setTotal(this.getApiDestinationCount(accountId));
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setNextToken(NextTokenUtil.findNextToken(this.getApiDestinationCount(accountId), Integer.parseInt(nextToken), maxResults));
         return result;
     }
 

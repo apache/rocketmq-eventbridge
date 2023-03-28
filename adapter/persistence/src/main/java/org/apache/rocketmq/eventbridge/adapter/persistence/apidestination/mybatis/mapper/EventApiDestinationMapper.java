@@ -62,7 +62,7 @@ public interface EventApiDestinationMapper {
      * @mbggenerated
      */
     List<ApiDestinationDO> listApiDestinations(@Param("accountId") String accountId, @Param("name") String name,
-        @Param("nextToken") int nextToken, @Param("maxResults") int maxResults);
+                                               @Param("connectionName") String connectionName, @Param("nextToken") int nextToken, @Param("maxResults") int maxResults);
 
     /**
      * Select by account and name
