@@ -24,6 +24,7 @@ import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.repository.EventRuleRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternEvaluatorBuilder;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -103,7 +104,7 @@ public class EventRuleService extends AbstractResourceService {
         PaginationResult<List<EventRule>> result = new PaginationResult();
         result.setData(eventRules);
         result.setTotal(this.getEventRulesCount(accountId, eventBusName));
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setNextToken(NextTokenUtil.findNextToken(this.getEventRulesCount(accountId, eventBusName), Integer.parseInt(nextToken), maxResults));
         return result;
     }
 

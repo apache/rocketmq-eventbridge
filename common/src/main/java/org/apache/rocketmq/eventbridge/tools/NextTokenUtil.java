@@ -15,32 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.connection;
+package org.apache.rocketmq.eventbridge.tools;
 
-import java.io.Serializable;
-import java.util.Date;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
-import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
+public class NextTokenUtil {
 
-@Getter
-@Setter
-@ToString
-public class ConnectionDTO implements Serializable {
-
-    private static final long serialVersionUID = 7351924623576926203L;
-    private Integer id;
-    private String accountId;
-
-    private String connectionName;
-
-    private String description;
-
-    private NetworkParameters networkParameters;
-
-    private AuthParameters authParameters;
-
-    private Date gmtCreate;
+    public static String findNextToken(int totalSize, int skipIdx, int limit) {
+        if (skipIdx + limit < totalSize) {
+            return String.valueOf(skipIdx + limit);
+        } else {
+            return null;
+        }
+    }
 }
