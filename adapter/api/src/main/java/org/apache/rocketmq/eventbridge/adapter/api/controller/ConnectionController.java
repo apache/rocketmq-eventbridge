@@ -147,7 +147,6 @@ public class ConnectionController {
                     ConnectionResponse connectionResponse = new ConnectionResponse();
                     BeanUtils.copyProperties(connectionDTO, connectionResponse);
                     connectionResponse.setGmtCreate(connectionDTO.getGmtCreate().getTime());
-                    connectionResponse.setApiDestinationName(connectionDTO.getApiDestinationName());
                     connectionResponse.setId(connectionDTO.getId());
                     connectionResponses.add(dataMasking(connectionResponse));
                 });
@@ -171,7 +170,6 @@ public class ConnectionController {
                     ConnectionResponse connectionResponse = new ConnectionResponse();
                     BeanUtils.copyProperties(connectionDTO, connectionResponse);
                     connectionResponse.setGmtCreate(connectionDTO.getGmtCreate().getTime());
-                    connectionResponse.setApiDestinationName(connectionDTO.getApiDestinationName());
                     connectionResponse.setId(connectionDTO.getId());
                     connectionResponses.add(connectionResponse);
                 });
@@ -202,7 +200,6 @@ public class ConnectionController {
                         ConnectionResponse connectionResponse = new ConnectionResponse();
                         BeanUtils.copyProperties(connectionDTO, connectionResponse);
                         connectionResponse.setGmtCreate(connectionDTO.getGmtCreate().getTime());
-                        connectionResponse.setApiDestinationName(connectionDTO.getApiDestinationName());
                         connectionResponse.setId(connectionDTO.getId());
                         connectionResponses.add(dataMasking(connectionResponse));
                     });

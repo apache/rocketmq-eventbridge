@@ -45,9 +45,6 @@ public class ConnectionResponse extends BaseDTO {
     @SerializedName("GmtCreate")
     private Long gmtCreate;
 
-    @SerializedName("ApiDestinationName")
-    private String apiDestinationName;
-
     @SerializedName("Id")
     private Integer id;
 

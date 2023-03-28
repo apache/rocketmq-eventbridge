@@ -82,10 +82,8 @@
         select
         ec.id, ec.account_id, ec.name, ec.authorization_type, ec.network_type, ec.description, ec.gmt_create,
         ec.gmt_modify,
-        ec.auth_parameters, ec.network_parameters, ead.name as apiDestinationName
+        ec.auth_parameters, ec.network_parameters
         from event_connection ec
-        left join event_api_destination ead
-        on ec.name = ead.connection_name
         <where>
             <if test="accountId != null and accountId != ''">ec.account_id = #{accountId}</if>
             <if test="name != null and name != ''">and ec.name like concat('%',#{name},'%')</if>
@@ -96,10 +94,8 @@
         select
         ec.id, ec.account_id, ec.name, ec.authorization_type, ec.network_type, ec.description, ec.gmt_create,
         ec.gmt_modify,
-        ec.auth_parameters, ec.network_parameters, ead.name as apiDestinationName
+        ec.auth_parameters, ec.network_parameters
         from event_connection ec
-        left join event_api_destination ead
-        on ec.name = ead.connection_name
         <where>
             <if test="accountId != null and accountId != ''">ec.account_id = #{accountId}</if>
             <if test="name != null and name != ''">and ec.name = #{name,jdbcType=VARCHAR}</if>

@@ -109,9 +109,9 @@ public class ApiDestinationService extends AbstractResourceService {
         return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
     }
 
-    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String connectionName, String nextToken,
                                                                          Integer maxResults) {
-        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
+        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, connectionName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
         result.setData(apiDestinationDTOS);
         result.setTotal(this.getApiDestinationCount(accountId));
