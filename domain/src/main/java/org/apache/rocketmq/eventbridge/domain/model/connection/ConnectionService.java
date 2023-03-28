@@ -42,6 +42,7 @@ import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -264,7 +265,7 @@ public class ConnectionService extends AbstractResourceService {
 
     public List<ConnectionDTO> getConnection(String accountId, String connectionName) {
         final List<ConnectionDTO> connectionDTO = connectionRepository.getConnection(accountId, connectionName);
-        if (connectionDTO == null) {
+        if (CollectionUtils.isEmpty(connectionDTO)) {
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionNotExist, connectionName);
         }
         return connectionDTO;
@@ -279,7 +280,7 @@ public class ConnectionService extends AbstractResourceService {
         PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
         result.setData(connectionDTOS);
         result.setTotal(this.getConnectionCount(accountId));
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setNextToken(NextTokenUtil.findNextToken(this.getConnectionCount(accountId), Integer.parseInt(nextToken), maxResults));
         return result;
     }
 

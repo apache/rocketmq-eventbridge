@@ -23,6 +23,7 @@ import java.util.UUID;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.junit.Assert;
@@ -55,7 +56,7 @@ public class ApiDestinationServiceTest {
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         apiDestinationDTO.setName(UUID.randomUUID().toString());
         Mockito.when(apiDestinationRepository.getApiDestinationCount(any())).thenReturn(8);
-        Mockito.when(apiDestinationRepository.listApiDestinations(any(), any(), any(), anyInt())).thenReturn(new ArrayList<>());
+        Mockito.when(apiDestinationRepository.listApiDestinations(any(), any(), any(), any(), anyInt())).thenReturn(new ArrayList<>());
         Mockito.when(quotaService.getTotalQuota(any(), any())).thenReturn(10);
     }
 
@@ -65,6 +66,10 @@ public class ApiDestinationServiceTest {
         ApiDestinationDTO eventApiDestinationDTO = new ApiDestinationDTO();
         eventApiDestinationDTO.setName(UUID.randomUUID().toString());
         eventApiDestinationDTO.setAccountId(UUID.randomUUID().toString());
+        HttpApiParameters httpApiParameters = new HttpApiParameters();
+        httpApiParameters.setMethod("POST");
+        httpApiParameters.setEndpoint("http://127.0.0.1:8001");
+        eventApiDestinationDTO.setApiParams(httpApiParameters);
         final String apiDestination = apiDestinationService.createApiDestination(eventApiDestinationDTO);
         Assert.assertNotNull(apiDestination);
     }
@@ -75,6 +80,10 @@ public class ApiDestinationServiceTest {
         ApiDestinationDTO apiDestinationDTO = new ApiDestinationDTO();
         apiDestinationDTO.setName(UUID.randomUUID().toString());
         apiDestinationDTO.setAccountId(UUID.randomUUID().toString());
+        HttpApiParameters httpApiParameters = new HttpApiParameters();
+        httpApiParameters.setMethod("POST");
+        httpApiParameters.setEndpoint("http://127.0.0.1:8001");
+        apiDestinationDTO.setApiParams(httpApiParameters);
         final Boolean aBoolean = apiDestinationService.updateApiDestination(apiDestinationDTO);
         Assert.assertTrue(aBoolean);
     }
@@ -95,7 +104,7 @@ public class ApiDestinationServiceTest {
 
     @Test
     public void testListApiDestinations() {
-        final PaginationResult<List<ApiDestinationDTO>> listPaginationResult = apiDestinationService.listApiDestinations(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
+        final PaginationResult<List<ApiDestinationDTO>> listPaginationResult = apiDestinationService.listApiDestinations(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), "0", 10);
         Assert.assertNotNull(listPaginationResult.getData());
     }
 }

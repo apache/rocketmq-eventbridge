@@ -30,7 +30,7 @@ public interface ApiDestinationRepository {
 
     Boolean deleteApiDestination(String accountId, String apiDestinationName);
 
-    List<ApiDestinationDTO> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
+    List<ApiDestinationDTO> listApiDestinations(String accountId, String apiDestinationName, String connectionName, String nextToken,
         int maxResults);
 
     int getApiDestinationCount(String accountId);
