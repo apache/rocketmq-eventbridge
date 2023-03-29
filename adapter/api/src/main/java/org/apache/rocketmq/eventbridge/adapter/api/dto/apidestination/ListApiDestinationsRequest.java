@@ -33,8 +33,8 @@ public class ListApiDestinationsRequest extends BaseResponse {
     @SerializedName("ApiDestinationNamePrefix")
     private String apiDestinationNamePrefix;
 
-    @SerializedName("ConnectionNamePrefix")
-    private String connectionNamePrefix;
+    @SerializedName("ConnectionName")
+    private String connectionName;
 
 
     @Min(value = 0, message = "The limit size of page is invalid, which must greater than 0 and less than [{0}].")
