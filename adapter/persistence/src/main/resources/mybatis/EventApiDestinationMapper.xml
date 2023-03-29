@@ -72,7 +72,7 @@
         <where>
             <if test="accountId != null and accountId != ''">account_id = #{accountId}</if>
             <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
-            <if test="connectionName != null and connectionName != ''">and connection_name like concat('%',#{connectionName},'%')</if>
+            <if test="connectionName != null and connectionName != ''">and connection_name = #{connectionName}</if>
         </where>
         order by gmt_modify desc LIMIT #{nextToken} , #{maxResults}
     </select>
