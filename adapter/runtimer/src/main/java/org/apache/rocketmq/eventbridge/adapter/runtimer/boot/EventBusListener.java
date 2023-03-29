@@ -19,9 +19,14 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
 import java.util.List;
+
+import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * listen the event and offer to queue
@@ -30,12 +35,13 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
  */
 public class EventBusListener extends ServiceThread {
 
+    private static final Logger logger = LoggerFactory.getLogger(EventBusListener.class);
+
     private ListenerFactory listenerFactory;
 
     private EventSubscriber eventSubscriber;
 
-    public EventBusListener(ListenerFactory listenerFactory,
-        EventSubscriber eventSubscriber) {
+    public EventBusListener(ListenerFactory listenerFactory, EventSubscriber eventSubscriber) {
         this.listenerFactory = listenerFactory;
         this.eventSubscriber = eventSubscriber;
     }
@@ -43,8 +49,16 @@ public class EventBusListener extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            List<ConnectRecord> recordList = eventSubscriber.pull();
-            listenerFactory.offerEventRecords(recordList);
+            try{
+                List<ConnectRecord> recordList = eventSubscriber.pull();
+                if(CollectionUtils.isEmpty(recordList)){
+                    this.waitForRunning(1000);
+                    continue;
+                }
+                listenerFactory.offerEventRecords(recordList);
+            }catch (Exception exception) {
+                logger.error(" event bus pull record exception, stackTrace - ", exception);
+            }
         }
     }
 

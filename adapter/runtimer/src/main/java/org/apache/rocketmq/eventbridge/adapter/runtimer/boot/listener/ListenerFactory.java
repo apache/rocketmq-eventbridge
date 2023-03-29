@@ -35,9 +35,12 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
+import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
@@ -46,6 +49,8 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyV
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +63,7 @@ public class ListenerFactory implements TargetRunnerListener {
 
     private static final String SEMICOLON = ";";
 
-    private static final String SYS_DEFAULT_GROUP = "default-%s-group";
+    private static final String SYS_DEFAULT_GROUP = "event-bridge-default-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
 
@@ -73,23 +78,42 @@ public class ListenerFactory implements TargetRunnerListener {
     private BlockingQueue<ConnectRecord> targetQueue = new LinkedBlockingQueue<>(50000);
 
     private Map<String/*TargetRunnerName*/, TransformEngine<ConnectRecord>> taskTransformMap = new ConcurrentHashMap<>(20);
+
     private Map<String/*TargetRunnerName*/, SinkTask> pusherTaskMap = new ConcurrentHashMap<>(20);
+
     private Map<String/*TargetRunnerName*/, TargetRunnerConfig> targetRunnerConfigMap = new ConcurrentHashMap<>(20);
 
     @Value("${rocketmq.namesrvAddr:}")
     private String namesrvAddr;
 
-    public DefaultLitePullConsumer initDefaultMQPullConsumer(String topic) {
+    /**
+     * first init default rocketmq pull consumer
+     * @param topics
+     * @return
+     */
+    public DefaultLitePullConsumer initDefaultMQPullConsumer(Set<String> topics) {
         DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
+        consumer.setConsumerGroup(SYS_DEFAULT_GROUP);
+        consumer.setNamesrvAddr(namesrvAddr);
         try {
-            consumer.setConsumerGroup(String.format(SYS_DEFAULT_GROUP, topic));
-            consumer.setNamesrvAddr(namesrvAddr);
-            consumer.subscribe(topic, "*");
+            for(String topic : topics){
+                consumer.subscribe(topic, "*");
+            }
             consumer.start();
         } catch (Exception exception) {
-            logger.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
+            logger.error("init default pull consumer exception, topic -" + topics.toString() + "-stackTrace-", exception);
+            throw new EventBridgeException(" init rocketmq consumer failed");
         }
         return consumer;
+    }
+
+    public static String createGroupName(String prefix) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append("-");
+        sb.append(RemotingUtil.getLocalAddress()).append("-");
+        sb.append(UtilAll.getPid()).append("-");
+        sb.append(System.nanoTime());
+        return sb.toString().replace(".", "-");
     }
 
     public TargetRunnerConfig takeTaskConfig() {
@@ -196,6 +220,27 @@ public class ListenerFactory implements TargetRunnerListener {
             allTopicList.addAll(topicList);
         }
         return Lists.newArrayList(allTopicList);
+    }
+
+    /**
+     * parse topics by specific target runner configs
+     * @param targetRunnerConfigs
+     * @return
+     */
+    public Set<String> parseTopicsByRunnerConfigs(Set<TargetRunnerConfig> targetRunnerConfigs){
+        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
+            logger.warn("target runner config is empty, parse to topic failed!");
+            return null;
+        }
+        Set<String> listenTopics = Sets.newHashSet();
+        for(TargetRunnerConfig runnerConfig : targetRunnerConfigs){
+            List<Map<String,String>> runnerConfigMap = runnerConfig.getComponents();
+            if(CollectionUtils.isEmpty(runnerConfigMap)){
+                continue;
+            }
+            listenTopics.addAll(runnerConfigMap.stream().map(item->item.get(RuntimerConfigDefine.CONNECT_TOPICNAME)).collect(Collectors.toSet()));
+        }
+        return listenTopics;
     }
 
     /**

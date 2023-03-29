@@ -17,25 +17,18 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * event bridge runtimer
@@ -49,26 +42,10 @@ public class Runtimer {
 
     private AtomicReference<RuntimerState> runtimerState;
 
-    private Plugin plugin;
-
     private ListenerFactory listenerFactory;
 
-    private TargetRunnerConfigObserver targetRunnerConfigObserver;
-
-    private Map<String, List<TargetKeyValue>> taskConfigs = new HashMap<>();
-
-    private EventBusListener listener;
-
-    private EventRuleTransfer transfer;
-
-    private EventTargetPusher pusher;
-
-    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "RuntimerScheduledThread"));
-
-    public Runtimer(Plugin plugin, ListenerFactory listenerFactory, TargetRunnerConfigObserver configManageService) {
-        this.plugin = plugin;
+    public Runtimer(ListenerFactory listenerFactory) {
         this.listenerFactory = listenerFactory;
-        this.targetRunnerConfigObserver = configManageService;
     }
 
     @PostConstruct
