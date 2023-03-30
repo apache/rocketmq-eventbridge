@@ -19,22 +19,17 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * receive event and transfer the rule to pusher
@@ -59,7 +54,7 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            //TODO JAVA8 并发流处理
+            // add CompletableFuture
             ConnectRecord eventRecord = listenerFactory.takeEventRecord();
             if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
@@ -79,12 +74,7 @@ public class EventRuleTransfer extends ServiceThread {
                     listenerFactory.offerTargetTaskQueue(transformRecord);
                     logger.debug("offer target task queue succeed, targetMap - {}", JSON.toJSONString(transformRecord));
                 });
-
-
             });
         }
     }
-
-
-
 }

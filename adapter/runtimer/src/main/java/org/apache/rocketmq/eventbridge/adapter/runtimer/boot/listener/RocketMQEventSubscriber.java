@@ -33,8 +33,6 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -42,6 +40,7 @@ import org.springframework.util.CollectionUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -53,29 +52,31 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private ListenerFactory listenerFactory;
 
-    private AbstractTargetRunnerConfigObserver runnerConfigObserver;
-
     private DefaultLitePullConsumer pullConsumer;
 
     private Integer DEFAULT_PULL_TIME_OUT = 3000;
 
     public RocketMQEventSubscriber(ListenerFactory listenerFactory) {
         this.listenerFactory = listenerFactory;
-        this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
-        this.runnerConfigObserver.registerListener(this);
         this.initPullConsumer();
     }
 
     @Override
     public void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum) {
+        if(Objects.isNull(pullConsumer)){
+            pullConsumer = listenerFactory.initDefaultMQPullConsumer();
+            return;
+        }
         Set<String> currentTopics = listenerFactory.parseTopicsByRunnerConfigs(Sets.newHashSet(targetRunnerConfig));
         for (String topic : currentTopics){
             switch (refreshTypeEnum){
                 case ADD:
                 case UPDATE:
                         subscribe(topic);
+                        break;
                 case DELETE:
                         unSubscribe(topic);
+                        break;
                 default:
                     break;
             }
@@ -109,9 +110,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initPullConsumer() {
-        Set<TargetRunnerConfig> runnerConfigSet = runnerConfigObserver.getLatestTargetRunnerConfig();
-        Set<String> listenTopics = listenerFactory.parseTopicsByRunnerConfigs(runnerConfigSet);
-        pullConsumer = listenerFactory.initDefaultMQPullConsumer(listenTopics);
+        pullConsumer = listenerFactory.initDefaultMQPullConsumer();
     }
 
     /**
@@ -151,8 +150,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private void subscribe(String topic) {
         try {
             pullConsumer.subscribe(topic, "*");
-        } catch (MQClientException e) {
-            e.printStackTrace();
+        } catch (MQClientException exception) {
+            logger.error("rocketmq event subscribe new topic failed, stack trace - ", exception);
         }
     }
 

@@ -20,9 +20,12 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -44,14 +47,21 @@ public class Runtimer {
 
     private ListenerFactory listenerFactory;
 
+    private AbstractTargetRunnerConfigObserver runnerConfigObserver;
+
     public Runtimer(ListenerFactory listenerFactory) {
         this.listenerFactory = listenerFactory;
+        this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
     }
 
     @PostConstruct
     public void initAndStart() {
         logger.info("init runtimer task config");
-        new EventBusListener(listenerFactory, new RocketMQEventSubscriber(listenerFactory)).start();
+        listenerFactory.initListenerMetadata(runnerConfigObserver.getLatestTargetRunnerConfig());
+        EventSubscriber eventSubscriber = new RocketMQEventSubscriber(listenerFactory);
+        runnerConfigObserver.registerListener(listenerFactory);
+        runnerConfigObserver.registerListener(eventSubscriber);
+        new EventBusListener(listenerFactory, eventSubscriber).start();
         new EventRuleTransfer(listenerFactory).start();
         new EventTargetPusher(listenerFactory).start();
         startRuntimer();

@@ -18,15 +18,14 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.List;
-
-import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * listen the event and offer to queue
@@ -57,12 +56,13 @@ public class EventBusListener extends ServiceThread {
                 }
                 listenerFactory.offerEventRecords(recordList);
             }catch (Exception exception) {
-                logger.error(" event bus pull record exception, stackTrace - ", exception);
+                logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
             }
         }
     }
 
-    @Override public String getServiceName() {
+    @Override
+    public String getServiceName() {
         return EventBusListener.class.getSimpleName();
     }
 }
