@@ -19,7 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.slf4j.Logger;
@@ -38,12 +38,12 @@ public class EventRuleTransfer extends ServiceThread {
 
     private static final Logger logger = LoggerFactory.getLogger(EventRuleTransfer.class);
 
-    private ListenerFactory listenerFactory;
+    private CirculatorContext circulatorContext;
 
     private ExecutorService executorService = new ThreadPoolExecutor(20, 60, 1000, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
 
-    public EventRuleTransfer(ListenerFactory listenerFactory) {
-        this.listenerFactory = listenerFactory;
+    public EventRuleTransfer(CirculatorContext circulatorContext) {
+        this.circulatorContext = circulatorContext;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class EventRuleTransfer extends ServiceThread {
     public void run() {
         while (!stopped) {
             // add CompletableFuture
-            ConnectRecord eventRecord = listenerFactory.takeEventRecord();
+            ConnectRecord eventRecord = circulatorContext.takeEventRecord();
             if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);
@@ -64,14 +64,14 @@ public class EventRuleTransfer extends ServiceThread {
             executorService.submit(() -> {
                 // extension add sub
                 // rule - target
-                listenerFactory.getTaskTransformMap().entrySet().forEach(entry -> {
+                circulatorContext.getTaskTransformMap().entrySet().forEach(entry -> {
                     TransformEngine<ConnectRecord> transformEngine = entry.getValue();
                     ConnectRecord transformRecord = transformEngine.doTransforms(eventRecord);
                     if (Objects.isNull(transformRecord)) {
                         return;
                     }
                     // a bean for maintain
-                    listenerFactory.offerTargetTaskQueue(transformRecord);
+                    circulatorContext.offerTargetTaskQueue(transformRecord);
                     logger.debug("offer target task queue succeed, targetMap - {}", JSON.toJSONString(transformRecord));
                 });
             });

@@ -21,7 +21,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
@@ -39,16 +39,16 @@ public class EventTargetPusher extends ServiceThread{
 
     private static final Logger logger = LoggerFactory.getLogger(EventTargetPusher.class);
 
-    private ListenerFactory listenerFactory;
+    private CirculatorContext circulatorContext;
 
-    public EventTargetPusher(ListenerFactory listenerFactory) {
-        this.listenerFactory = listenerFactory;
+    public EventTargetPusher(CirculatorContext circulatorContext) {
+        this.circulatorContext = circulatorContext;
     }
 
     @Override
     public void run() {
         while (!stopped) {
-            ConnectRecord targetRecord = listenerFactory.takeTargetMap();
+            ConnectRecord targetRecord = circulatorContext.takeTargetMap();
             if (Objects.isNull(targetRecord)) {
                 logger.info("current target pusher is empty");
                 this.waitForRunning(1000);
@@ -58,7 +58,7 @@ public class EventTargetPusher extends ServiceThread{
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecord));
             }
 
-            Map<String, SinkTask> latestTaskMap = listenerFactory.getPusherTaskMap();
+            Map<String, SinkTask> latestTaskMap = circulatorContext.getPusherTaskMap();
             String runnerName = targetRecord.getExtensions().getString(RuntimerConfigDefine.RUNNER_NAME);
             SinkTask sinkTask = latestTaskMap.get(runnerName);
             // add thread pool

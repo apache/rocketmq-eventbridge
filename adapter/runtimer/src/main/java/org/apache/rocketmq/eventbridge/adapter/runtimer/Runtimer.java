@@ -21,7 +21,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
@@ -45,25 +45,25 @@ public class Runtimer {
 
     private AtomicReference<RuntimerState> runtimerState;
 
-    private ListenerFactory listenerFactory;
+    private CirculatorContext circulatorContext;
 
     private AbstractTargetRunnerConfigObserver runnerConfigObserver;
 
-    public Runtimer(ListenerFactory listenerFactory) {
-        this.listenerFactory = listenerFactory;
+    public Runtimer(CirculatorContext circulatorContext) {
+        this.circulatorContext = circulatorContext;
         this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
     }
 
     @PostConstruct
     public void initAndStart() {
         logger.info("init runtimer task config");
-        listenerFactory.initListenerMetadata(runnerConfigObserver.getLatestTargetRunnerConfig());
-        EventSubscriber eventSubscriber = new RocketMQEventSubscriber(listenerFactory);
-        runnerConfigObserver.registerListener(listenerFactory);
+        circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
+        EventSubscriber eventSubscriber = new RocketMQEventSubscriber(runnerConfigObserver);
+        runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(listenerFactory, eventSubscriber).start();
-        new EventRuleTransfer(listenerFactory).start();
-        new EventTargetPusher(listenerFactory).start();
+        new EventBusListener(circulatorContext, eventSubscriber).start();
+        new EventRuleTransfer(circulatorContext).start();
+        new EventTargetPusher(circulatorContext).start();
         startRuntimer();
     }
 
