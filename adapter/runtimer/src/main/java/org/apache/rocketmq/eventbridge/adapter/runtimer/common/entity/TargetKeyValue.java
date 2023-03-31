@@ -18,11 +18,10 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity;
 
 import io.openmessaging.KeyValue;
-import org.springframework.util.IdGenerator;
-import org.springframework.util.SimpleIdGenerator;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +43,11 @@ public class TargetKeyValue implements KeyValue, Serializable {
 
     public TargetKeyValue() {
         properties = new ConcurrentHashMap<>();
+        targetKeyId = UUID.randomUUID().toString();
+    }
+
+    public TargetKeyValue(Map<String, String> targetMap) {
+        properties = new ConcurrentHashMap<>(targetMap);
         targetKeyId = UUID.randomUUID().toString();
     }
 
@@ -136,24 +140,24 @@ public class TargetKeyValue implements KeyValue, Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-
-        if (obj != null && obj.getClass() == this.getClass()) {
-            TargetKeyValue keyValue = (TargetKeyValue) obj;
-            return this.properties.equals(keyValue.getProperties());
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TargetKeyValue that = (TargetKeyValue) o;
+        return Objects.equals(targetKeyId, that.targetKeyId) && Objects.equals(properties, that.properties);
     }
 
     @Override
     public int hashCode() {
-        return properties.hashCode();
+        return Objects.hash(targetKeyId, properties);
     }
 
-    @Override public String toString() {
-        return "ConnectKeyValue{" +
-            "properties=" + properties +
-            '}';
+    @Override
+    public String toString() {
+        return "TargetKeyValue{" +
+                "targetKeyId='" + targetKeyId + '\'' +
+                ", properties=" + properties +
+                '}';
     }
 
     public String getTargetKeyId() {

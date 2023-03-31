@@ -17,25 +17,21 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * event bridge runtimer
@@ -49,34 +45,25 @@ public class Runtimer {
 
     private AtomicReference<RuntimerState> runtimerState;
 
-    private Plugin plugin;
+    private CirculatorContext circulatorContext;
 
-    private ListenerFactory listenerFactory;
+    private AbstractTargetRunnerConfigObserver runnerConfigObserver;
 
-    private TargetRunnerConfigObserver targetRunnerConfigObserver;
-
-    private Map<String, List<TargetKeyValue>> taskConfigs = new HashMap<>();
-
-    private EventBusListener listener;
-
-    private EventRuleTransfer transfer;
-
-    private EventTargetPusher pusher;
-
-    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "RuntimerScheduledThread"));
-
-    public Runtimer(Plugin plugin, ListenerFactory listenerFactory, TargetRunnerConfigObserver configManageService) {
-        this.plugin = plugin;
-        this.listenerFactory = listenerFactory;
-        this.targetRunnerConfigObserver = configManageService;
+    public Runtimer(CirculatorContext circulatorContext) {
+        this.circulatorContext = circulatorContext;
+        this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
     }
 
     @PostConstruct
     public void initAndStart() {
         logger.info("init runtimer task config");
-        new EventBusListener(listenerFactory, new RocketMQEventSubscriber(listenerFactory)).start();
-        new EventRuleTransfer(listenerFactory).start();
-        new EventTargetPusher(listenerFactory).start();
+        circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
+        EventSubscriber eventSubscriber = new RocketMQEventSubscriber(runnerConfigObserver);
+        runnerConfigObserver.registerListener(circulatorContext);
+        runnerConfigObserver.registerListener(eventSubscriber);
+        new EventBusListener(circulatorContext, eventSubscriber).start();
+        new EventRuleTransfer(circulatorContext).start();
+        new EventTargetPusher(circulatorContext).start();
         startRuntimer();
     }
 

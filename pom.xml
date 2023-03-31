@@ -89,6 +89,7 @@
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.10.0</apache.commons-text.version>
         <mockito.version>2.13.0</mockito.version>
+        <jupiter.version>5.9.2</jupiter.version>
         <caffeine.version>2.9.3</caffeine.version>
         <fastjson.version>1.2.83</fastjson.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
