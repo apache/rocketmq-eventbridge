@@ -18,10 +18,14 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.List;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.ListenerFactory;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * listen the event and offer to queue
@@ -30,25 +34,35 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
  */
 public class EventBusListener extends ServiceThread {
 
-    private ListenerFactory listenerFactory;
+    private static final Logger logger = LoggerFactory.getLogger(EventBusListener.class);
+
+    private CirculatorContext circulatorContext;
 
     private EventSubscriber eventSubscriber;
 
-    public EventBusListener(ListenerFactory listenerFactory,
-        EventSubscriber eventSubscriber) {
-        this.listenerFactory = listenerFactory;
+    public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber) {
+        this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
     }
 
     @Override
     public void run() {
         while (!stopped) {
-            List<ConnectRecord> recordList = eventSubscriber.pull();
-            listenerFactory.offerEventRecords(recordList);
+            try{
+                List<ConnectRecord> recordList = eventSubscriber.pull();
+                if(CollectionUtils.isEmpty(recordList)){
+                    this.waitForRunning(1000);
+                    continue;
+                }
+                circulatorContext.offerEventRecords(recordList);
+            }catch (Exception exception) {
+                logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
+            }
         }
     }
 
-    @Override public String getServiceName() {
+    @Override
+    public String getServiceName() {
         return EventBusListener.class.getSimpleName();
     }
 }

@@ -18,12 +18,19 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
+
+import java.util.List;
 
 public abstract class EventSubscriber implements TargetRunnerListener {
 
-    abstract void refresh();
+    /**
+     * Refresh subscriber inner data when runner config changed
+     * @param targetRunnerConfig
+     * @param refreshTypeEnum
+     */
+    public abstract void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum);
 
     /**
      * Pull connect records from store, Blocking method when is empty.
@@ -46,7 +53,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh();
+        this.refresh(targetRunnerConfig, RefreshTypeEnum.ADD);
     }
 
     /**
@@ -56,8 +63,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-
-        this.refresh();
+        this.refresh(targetRunnerConfig, RefreshTypeEnum.UPDATE);
     }
 
     /**
@@ -67,7 +73,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh();
+        this.refresh(targetRunnerConfig, RefreshTypeEnum.DELETE);
     }
 
 }

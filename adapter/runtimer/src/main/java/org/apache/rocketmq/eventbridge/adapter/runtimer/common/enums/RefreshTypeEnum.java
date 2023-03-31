@@ -15,31 +15,13 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums;
 
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
-
-public interface TargetRunnerListener {
-
-    /**
-     * Call when add new target runner to runtimer.
-     *
-     * @param targetRunnerConfig
-     */
-    void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig);
-
-    /**
-     * Call when the old target runner updated.
-     *
-     * @param targetRunnerConfig
-     */
-    void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig);
-
-    /**
-     * Call when the old target runner deleted from runtimer.
-     *
-     * @param targetRunnerConfig
-     */
-    void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig);
-
+/**
+ * runner refresh type
+ */
+public enum RefreshTypeEnum {
+    ADD,
+    UPDATE,
+    DELETE
 }

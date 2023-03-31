@@ -37,6 +37,8 @@ public class RuntimerConfigDefine {
 
     public static final String TASK_CLASS = "task-class";
 
+    public static final String RUNNER_NAME = "runner-name";
+
     public static final String TASK_ID = "task-id";
 
     public static final String TASK_TYPE = "task-type";

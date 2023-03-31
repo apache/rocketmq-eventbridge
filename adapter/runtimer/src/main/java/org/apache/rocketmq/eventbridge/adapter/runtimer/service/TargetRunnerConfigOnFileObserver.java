@@ -37,14 +37,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfigObserver {
 
     private String pathName;
+
+    public static final String DEFAULT_TARGET_RUNNER_CONFIG_FILE_NAME = "target-runner.json";
+
 
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
         ThreadUtils.newThreadFactory("TargetRunnerConfigOnFileObserver", false));
@@ -57,6 +62,9 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
 
     public TargetRunnerConfigOnFileObserver() {
         super.getTargetRunnerConfig().addAll(getLatestTargetRunnerConfig());
+        if(StringUtils.isEmpty(pathName)){
+            this.pathName = getConfigFilePath();
+        }
         this.addListen(pathName, this);
     }
 
@@ -66,8 +74,7 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
         try {
             File file = new File(pathName);
             config = FileUtils.readFileToString(file, "UTF-8");
-            Type workerConfigType = new TypeToken<HashSet<TargetRunnerConfig>>() {
-            }.getType();
+            Type workerConfigType = new TypeToken<HashSet<TargetRunnerConfig>>() {}.getType();
             Set<TargetRunnerConfig> taskConfigList = new Gson().fromJson(config, workerConfigType);
             return taskConfigList;
         } catch (IOException e) {
@@ -78,16 +85,14 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
         }
     }
 
-    public void addListen(String pathName,
-        TargetRunnerConfigOnFileObserver pusherConfigOnFileService) {
+    public void addListen(String pathName, TargetRunnerConfigOnFileObserver pusherConfigOnFileService) {
         log.info("Watching task file changing:{}", pathName);
         int index = pathName.lastIndexOf("/");
         String filePath = pathName.substring(0, index);
         String fileName = pathName.substring(index + 1);
         service.scheduleAtFixedRate(() -> {
             try {
-                WatchService watchService = FileSystems.getDefault()
-                    .newWatchService();
+                WatchService watchService = FileSystems.getDefault().newWatchService();
                 Path path = Paths.get(filePath);
                 path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE,
                     StandardWatchEventKinds.ENTRY_MODIFY);
@@ -134,6 +139,10 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
         Map<String, TargetRunnerConfig> map = Maps.newHashMap();
         targetRunnerConfigs.forEach(entry -> map.put(entry.getName(), entry));
         return map;
+    }
+
+    private String getConfigFilePath() {
+        return this.getClass().getClassLoader().getResource(DEFAULT_TARGET_RUNNER_CONFIG_FILE_NAME).getPath();
     }
 
 }
