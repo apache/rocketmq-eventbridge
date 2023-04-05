@@ -61,10 +61,10 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
     }
 
     public TargetRunnerConfigOnFileObserver() {
-        super.getTargetRunnerConfig().addAll(getLatestTargetRunnerConfig());
         if(StringUtils.isEmpty(pathName)){
             this.pathName = getConfigFilePath();
         }
+        super.getTargetRunnerConfig().addAll(getLatestTargetRunnerConfig());
         this.addListen(pathName, this);
     }
 
