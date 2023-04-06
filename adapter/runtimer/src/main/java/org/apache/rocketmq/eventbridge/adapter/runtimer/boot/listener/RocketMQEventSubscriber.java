@@ -46,7 +46,9 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Array;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -58,7 +60,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private DefaultLitePullConsumer pullConsumer;
 
-    private TargetRunnerConfigObserver runnerConfigObserver;
+    private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;
 
@@ -100,25 +102,31 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     @Override
     public List<ConnectRecord> pull() {
-        List<MessageExt> messageExts = pullConsumer.poll(pullTimeOut);
-        if (CollectionUtils.isEmpty(messageExts)) {
+        List<MessageExt> messages = pullConsumer.poll(pullTimeOut);
+        if (CollectionUtils.isEmpty(messages)) {
             logger.info("consumer poll message empty , consumer - {}", JSON.toJSONString(pullConsumer));
             return null;
         }
         List<ConnectRecord> connectRecords = Lists.newArrayList();
-        for (MessageExt messageExt : messageExts) {
-            ConnectRecord eventRecord = convertToSinkRecord(messageExt);
-            connectRecords.add(eventRecord);
-            if(logger.isDebugEnabled()){
-                logger.debug("offer listen event record -  {} - by message event- {}", eventRecord, messageExt);
-            }
-        }
+        List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+        messages.forEach(item->{
+            CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(()-> convertToSinkRecord(item))
+                    .exceptionally((exception) -> {
+                        logger.error("execute completable job failed，stackTrace-", exception);
+                        return null;
+                    })
+                    .thenAccept(connectRecords::add);
+            completableFutures.add(recordCompletableFuture);
+        });
+
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[messages.size()])).join();
+
         return connectRecords;
     }
 
     @Override
     public void commit(List<ConnectRecord> connectRecordList) {
-
+        // TODO
     }
 
     /**
@@ -151,9 +159,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
             pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
         }catch (Exception exception){
-
+            logger.error("init rocket mq property exception, stack trace-", exception);
         }
-
     }
 
     /**

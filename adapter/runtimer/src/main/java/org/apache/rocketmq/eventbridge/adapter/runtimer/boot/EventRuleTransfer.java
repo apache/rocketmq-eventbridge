@@ -18,18 +18,24 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * receive event and transfer the rule to pusher
@@ -38,9 +44,7 @@ public class EventRuleTransfer extends ServiceThread {
 
     private static final Logger logger = LoggerFactory.getLogger(EventRuleTransfer.class);
 
-    private CirculatorContext circulatorContext;
-
-    private ExecutorService executorService = new ThreadPoolExecutor(20, 60, 1000, TimeUnit.MICROSECONDS, new LinkedBlockingDeque<>(100));
+    private final CirculatorContext circulatorContext;
 
     public EventRuleTransfer(CirculatorContext circulatorContext) {
         this.circulatorContext = circulatorContext;
@@ -54,27 +58,52 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            // add CompletableFuture
             ConnectRecord eventRecord = circulatorContext.takeEventRecord();
             if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);
                 continue;
             }
-            executorService.submit(() -> {
-                // extension add sub
-                // rule - target
-                circulatorContext.getTaskTransformMap().entrySet().forEach(entry -> {
-                    TransformEngine<ConnectRecord> transformEngine = entry.getValue();
-                    ConnectRecord transformRecord = transformEngine.doTransforms(eventRecord);
-                    if (Objects.isNull(transformRecord)) {
-                        return;
-                    }
-                    // a bean for maintain
-                    circulatorContext.offerTargetTaskQueue(transformRecord);
-                    logger.debug("offer target task queue succeed, targetMap - {}", JSON.toJSONString(transformRecord));
-                });
+            Map<String, TransformEngine<ConnectRecord>> latestTransformMap = circulatorContext.getTaskTransformMap();
+            if(MapUtils.isEmpty(latestTransformMap)){
+                logger.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
+                this.waitForRunning(3000);
+                continue;
+            }
+            // the event channel take rocket mq topic name as default
+            String eventChannel = eventRecord.getExtension(RuntimerConfigDefine.CONNECT_TOPICNAME);
+            Set<TransformEngine<ConnectRecord>> adaptTransformSet = latestTransformMap.values().stream()
+                    .filter(item -> eventChannel.equals(item.getConnectConfig(RuntimerConfigDefine.CONNECT_TOPICNAME)))
+                    .collect(Collectors.toSet());
+            if(CollectionUtils.isEmpty(adaptTransformSet)){
+                    logger.warn("adapt specific topic ref transform engine is empty, eventChannelName- {}", eventChannel);
+                    this.waitForRunning(3000);
+                    continue;
+            }
+            List<ConnectRecord> afterTransformConnect = Lists.newArrayList();
+            List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+            adaptTransformSet.forEach(transfer->{
+                CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(()-> transfer.doTransforms(eventRecord))
+                        .exceptionally((exception) -> {
+                            logger.error("transfer do transform event record failed，stackTrace-", exception);
+                            return null;
+                        })
+                        .thenAccept(item-> {
+                            if(Objects.nonNull(item)){
+                                afterTransformConnect.add(item);
+                            }
+                        });
+                completableFutures.add(transformFuture);
             });
+
+            try{
+                CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[adaptTransformSet.size()])).get();
+                circulatorContext.offerTargetTaskQueue(afterTransformConnect);
+                logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
+            }catch (Exception exception){
+                logger.error("transfer event record failed, stackTrace-", exception);
+            }
+
         }
     }
 }

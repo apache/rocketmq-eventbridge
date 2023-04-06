@@ -1,23 +1,21 @@
 [
-    {
-
-        "name":"xxxxx",
-        "components":[ {
-          "class" : "org.apache.rocketmq.connect.FileStream",
-          "path" : "xxxxxxxx",
-          "name" : "demo"
-        },
-        {
-          "class" : "org.apache.rocketmq.connect.transforms.PatternRename",
-          "pattern" : "company",
-          "replacement": "company02"
-        },
-       {
-          "class" : "org.apache.rocketmq.connect.HttpSinkTask",
-          "url" : "http://xxxxx/demo"
-        } ],
-        "runOptions":{
-            "taskSize":1
-        }
-    }
+  {
+    "name":"demo-runner",
+    "components":[
+      {
+        "topic":"eventbridge%123456%demo-bus_1670134841730"
+      },
+      {
+        "class":"org.apache.rocketmq.connect.xxxTramsform1"
+      },
+      {
+        "class":"org.apache.rocketmq.connect.xxxTransform2"
+      },
+      {
+        "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkTask",
+        "webHook":"https://oapi.dingtalk.com/robot/send?access_token=b43a54b702314415c2acdae97eda1e092528b7a9dddb31510a5b4430be2ef867",
+        "secretKey":"SEC53483bf496b8f9e0b4ab0ab669d422208e6ccfaedfd5120ea6b8426b9ecd47aa"
+      }
+    ]
+  }
 ]
