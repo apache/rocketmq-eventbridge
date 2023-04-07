@@ -71,9 +71,10 @@ public class EventRuleTransfer extends ServiceThread {
                 continue;
             }
             // the event channel take rocket mq topic name as default
-            String eventChannel = eventRecord.getExtension(RuntimerConfigDefine.CONNECT_TOPICNAME);
+            String eventChannelKey = RuntimerConfigDefine.CONNECT_TOPICNAME;
+            String eventChannel = eventRecord.getExtension(eventChannelKey);
             Set<TransformEngine<ConnectRecord>> adaptTransformSet = latestTransformMap.values().stream()
-                    .filter(item -> eventChannel.equals(item.getConnectConfig(RuntimerConfigDefine.CONNECT_TOPICNAME)))
+                    .filter(engine -> eventChannel.equals(engine.getConnectConfig(eventChannelKey)))
                     .collect(Collectors.toSet());
             if(CollectionUtils.isEmpty(adaptTransformSet)){
                     logger.warn("adapt specific topic ref transform engine is empty, eventChannelName- {}", eventChannel);
@@ -88,9 +89,13 @@ public class EventRuleTransfer extends ServiceThread {
                             logger.error("transfer do transform event record failed，stackTrace-", exception);
                             return null;
                         })
-                        .thenAccept(item-> {
-                            if(Objects.nonNull(item)){
-                                afterTransformConnect.add(item);
+                        .thenAccept(record-> {
+                            if(Objects.nonNull(record)){
+                                String runnerNameKey = RuntimerConfigDefine.RUNNER_NAME;
+                                String taskClassKey = RuntimerConfigDefine.TASK_CLASS;
+                                record.getExtensions().put(runnerNameKey, transfer.getConnectConfig(runnerNameKey));
+                                record.getExtensions().put(taskClassKey, transfer.getConnectConfig(taskClassKey));
+                                afterTransformConnect.add(record);
                             }
                         });
                 completableFutures.add(transformFuture);

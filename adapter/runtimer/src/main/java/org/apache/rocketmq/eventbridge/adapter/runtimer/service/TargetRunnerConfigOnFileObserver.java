@@ -50,7 +50,6 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
 
     public static final String DEFAULT_TARGET_RUNNER_CONFIG_FILE_NAME = "target-runner.json";
 
-
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
         ThreadUtils.newThreadFactory("TargetRunnerConfigOnFileObserver", false));
 
@@ -61,10 +60,8 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
     }
 
     public TargetRunnerConfigOnFileObserver() {
+        this.pathName = getConfigFilePath();
         super.getTargetRunnerConfig().addAll(getLatestTargetRunnerConfig());
-        if(StringUtils.isEmpty(pathName)){
-            this.pathName = getConfigFilePath();
-        }
         this.addListen(pathName, this);
     }
 

@@ -33,7 +33,6 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClas
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -49,7 +48,7 @@ public class CirculatorContext implements TargetRunnerListener {
 
     private final static Logger logger = LoggerFactory.getLogger(LoggerName.EventBus_Listener);
 
-    private BlockingQueue<ConnectRecord> eventRecord = new LinkedBlockingQueue<>(50000);
+    private BlockingQueue<ConnectRecord> eventQueue = new LinkedBlockingQueue<>(50000);
 
     private BlockingQueue<ConnectRecord> targetQueue = new LinkedBlockingQueue<>(50000);
 
@@ -99,7 +98,7 @@ public class CirculatorContext implements TargetRunnerListener {
      * @param connectRecords
      */
     public boolean offerEventRecords(List<ConnectRecord> connectRecords) {
-        return eventRecord.addAll(connectRecords);
+        return eventQueue.addAll(connectRecords);
     }
 
     /**
@@ -108,11 +107,11 @@ public class CirculatorContext implements TargetRunnerListener {
      * @return
      */
     public ConnectRecord takeEventRecord() {
-        if (eventRecord.isEmpty()) {
+        if (eventQueue.isEmpty()) {
             return null;
         }
         try {
-            return eventRecord.take();
+            return eventQueue.take();
         } catch (Exception exception) {
             logger.error("take event record exception - stack-> ", exception);
         }
@@ -162,19 +161,19 @@ public class CirculatorContext implements TargetRunnerListener {
         switch (refreshTypeEnum) {
             case ADD:
             case UPDATE:
-                for (Map<String, String> configMap : targetRunnerConfig.getComponents()) {
-                    TargetKeyValue targetKeyValue = new TargetKeyValue(configMap);
-                    TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetKeyValue, plugin);
-                    taskTransformMap.put(runnerName, transformChain);
+                TargetKeyValue targetKeyValue = new TargetKeyValue();
+                targetRunnerConfig.getComponents().forEach(targetKeyValue::putAll);
+                TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetKeyValue, plugin);
+                taskTransformMap.put(runnerName, transformChain);
 
-                    SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
-                    pusherTaskMap.put(runnerName, sinkTask);
+                SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
+                pusherTaskMap.put(runnerName, sinkTask);
 
-                    String pusherClass = configMap.get(RuntimerConfigDefine.TASK_CLASS);
-                    if (StringUtils.isNotEmpty(pusherClass) && !pusherExecutorMap.containsKey(pusherClass)) {
-                        pusherExecutorMap.put(pusherClass, initDefaultThreadPoolExecutor(pusherClass));
-                    }
+                String pusherClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+                if (StringUtils.isNotEmpty(pusherClass) && !pusherExecutorMap.containsKey(pusherClass)) {
+                    pusherExecutorMap.put(pusherClass, initDefaultThreadPoolExecutor(pusherClass));
                 }
+
                 break;
             case DELETE:
                 taskTransformMap.remove(runnerName);

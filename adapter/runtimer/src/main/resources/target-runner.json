@@ -3,18 +3,20 @@
     "name":"demo-runner",
     "components":[
       {
-        "topic":"eventbridge%123456%demo-bus_1670134841730"
+        "runner-name": "demo-runner",
+        "connect-topicname":"eventbridge%654321%demo-bus_1678348282165"
       },
       {
-        "class":"org.apache.rocketmq.connect.xxxTramsform1"
+        "transforms":"filter,transform,",
+        "transforms-filter-filterPattern":"{}",
+        "transforms-filter-class":"org.apache.rocketmq.connect.transform.eventbridge.EventBridgeFilterTransform",
+        "transforms-transform-data":"{\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\",\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\"}",
+        "transforms-transform-class": "org.apache.rocketmq.connect.transform.eventbridge.EventBridgeTransform"
       },
       {
-        "class":"org.apache.rocketmq.connect.xxxTransform2"
-      },
-      {
-        "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkTask",
-        "webHook":"https://oapi.dingtalk.com/robot/send?access_token=b43a54b702314415c2acdae97eda1e092528b7a9dddb31510a5b4430be2ef867",
-        "secretKey":"SEC53483bf496b8f9e0b4ab0ab669d422208e6ccfaedfd5120ea6b8426b9ecd47aa"
+        "task-class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkTask",
+        "webHook":"https://oapi.dingtalk.com/robot/send?access_token=7f78aa4734ea9bd245984e47b6764ccb950b4292e4f6f9424dff92909f485f16",
+        "secretKey":"SEC8a898c9df7b6415090a8f1341d9eed000c815a89f301f2de87302a1e802dbd69"
       }
     ]
   }

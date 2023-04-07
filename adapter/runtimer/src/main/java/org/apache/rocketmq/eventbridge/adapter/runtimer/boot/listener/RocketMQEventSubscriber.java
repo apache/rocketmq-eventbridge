@@ -27,6 +27,7 @@ import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.internal.DefaultKeyValue;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
@@ -43,13 +44,10 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Array;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * RocketMQ implement event subscriber
@@ -65,6 +63,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private Integer pullTimeOut;
 
     private String namesrvAddr;
+
+    private Integer pullBatchSize;
 
     private static final String SEMICOLON = ";";
 
@@ -135,17 +135,18 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * @return
      */
     public Set<String> parseTopicsByRunnerConfigs(Set<TargetRunnerConfig> targetRunnerConfigs){
-        if(org.apache.commons.collections.CollectionUtils.isEmpty(targetRunnerConfigs)){
+        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
             logger.warn("target runner config is empty, parse to topic failed!");
             return null;
         }
         Set<String> listenTopics = Sets.newHashSet();
         for(TargetRunnerConfig runnerConfig : targetRunnerConfigs){
             List<Map<String,String>> runnerConfigMap = runnerConfig.getComponents();
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(runnerConfigMap)){
+            if(CollectionUtils.isEmpty(runnerConfigMap)){
+                logger.warn("target runner config components is empty, config info - {}", runnerConfig);
                 continue;
             }
-            listenTopics.addAll(runnerConfigMap.stream().map(item->item.get(RuntimerConfigDefine.CONNECT_TOPICNAME)).collect(Collectors.toSet()));
+            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CONNECT_TOPICNAME));
         }
         return listenTopics;
     }
@@ -158,6 +159,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             Properties properties = PropertiesLoaderUtils.loadAllProperties("runtimer.properties");
             namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
             pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
+            pullBatchSize = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullBatchSize"));
         }catch (Exception exception){
             logger.error("init rocket mq property exception, stack trace-", exception);
         }
@@ -180,6 +182,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
         consumer.setConsumerGroup(createGroupName(SYS_DEFAULT_GROUP));
         consumer.setNamesrvAddr(namesrvAddr);
+        consumer.setPullBatchSize(pullBatchSize);
         try {
             for(String topic : topics){
                 consumer.subscribe(topic, "*");
@@ -221,7 +224,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      */
     private MessageQueue parseMessageQueueList(String messageQueueStr) {
         List<String> messageQueueStrList = Splitter.on(SEMICOLON).omitEmptyStrings().trimResults().splitToList(messageQueueStr);
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(messageQueueStrList) || messageQueueStrList.size() != 3) {
+        if (CollectionUtils.isEmpty(messageQueueStrList) || messageQueueStrList.size() != 3) {
             return null;
         }
         return new MessageQueue(messageQueueStrList.get(0), messageQueueStrList.get(1), Integer.valueOf(messageQueueStrList.get(2)));
