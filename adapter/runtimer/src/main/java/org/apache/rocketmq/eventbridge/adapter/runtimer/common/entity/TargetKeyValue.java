@@ -139,6 +139,11 @@ public class TargetKeyValue implements KeyValue, Serializable {
         this.properties = properties;
     }
 
+    public KeyValue putAll(Map<String,String> configProps){
+        this.properties.putAll(configProps);
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

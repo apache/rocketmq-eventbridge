@@ -30,7 +30,7 @@ public class EventBridgeFilterTransformTest {
         EventBridgeFilterTransform transform = new EventBridgeFilterTransform();
         KeyValue keyValue = new DefaultKeyValue();
         keyValue.put("filterPattern", "{\"source\":[\"acs.mns\"]}");
-        transform.start(keyValue);
+        transform.init(keyValue);
 
         ConnectRecord record = new ConnectRecord(null, null, System.currentTimeMillis());
         record.addExtension("source", "acs.demo");

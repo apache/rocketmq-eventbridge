@@ -36,9 +36,9 @@ public class EventBusListener extends ServiceThread {
 
     private static final Logger logger = LoggerFactory.getLogger(EventBusListener.class);
 
-    private CirculatorContext circulatorContext;
+    private final CirculatorContext circulatorContext;
 
-    private EventSubscriber eventSubscriber;
+    private final EventSubscriber eventSubscriber;
 
     public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber) {
         this.circulatorContext = circulatorContext;
