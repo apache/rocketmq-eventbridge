@@ -21,7 +21,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <openmessaging-connector.version>0.1.4</openmessaging-connector.version>
+        <openmessaging-connector.version>0.1.2</openmessaging-connector.version>
         <cloudevents.version>2.3.0</cloudevents.version>
     </properties>
 

@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.v1.CloudEventV1;
 import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.rocketmq.eventbridge.tools.transform.*;
 
@@ -167,7 +168,7 @@ public class CloudEventTransform implements io.openmessaging.connector.api.compo
     }
 
     @Override
-    public void start(KeyValue config) {
+    public void init(KeyValue config) {
         this.idTransform = buildTransform(config, CloudEventV1.ID);
         this.sourceTransform = buildTransform(config, CloudEventV1.SOURCE);
         this.specversionTransform = buildTransform(config, CloudEventV1.SPECVERSION);
@@ -175,6 +176,11 @@ public class CloudEventTransform implements io.openmessaging.connector.api.compo
         this.datacontenttypeTransform = buildTransform(config, CloudEventV1.DATACONTENTTYPE);
         this.timeTransform = buildTransform(config, CloudEventV1.TIME);
         this.subjectTransform = buildTransform(config, CloudEventV1.SUBJECT);
+    }
+
+    @Override
+    public void start(ComponentContext componentContext) {
+
     }
 
     private Transform buildTransform(KeyValue config, String key) {

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * event target push to sink task
@@ -39,7 +40,7 @@ public class EventTargetPusher extends ServiceThread{
 
     private static final Logger logger = LoggerFactory.getLogger(EventTargetPusher.class);
 
-    private CirculatorContext circulatorContext;
+    private final CirculatorContext circulatorContext;
 
     public EventTargetPusher(CirculatorContext circulatorContext) {
         this.circulatorContext = circulatorContext;
@@ -58,11 +59,16 @@ public class EventTargetPusher extends ServiceThread{
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecord));
             }
 
-            Map<String, SinkTask> latestTaskMap = circulatorContext.getPusherTaskMap();
-            String runnerName = targetRecord.getExtensions().getString(RuntimerConfigDefine.RUNNER_NAME);
-            SinkTask sinkTask = latestTaskMap.get(runnerName);
-            // add thread pool
-            sinkTask.put(Lists.newArrayList(targetRecord));
+            ExecutorService executorService = circulatorContext.getExecutorService(targetRecord.getExtensions().getString(RuntimerConfigDefine.TASK_CLASS));
+            executorService.execute(() -> {
+                try {
+                    String runnerName = targetRecord.getExtensions().getString(RuntimerConfigDefine.RUNNER_NAME);
+                    SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);;
+                    sinkTask.put(Lists.newArrayList(targetRecord));
+                }catch (Exception exception){
+                    logger.error(getServiceName() + " push target exception, record - " + targetRecord + " , stackTrace-", exception);
+                }
+            });
         }
     }
 

@@ -38,7 +38,7 @@ public class EventBridgeTransformTest {
             "{\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\","
                 + "\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\"}");
         EventBridgeTransform eventBridgeTransform = new EventBridgeTransform();
-        eventBridgeTransform.start(keyValue);
+        eventBridgeTransform.init(keyValue);
 
         ConnectRecord record = new ConnectRecord(null, null, System.currentTimeMillis());
         record.addExtension("type", "type");

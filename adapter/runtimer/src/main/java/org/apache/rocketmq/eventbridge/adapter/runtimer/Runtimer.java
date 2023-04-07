@@ -25,6 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class Runtimer {
 
     private CirculatorContext circulatorContext;
 
-    private AbstractTargetRunnerConfigObserver runnerConfigObserver;
+    private TargetRunnerConfigObserver runnerConfigObserver;
 
     public Runtimer(CirculatorContext circulatorContext) {
         this.circulatorContext = circulatorContext;

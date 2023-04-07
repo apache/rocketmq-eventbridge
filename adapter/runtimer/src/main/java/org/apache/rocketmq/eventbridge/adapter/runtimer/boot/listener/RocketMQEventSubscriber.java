@@ -27,6 +27,7 @@ import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.internal.DefaultKeyValue;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
@@ -43,11 +44,10 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * RocketMQ implement event subscriber
@@ -58,11 +58,13 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private DefaultLitePullConsumer pullConsumer;
 
-    private TargetRunnerConfigObserver runnerConfigObserver;
+    private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;
 
     private String namesrvAddr;
+
+    private Integer pullBatchSize;
 
     private static final String SEMICOLON = ";";
 
@@ -100,25 +102,31 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     @Override
     public List<ConnectRecord> pull() {
-        List<MessageExt> messageExts = pullConsumer.poll(pullTimeOut);
-        if (CollectionUtils.isEmpty(messageExts)) {
+        List<MessageExt> messages = pullConsumer.poll(pullTimeOut);
+        if (CollectionUtils.isEmpty(messages)) {
             logger.info("consumer poll message empty , consumer - {}", JSON.toJSONString(pullConsumer));
             return null;
         }
         List<ConnectRecord> connectRecords = Lists.newArrayList();
-        for (MessageExt messageExt : messageExts) {
-            ConnectRecord eventRecord = convertToSinkRecord(messageExt);
-            connectRecords.add(eventRecord);
-            if(logger.isDebugEnabled()){
-                logger.debug("offer listen event record -  {} - by message event- {}", eventRecord, messageExt);
-            }
-        }
+        List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+        messages.forEach(item->{
+            CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(()-> convertToSinkRecord(item))
+                    .exceptionally((exception) -> {
+                        logger.error("execute completable job failed，stackTrace-", exception);
+                        return null;
+                    })
+                    .thenAccept(connectRecords::add);
+            completableFutures.add(recordCompletableFuture);
+        });
+
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[messages.size()])).join();
+
         return connectRecords;
     }
 
     @Override
     public void commit(List<ConnectRecord> connectRecordList) {
-
+        // TODO
     }
 
     /**
@@ -127,17 +135,18 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * @return
      */
     public Set<String> parseTopicsByRunnerConfigs(Set<TargetRunnerConfig> targetRunnerConfigs){
-        if(org.apache.commons.collections.CollectionUtils.isEmpty(targetRunnerConfigs)){
+        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
             logger.warn("target runner config is empty, parse to topic failed!");
             return null;
         }
         Set<String> listenTopics = Sets.newHashSet();
         for(TargetRunnerConfig runnerConfig : targetRunnerConfigs){
             List<Map<String,String>> runnerConfigMap = runnerConfig.getComponents();
-            if(org.apache.commons.collections.CollectionUtils.isEmpty(runnerConfigMap)){
+            if(CollectionUtils.isEmpty(runnerConfigMap)){
+                logger.warn("target runner config components is empty, config info - {}", runnerConfig);
                 continue;
             }
-            listenTopics.addAll(runnerConfigMap.stream().map(item->item.get(RuntimerConfigDefine.CONNECT_TOPICNAME)).collect(Collectors.toSet()));
+            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CONNECT_TOPICNAME));
         }
         return listenTopics;
     }
@@ -150,10 +159,10 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             Properties properties = PropertiesLoaderUtils.loadAllProperties("runtimer.properties");
             namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
             pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
+            pullBatchSize = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullBatchSize"));
         }catch (Exception exception){
-
+            logger.error("init rocket mq property exception, stack trace-", exception);
         }
-
     }
 
     /**
@@ -173,6 +182,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
         consumer.setConsumerGroup(createGroupName(SYS_DEFAULT_GROUP));
         consumer.setNamesrvAddr(namesrvAddr);
+        consumer.setPullBatchSize(pullBatchSize);
         try {
             for(String topic : topics){
                 consumer.subscribe(topic, "*");
@@ -214,7 +224,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      */
     private MessageQueue parseMessageQueueList(String messageQueueStr) {
         List<String> messageQueueStrList = Splitter.on(SEMICOLON).omitEmptyStrings().trimResults().splitToList(messageQueueStr);
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(messageQueueStrList) || messageQueueStrList.size() != 3) {
+        if (CollectionUtils.isEmpty(messageQueueStrList) || messageQueueStrList.size() != 3) {
             return null;
         }
         return new MessageQueue(messageQueueStrList.get(0), messageQueueStrList.get(1), Integer.valueOf(messageQueueStrList.get(2)));

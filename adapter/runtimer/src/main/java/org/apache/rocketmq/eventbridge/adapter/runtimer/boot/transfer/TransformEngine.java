@@ -91,6 +91,11 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
         });
     }
 
+    /**
+     * transform event record for target record
+     * @param connectRecord
+     * @return
+     */
     public R doTransforms(R connectRecord) {
         if (transformList.size() == 0) {
             return connectRecord;
@@ -103,6 +108,15 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
             }
         }
         return connectRecord;
+    }
+
+    /**
+     * get task config value by key
+     * @param configKey
+     * @return
+     */
+    public String getConnectConfig(String configKey){
+        return config.getString(configKey);
     }
 
     private Transform getTransform(String transformClass) throws Exception {
