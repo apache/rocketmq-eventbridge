@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 
 @Slf4j
 public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigObserver {
@@ -32,8 +31,7 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
         ThreadUtils.newThreadFactory("TargetRunnerConfigOnDBObserver", false));
 
-    public TargetRunnerConfigOnDBObserver(Plugin plugin) {
-        this.addListen(this);
+    public TargetRunnerConfigOnDBObserver() {
     }
 
     @Override
