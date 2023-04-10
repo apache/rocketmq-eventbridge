@@ -24,6 +24,7 @@ import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
@@ -43,11 +44,14 @@ public class ApiDestinationService extends AbstractResourceService {
 
     private final ApiDestinationRepository apiDestinationRepository;
 
+    private final ConnectionService connectionService;
+
     private final QuotaService quotaService;
 
-    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository, QuotaService quotaService) {
+    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository, QuotaService quotaService, ConnectionService connectionService) {
         this.apiDestinationRepository = apiDestinationRepository;
         this.quotaService = quotaService;
+        this.connectionService = connectionService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -58,11 +62,16 @@ public class ApiDestinationService extends AbstractResourceService {
         super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), quotaService.getTotalQuota(eventApiDestinationDTO.getAccountId(), TotalQuotaEnum.API_DESTINATION_COUNT),
                 ApiDestinationCountExceedLimit);
         checkHttpApiParameters(eventApiDestinationDTO.getApiParams());
+        checkConnection(eventApiDestinationDTO);
         final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
         if (apiDestination) {
             return eventApiDestinationDTO.getName();
         }
         return null;
+    }
+
+    private void checkConnection(ApiDestinationDTO eventApiDestinationDTO) {
+        connectionService.getConnection(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getConnectionName());
     }
 
     private void checkHttpApiParameters(HttpApiParameters httpApiParameters) {
@@ -87,6 +96,7 @@ public class ApiDestinationService extends AbstractResourceService {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
         }
         checkHttpApiParameters(apiDestinationDTO.getApiParams());
+        checkConnection(apiDestinationDTO);
         return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
     }
 
