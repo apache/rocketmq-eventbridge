@@ -33,9 +33,12 @@ import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BodyParameter;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.HeaderParameter;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.QueryStringParameter;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
@@ -136,6 +139,18 @@ public class ConnectionService extends AbstractResourceService {
                         || clientParameters.getClientSecret().length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
                     throw new EventBridgeException(EventBridgeErrorCode.ClientSecretLengthExceed);
                 }
+            }
+            OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
+            if (oauthHttpParameters == null) {
+                throw new EventBridgeException(EventBridgeErrorCode.OauthHttpParametersEmpty);
+            }
+            List<BodyParameter> bodyParameters = oauthHttpParameters.getBodyParameters();
+            List<QueryStringParameter> queryStringParameters = oauthHttpParameters.getQueryStringParameters();
+            List<HeaderParameter> headerParameters = oauthHttpParameters.getHeaderParameters();
+            if (CollectionUtils.isEmpty(bodyParameters)
+                    && CollectionUtils.isEmpty(queryStringParameters)
+                    && CollectionUtils.isEmpty(headerParameters)) {
+                throw new EventBridgeException(EventBridgeErrorCode.OauthHttpParametersEmpty);
             }
         }
     }
