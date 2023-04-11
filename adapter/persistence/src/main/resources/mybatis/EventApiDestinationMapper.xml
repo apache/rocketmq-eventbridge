@@ -307,6 +307,7 @@
         <where>
             <if test="accountId != null and accountId != ''">account_id = #{accountId}</if>
             <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
+            <if test="connectionName != null and connectionName != ''">and connection_name = #{connectionName}</if>
         </where>
     </select>
     <select id="queryApiDestinationByConnectionName" resultMap="ResultMapWithBLOBs" parameterType="java.util.Map">

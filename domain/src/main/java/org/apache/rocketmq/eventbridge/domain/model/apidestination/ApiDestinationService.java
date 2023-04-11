@@ -123,7 +123,7 @@ public class ApiDestinationService extends AbstractResourceService {
                                                                          Integer maxResults) {
         final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, connectionName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
-        int apiDestinationCount = this.getApiDestinationCount(accountId, apiDestinationName);
+        int apiDestinationCount = this.getApiDestinationCount(accountId, apiDestinationName, connectionName);
         result.setData(apiDestinationDTOS);
         result.setTotal(apiDestinationCount);
         result.setNextToken(NextTokenUtil.findNextToken(apiDestinationCount, Integer.parseInt(nextToken), maxResults));
@@ -134,7 +134,7 @@ public class ApiDestinationService extends AbstractResourceService {
         return apiDestinationRepository.getApiDestinationCount(accountId);
     }
 
-    private int getApiDestinationCount(String accountId, String apiDestinationName) {
-        return apiDestinationRepository.getApiDestinationCount(accountId, apiDestinationName);
+    private int getApiDestinationCount(String accountId, String apiDestinationName, String connectionName) {
+        return apiDestinationRepository.getApiDestinationCount(accountId, apiDestinationName, connectionName);
     }
 }

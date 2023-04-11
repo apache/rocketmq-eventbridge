@@ -35,7 +35,7 @@ public interface ApiDestinationRepository {
 
     int getApiDestinationCount(String accountId);
 
-    int getApiDestinationCount(String accountId, String apiDestinationName);
+    int getApiDestinationCount(String accountId, String apiDestinationName, String connectionName);
 
     List<ApiDestinationDTO> queryApiDestinationByConnectionName(String accountId, String connectionName);
 }
