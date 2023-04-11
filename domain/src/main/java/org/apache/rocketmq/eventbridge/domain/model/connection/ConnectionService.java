@@ -177,6 +177,9 @@ public class ConnectionService extends AbstractResourceService {
 
     private void updateCheckApiKeyAuthParameters(AuthParameters authParameters) {
         ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
+        if (AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType()) && apiKeyAuthParameters == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.ApiKeyRequiredParameterIsEmpty);
+        }
         if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
             String apiKeyName = apiKeyAuthParameters.getApiKeyName();
             String apiKeyValue = apiKeyAuthParameters.getApiKeyValue();
@@ -215,6 +218,9 @@ public class ConnectionService extends AbstractResourceService {
 
     private void updateCheckBasicAuthParameters(AuthParameters authParameters) {
         BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
+        if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.BasicRequiredParameterIsEmpty);
+        }
         if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters != null) {
             String username = basicAuthParameters.getUsername();
             String password = basicAuthParameters.getPassword();
