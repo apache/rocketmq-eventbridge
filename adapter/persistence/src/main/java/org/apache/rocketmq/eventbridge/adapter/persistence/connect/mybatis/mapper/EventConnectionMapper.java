@@ -115,4 +115,6 @@ public interface EventConnectionMapper {
      * @return
      */
     int getConnectionCount(@Param("accountId") String accountId);
+
+    int getConnectionByAccountIdAndNameCount(@Param("accountId") String accountId,@Param("name") String name);
 }

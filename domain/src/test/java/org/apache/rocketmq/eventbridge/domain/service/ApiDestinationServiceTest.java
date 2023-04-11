@@ -20,10 +20,14 @@ package org.apache.rocketmq.eventbridge.domain.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.google.common.collect.Lists;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.junit.Assert;
@@ -47,6 +51,8 @@ public class ApiDestinationServiceTest {
     private ApiDestinationRepository apiDestinationRepository;
     @Mock
     private QuotaService quotaService;
+    @Mock
+    private ConnectionService connectionService;
 
     @Before
     public void testBefore() {
@@ -58,6 +64,9 @@ public class ApiDestinationServiceTest {
         Mockito.when(apiDestinationRepository.getApiDestinationCount(any())).thenReturn(8);
         Mockito.when(apiDestinationRepository.listApiDestinations(any(), any(), any(), any(), anyInt())).thenReturn(new ArrayList<>());
         Mockito.when(quotaService.getTotalQuota(any(), any())).thenReturn(10);
+        List<ConnectionDTO> connectionDTOS = Lists.newArrayList();
+        connectionDTOS.add(new ConnectionDTO());
+        Mockito.when(connectionService.getConnection(any(), any())).thenReturn(connectionDTOS);
     }
 
     @Test

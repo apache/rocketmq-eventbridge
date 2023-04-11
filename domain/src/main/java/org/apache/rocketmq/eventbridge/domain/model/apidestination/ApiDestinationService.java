@@ -123,13 +123,18 @@ public class ApiDestinationService extends AbstractResourceService {
                                                                          Integer maxResults) {
         final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, connectionName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
+        int apiDestinationCount = this.getApiDestinationCount(accountId, apiDestinationName);
         result.setData(apiDestinationDTOS);
-        result.setTotal(this.getApiDestinationCount(accountId));
-        result.setNextToken(NextTokenUtil.findNextToken(this.getApiDestinationCount(accountId), Integer.parseInt(nextToken), maxResults));
+        result.setTotal(apiDestinationCount);
+        result.setNextToken(NextTokenUtil.findNextToken(apiDestinationCount, Integer.parseInt(nextToken), maxResults));
         return result;
     }
 
     private int getApiDestinationCount(String accountId) {
         return apiDestinationRepository.getApiDestinationCount(accountId);
+    }
+
+    private int getApiDestinationCount(String accountId, String apiDestinationName) {
+        return apiDestinationRepository.getApiDestinationCount(accountId, apiDestinationName);
     }
 }

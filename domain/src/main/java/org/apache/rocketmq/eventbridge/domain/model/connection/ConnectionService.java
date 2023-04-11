@@ -249,14 +249,19 @@ public class ConnectionService extends AbstractResourceService {
     public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, Integer maxResults) {
         List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
         PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
+        int connectionCount = this.getConnectionCount(accountId, connectionName);
         result.setData(connectionDTOS);
-        result.setTotal(this.getConnectionCount(accountId));
-        result.setNextToken(NextTokenUtil.findNextToken(this.getConnectionCount(accountId), Integer.parseInt(nextToken), maxResults));
+        result.setTotal(connectionCount);
+        result.setNextToken(NextTokenUtil.findNextToken(connectionCount, Integer.parseInt(nextToken), maxResults));
         return result;
     }
 
     public int getConnectionCount(String accountId) {
         return connectionRepository.getConnectionCount(accountId);
+    }
+
+    public int getConnectionCount(String accountId, String connectionName) {
+        return connectionRepository.getConnectionCount(accountId, connectionName);
     }
 
     private AuthParameters setSecretData(AuthParameters authParameters, String accountId, String connectionName) {

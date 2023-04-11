@@ -35,6 +35,8 @@ public interface ConnectionRepository {
 
     int getConnectionCount(String accountId);
 
+    int getConnectionCount(String accountId, String connectionName);
+
     ConnectionDTO getConnectionById(Integer id);
 
     ConnectionDTO getConnectionByNameAccountId(String name, String accountId);
