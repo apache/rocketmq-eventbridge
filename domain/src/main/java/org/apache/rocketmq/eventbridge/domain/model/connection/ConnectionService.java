@@ -107,14 +107,6 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private void updateCheckAuthParameters(AuthParameters authParameters) {
-        if (authParameters != null) {
-            updateCheckBasicAuthParameters(authParameters);
-            updateCheckApiKeyAuthParameters(authParameters);
-            checkOAuthParameters(authParameters);
-        }
-    }
-
     private void checkOAuthParameters(AuthParameters authParameters) {
         OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (AuthorizationTypeEnum.OAUTH_AUTH.getType().equals(authParameters.getAuthorizationType()) && oauthParameters == null) {
@@ -175,27 +167,6 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private void updateCheckApiKeyAuthParameters(AuthParameters authParameters) {
-        ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
-        if (AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType()) && apiKeyAuthParameters == null) {
-            throw new EventBridgeException(EventBridgeErrorCode.ApiKeyRequiredParameterIsEmpty);
-        }
-        if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
-            String apiKeyName = apiKeyAuthParameters.getApiKeyName();
-            String apiKeyValue = apiKeyAuthParameters.getApiKeyValue();
-            if (StringUtils.isNotBlank(apiKeyName)
-                    && (apiKeyName.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || apiKeyName.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyNameLengthExceed);
-            }
-            if (StringUtils.isNotBlank(apiKeyValue)
-                    && (apiKeyValue.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || apiKeyValue.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyValueLengthExceed);
-            }
-        }
-    }
-
     private void checkBasicAuthParameters(AuthParameters authParameters) {
         BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters == null) {
@@ -211,27 +182,6 @@ public class ConnectionService extends AbstractResourceService {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
             }
             if (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
-                throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
-            }
-        }
-    }
-
-    private void updateCheckBasicAuthParameters(AuthParameters authParameters) {
-        BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
-        if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters == null) {
-            throw new EventBridgeException(EventBridgeErrorCode.BasicRequiredParameterIsEmpty);
-        }
-        if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters != null) {
-            String username = basicAuthParameters.getUsername();
-            String password = basicAuthParameters.getPassword();
-            if (StringUtils.isNotBlank(username) &&
-                    (username.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                            || username.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
-            }
-            if (StringUtils.isNotBlank(password)
-                    && (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
             }
         }
@@ -269,7 +219,7 @@ public class ConnectionService extends AbstractResourceService {
             secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, oldConnection.getConnectionName()));
         }
         if (connectionDTO.getAuthParameters() != null) {
-            updateCheckAuthParameters(connectionDTO.getAuthParameters());
+            checkAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), oldConnection));
         }
 
