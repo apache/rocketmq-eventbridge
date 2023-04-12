@@ -73,6 +73,11 @@ public class MybatisApiDestinationRepository implements ApiDestinationRepository
     }
 
     @Override
+    public int getApiDestinationCount(String accountId, String apiDestinationName, String connectionName) {
+        return eventApiDestinationMapper.getApiDestinationByAccountIdAndNameCount(accountId, apiDestinationName, connectionName);
+    }
+
+    @Override
     public List<ApiDestinationDTO> queryApiDestinationByConnectionName(String accountId, String connectionName) {
         return ApiDestinationConverter.doListCoverterDtoList(eventApiDestinationMapper.queryApiDestinationByConnectionName(accountId, connectionName));
     }

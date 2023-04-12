@@ -120,6 +120,8 @@ public interface EventApiDestinationMapper {
      */
     int getApiDestinationCount(@Param("accountId") String accountId);
 
+    int getApiDestinationByAccountIdAndNameCount(@Param("accountId") String accountId, @Param("name") String name, @Param("connectionName") String connectionName);
+
     List<ApiDestinationDO> queryApiDestinationByConnectionName(@Param("accountId") String accountId,
         @Param("connectionName") String connectionName);
 }

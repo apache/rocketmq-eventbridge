@@ -76,6 +76,11 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
+    public int getConnectionCount(String accountId, String connectionName) {
+        return eventConnectionMapper.getConnectionByAccountIdAndNameCount(accountId, connectionName);
+    }
+
+    @Override
     public ConnectionDTO getConnectionById(Integer id) {
         ConnectionDO connectionDO = eventConnectionMapper.selectByPrimaryKey(id);
         return ConnectConverter.doConvertDto(connectionDO);
