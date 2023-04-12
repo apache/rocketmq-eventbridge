@@ -33,9 +33,12 @@ import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.AuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BodyParameter;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.HeaderParameter;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.NetworkParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthHttpParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
+import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.QueryStringParameter;
 import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.ConnectionRepository;
@@ -104,14 +107,6 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private void updateCheckAuthParameters(AuthParameters authParameters) {
-        if (authParameters != null) {
-            updateCheckBasicAuthParameters(authParameters);
-            updateCheckApiKeyAuthParameters(authParameters);
-            checkOAuthParameters(authParameters);
-        }
-    }
-
     private void checkOAuthParameters(AuthParameters authParameters) {
         OAuthParameters oauthParameters = authParameters.getOauthParameters();
         if (AuthorizationTypeEnum.OAUTH_AUTH.getType().equals(authParameters.getAuthorizationType()) && oauthParameters == null) {
@@ -137,6 +132,18 @@ public class ConnectionService extends AbstractResourceService {
                     throw new EventBridgeException(EventBridgeErrorCode.ClientSecretLengthExceed);
                 }
             }
+            OAuthHttpParameters oauthHttpParameters = oauthParameters.getOauthHttpParameters();
+            if (oauthHttpParameters == null) {
+                throw new EventBridgeException(EventBridgeErrorCode.OauthHttpParametersEmpty);
+            }
+            List<BodyParameter> bodyParameters = oauthHttpParameters.getBodyParameters();
+            List<QueryStringParameter> queryStringParameters = oauthHttpParameters.getQueryStringParameters();
+            List<HeaderParameter> headerParameters = oauthHttpParameters.getHeaderParameters();
+            if (CollectionUtils.isEmpty(bodyParameters)
+                    && CollectionUtils.isEmpty(queryStringParameters)
+                    && CollectionUtils.isEmpty(headerParameters)) {
+                throw new EventBridgeException(EventBridgeErrorCode.OauthHttpParametersEmpty);
+            }
         }
     }
 
@@ -160,24 +167,6 @@ public class ConnectionService extends AbstractResourceService {
         }
     }
 
-    private void updateCheckApiKeyAuthParameters(AuthParameters authParameters) {
-        ApiKeyAuthParameters apiKeyAuthParameters = authParameters.getApiKeyAuthParameters();
-        if (apiKeyAuthParameters != null && AuthorizationTypeEnum.API_KEY_AUTH.getType().equals(authParameters.getAuthorizationType())) {
-            String apiKeyName = apiKeyAuthParameters.getApiKeyName();
-            String apiKeyValue = apiKeyAuthParameters.getApiKeyValue();
-            if (StringUtils.isNotBlank(apiKeyName)
-                    && (apiKeyName.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || apiKeyName.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyNameLengthExceed);
-            }
-            if (StringUtils.isNotBlank(apiKeyValue)
-                    && (apiKeyValue.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || apiKeyValue.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.ApiKeyValueLengthExceed);
-            }
-        }
-    }
-
     private void checkBasicAuthParameters(AuthParameters authParameters) {
         BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
         if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters == null) {
@@ -193,24 +182,6 @@ public class ConnectionService extends AbstractResourceService {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
             }
             if (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT) {
-                throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
-            }
-        }
-    }
-
-    private void updateCheckBasicAuthParameters(AuthParameters authParameters) {
-        BasicAuthParameters basicAuthParameters = authParameters.getBasicAuthParameters();
-        if (AuthorizationTypeEnum.BASIC_AUTH.getType().equals(authParameters.getAuthorizationType()) && basicAuthParameters != null) {
-            String username = basicAuthParameters.getUsername();
-            String password = basicAuthParameters.getPassword();
-            if (StringUtils.isNotBlank(username) &&
-                    (username.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                            || username.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
-                throw new EventBridgeException(EventBridgeErrorCode.BasicUserNameLengthExceed);
-            }
-            if (StringUtils.isNotBlank(password)
-                    && (password.length() > EventBridgeConstants.MAX_LENGTH_CONSTANT
-                    || password.length() < EventBridgeConstants.MIN_LENGTH_CONSTANT)) {
                 throw new EventBridgeException(EventBridgeErrorCode.BasicPassWordLengthExceed);
             }
         }
@@ -248,7 +219,7 @@ public class ConnectionService extends AbstractResourceService {
             secretManagerAPI.deleteSecretName(secretManagerAPI.getSecretName(accountId, oldConnection.getConnectionName()));
         }
         if (connectionDTO.getAuthParameters() != null) {
-            updateCheckAuthParameters(connectionDTO.getAuthParameters());
+            checkAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(updateSecretData(connectionDTO.getAuthParameters(), accountId, connectionDTO.getConnectionName(), oldConnection));
         }
 
@@ -278,14 +249,19 @@ public class ConnectionService extends AbstractResourceService {
     public PaginationResult<List<ConnectionDTO>> listConnections(String accountId, String connectionName, String nextToken, Integer maxResults) {
         List<ConnectionDTO> connectionDTOS = connectionRepository.listConnections(accountId, connectionName, nextToken, maxResults);
         PaginationResult<List<ConnectionDTO>> result = new PaginationResult();
+        int connectionCount = this.getConnectionCount(accountId, connectionName);
         result.setData(connectionDTOS);
-        result.setTotal(this.getConnectionCount(accountId));
-        result.setNextToken(NextTokenUtil.findNextToken(this.getConnectionCount(accountId), Integer.parseInt(nextToken), maxResults));
+        result.setTotal(connectionCount);
+        result.setNextToken(NextTokenUtil.findNextToken(connectionCount, Integer.parseInt(nextToken), maxResults));
         return result;
     }
 
     public int getConnectionCount(String accountId) {
         return connectionRepository.getConnectionCount(accountId);
+    }
+
+    public int getConnectionCount(String accountId, String connectionName) {
+        return connectionRepository.getConnectionCount(accountId, connectionName);
     }
 
     private AuthParameters setSecretData(AuthParameters authParameters, String accountId, String connectionName) {
