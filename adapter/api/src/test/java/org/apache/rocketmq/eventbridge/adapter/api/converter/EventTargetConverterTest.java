@@ -22,8 +22,8 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.target.DeadLetterQueueDTO
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.EventTargetDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.RetryStrategyDTO;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.target.RunOptionsDTO;
-import org.apache.rocketmq.eventbridge.domain.common.enums.ErrorToleranceEnum;
-import org.apache.rocketmq.eventbridge.domain.common.enums.PushRetryStrategyEnum;
+import org.apache.rocketmq.eventbridge.enums.ErrorToleranceEnum;
+import org.apache.rocketmq.eventbridge.enums.PushRetryStrategyEnum;
 import org.apache.rocketmq.eventbridge.domain.model.run.DeadLetterQueue;
 import org.apache.rocketmq.eventbridge.domain.model.run.RetryStrategy;
 import org.apache.rocketmq.eventbridge.domain.model.target.EventTarget;

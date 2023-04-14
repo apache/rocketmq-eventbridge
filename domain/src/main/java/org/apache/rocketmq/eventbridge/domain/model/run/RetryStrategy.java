@@ -19,7 +19,7 @@ package org.apache.rocketmq.eventbridge.domain.model.run;
 
 import lombok.Builder;
 import lombok.Data;
-import org.apache.rocketmq.eventbridge.domain.common.enums.PushRetryStrategyEnum;
+import org.apache.rocketmq.eventbridge.enums.PushRetryStrategyEnum;
 
 @Builder
 @Data
