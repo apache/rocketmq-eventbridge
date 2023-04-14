@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.persistence.data.rocketmq.repository;
 
+import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +24,13 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.protocol.body.ClusterInfo;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
+import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,7 @@ public class RocketMQMetaService {
 
     public boolean createTopic(String clusterName, String topicName) {
         try {
-            defaultMQAdminExt.createTopic(clusterName, topicName, DEFAULT_QUEUE_NUM);
+            defaultMQAdminExt.createTopic(clusterName, topicName, DEFAULT_QUEUE_NUM, Maps.newHashMap());
         } catch (MQClientException e) {
             log.error("Create topic failed.", e);
             throw new EventBridgeException(DefaultErrorCode.InternalError, e);
