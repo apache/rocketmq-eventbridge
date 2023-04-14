@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.Data;
 
+import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.TARGET_RUNNER_KEY;
+
 /**
  * pusher target key config
  */
@@ -35,6 +37,8 @@ public class TargetRunnerConfig implements Serializable {
      * All data are reserved in this map.
      */
     private List<Map<String, String>> components;
+
+    private RunOptions runOptions = new RunOptions();
 
     @Override
     public boolean equals(Object o) {
@@ -98,5 +102,9 @@ public class TargetRunnerConfig implements Serializable {
             }
         }
         return true;
+    }
+
+    public String getEventBusName() {
+        return components.get(0).get(TARGET_RUNNER_KEY);
     }
 }
