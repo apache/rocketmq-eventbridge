@@ -23,6 +23,7 @@ import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.Transform;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
@@ -42,6 +43,8 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
 
     private final List<Transform> transformList;
+
+    private Map<String,List<Transform>> transformListMap;
 
     private final KeyValue config;
 

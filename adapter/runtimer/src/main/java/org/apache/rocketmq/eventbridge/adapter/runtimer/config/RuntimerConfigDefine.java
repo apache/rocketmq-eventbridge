@@ -19,7 +19,6 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.config;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -97,6 +96,10 @@ public class RuntimerConfigDefine {
     public static final String CONNECT_SCHEMA = "connect-schema";
 
     public static final String TRANSFORMS = "transforms";
+
+    public static final String CONNECT_RECORDS_KEY = "SYSTEM_RETRY_TIMES";
+
+    public static final String TARGET_RUNNER_KEY = "eventBusName";
 
     /**
      * The required key for all configurations.

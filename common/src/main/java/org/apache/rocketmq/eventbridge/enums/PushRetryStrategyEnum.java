@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.common.enums;
+package org.apache.rocketmq.eventbridge.enums;
 
 import com.google.common.base.Strings;
 
@@ -27,7 +27,7 @@ public enum PushRetryStrategyEnum {
     /**
      * 176 times: 8s~16s~32s~64s~128s~256s~512s ... 512s(170)
      */
-    EXPONENTIAL_DECAY_RETRY(2, 10);
+    EXPONENTIAL_DECAY_RETRY(2, 170);
 
     private int code;
     private int retryTimes;
