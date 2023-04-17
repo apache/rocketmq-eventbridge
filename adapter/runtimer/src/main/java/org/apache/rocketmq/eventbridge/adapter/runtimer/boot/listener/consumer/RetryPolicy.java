@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.run;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer;
 
-import lombok.Builder;
-import lombok.Data;
-import org.apache.rocketmq.eventbridge.enums.ErrorToleranceEnum;
-
-@Builder
-@Data
-public class RunOptions {
-    private ErrorToleranceEnum errorsTolerance;
-
-    private RetryStrategy retryStrategy;
-
-    private DeadLetterQueue deadLetterQueue;
+/**
+ * @Author changfeng
+ * @Date 2023/4/9 10:10 上午
+ */
+public interface RetryPolicy {
+    long nextDelayDuration();
 }

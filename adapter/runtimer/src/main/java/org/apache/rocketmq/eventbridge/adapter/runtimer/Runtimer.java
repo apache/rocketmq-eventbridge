@@ -17,22 +17,23 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer;
 
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.AbstractTargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.ConfigModeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnDBObserver;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * event bridge runtimer
@@ -50,9 +51,16 @@ public class Runtimer {
 
     private TargetRunnerConfigObserver runnerConfigObserver;
 
-    public Runtimer(CirculatorContext circulatorContext) {
+    public Runtimer(CirculatorContext circulatorContext, @Value("${rumtimer.config.mode}") String configMode) {
         this.circulatorContext = circulatorContext;
-        this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
+        switch (ConfigModeEnum.parse(configMode)) {
+            case DB:
+                this.runnerConfigObserver = new TargetRunnerConfigOnDBObserver();
+                break;
+            default:
+                this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
+                break;
+        }
     }
 
     @PostConstruct

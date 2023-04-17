@@ -15,18 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.run;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer;
 
-import lombok.Builder;
-import lombok.Data;
-import org.apache.rocketmq.eventbridge.enums.ErrorToleranceEnum;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.message.MessageExt;
 
-@Builder
-@Data
-public class RunOptions {
-    private ErrorToleranceEnum errorsTolerance;
+import java.time.Duration;
+import java.util.List;
 
-    private RetryStrategy retryStrategy;
+/**
+ * @Author changfeng
+ * @Date 2023/4/9 10:09 上午
+ */
+public interface LitePullConsumer {
+    void startup() throws MQClientException;
 
-    private DeadLetterQueue deadLetterQueue;
+    void shutdown();
+
+    void attachTopic(String topic, String tag);
+
+    List<MessageExt> poll(int pullBatchSize, Duration timeout);
+
+    void commit(List<String> messageIdList);
+
+    void setSockProxyJson(String proxyJson);
+
+    void subscribe(String topic);
+
+    void unsubscribe(String topic);
 }

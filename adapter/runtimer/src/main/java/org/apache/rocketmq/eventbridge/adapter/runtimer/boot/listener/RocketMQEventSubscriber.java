@@ -18,9 +18,10 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.data.RecordOffset;
@@ -30,23 +31,34 @@ import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.utils.NetworkUtil;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.ClientConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.LitePullConsumer;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.LitePullConsumerImpl;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.remoting.common.RemotingUtil;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -56,15 +68,16 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
-    private DefaultLitePullConsumer pullConsumer;
+    private LitePullConsumer pullConsumer;
 
     private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;
-
-    private String namesrvAddr;
-
     private Integer pullBatchSize;
+
+    private ClientConfig clientConfig;
+    private SessionCredentials sessionCredentials;
+    private String socksProxy;
 
     private static final String SEMICOLON = ";";
 
@@ -81,7 +94,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     @Override
     public void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum) {
         if(Objects.isNull(pullConsumer)){
-            pullConsumer = initDefaultMQPullConsumer();
+            pullConsumer = initLitePullConsumer();
             return;
         }
         Set<String> currentTopics = parseTopicsByRunnerConfigs(Sets.newHashSet(targetRunnerConfig));
@@ -102,7 +115,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     @Override
     public List<ConnectRecord> pull() {
-        List<MessageExt> messages = pullConsumer.poll(pullTimeOut);
+        List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
         if (CollectionUtils.isEmpty(messages)) {
             logger.info("consumer poll message empty , consumer - {}", JSON.toJSONString(pullConsumer));
             return null;
@@ -156,10 +169,43 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      */
     private void initMqProperties() {
         try {
+            ClientConfig clientConfig = new ClientConfig();
             Properties properties = PropertiesLoaderUtils.loadAllProperties("runtimer.properties");
-            namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
+            String namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
+            String consumerGroup = properties.getProperty("rocketmq.consumerGroup");
             pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
             pullBatchSize = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullBatchSize"));
+            String accessChannel = properties.getProperty("rocketmq.accessChannel");
+            String namespace = properties.getProperty("rocketmq.namespace");
+            String accessKey = properties.getProperty("rocketmq.consumer.accessKey");
+            String secretKey = properties.getProperty("rocketmq.consumer.secretKey");
+            String socks5UserName = properties.getProperty("rocketmq.consumer.socks5UserName");
+            String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
+            String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
+
+            clientConfig.setNameSrvAddr(namesrvAddr);
+            clientConfig.setConsumerGroup(StringUtils.isBlank(consumerGroup) ?
+                    createGroupName(SYS_DEFAULT_GROUP) : consumerGroup);
+            clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
+                    AccessChannel.CLOUD : AccessChannel.LOCAL);
+            clientConfig.setNamespace(namespace);
+            this.clientConfig = clientConfig;
+
+            if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
+                this.sessionCredentials = new SessionCredentials(accessKey, secretKey);
+            }
+
+            if (StringUtils.isNotBlank(socks5UserName) && StringUtils.isNotBlank(socks5Password)
+                    && StringUtils.isNotBlank(socks5Endpoint)) {
+                SocksProxyConfig proxyConfig = new SocksProxyConfig();
+                proxyConfig.setUsername(socks5UserName);
+                proxyConfig.setPassword(socks5Password);
+                proxyConfig.setAddr(socks5Endpoint);
+                Map<String, SocksProxyConfig> proxyConfigMap = Maps.newHashMap();
+                proxyConfigMap.put("0.0.0.0/0", proxyConfig);
+                this.socksProxy = new Gson().toJson(proxyConfigMap);
+            }
+
         }catch (Exception exception){
             logger.error("init rocket mq property exception, stack trace-", exception);
         }
@@ -169,65 +215,49 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initPullConsumer() {
-        pullConsumer = initDefaultMQPullConsumer();
+        pullConsumer = initLitePullConsumer();
     }
 
     /**
      * first init default rocketmq pull consumer
      * @return
      */
-    public DefaultLitePullConsumer initDefaultMQPullConsumer () {
+    public LitePullConsumer initLitePullConsumer() {
+        if (pullConsumer != null) {
+            try {
+                pullConsumer.shutdown();
+            } catch (Exception e) {
+                logger.error("Consumer shutdown failed.", e);
+            }
+        }
+
         Set<TargetRunnerConfig> targetRunnerConfigs = runnerConfigObserver.getTargetRunnerConfig();
         Set<String> topics = parseTopicsByRunnerConfigs(targetRunnerConfigs);
-        DefaultLitePullConsumer consumer = new DefaultLitePullConsumer();
-        consumer.setConsumerGroup(createGroupName(SYS_DEFAULT_GROUP));
-        consumer.setNamesrvAddr(namesrvAddr);
-        consumer.setPullBatchSize(pullBatchSize);
+
+        RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
+        this.pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
+        if (StringUtils.isNotBlank(this.socksProxy)) {
+            pullConsumer.setSockProxyJson(this.socksProxy);
+        }
         try {
             for(String topic : topics){
-                consumer.subscribe(topic, "*");
+                pullConsumer.attachTopic(topic, "*");
             }
-            consumer.start();
+            pullConsumer.startup();
         } catch (Exception exception) {
             logger.error("init default pull consumer exception, topic -" + topics.toString() + "-stackTrace-", exception);
             throw new EventBridgeException(" init rocketmq consumer failed");
         }
-        return consumer;
+        return pullConsumer;
     }
 
     private String createGroupName(String prefix) {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix).append("-");
-        sb.append(RemotingUtil.getLocalAddress()).append("-");
+        sb.append(NetworkUtil.getLocalAddress()).append("-");
         sb.append(UtilAll.getPid()).append("-");
         sb.append(System.nanoTime());
         return sb.toString().replace(".", "-");
-    }
-
-    private String createInstance(String servers) {
-        String[] serversArray = servers.split(";");
-        List<String> serversList = new ArrayList<String>();
-        for (String server : serversArray) {
-            if (!serversList.contains(server)) {
-                serversList.add(server);
-            }
-        }
-        Collections.sort(serversList);
-        return String.valueOf(serversList.toString().hashCode());
-    }
-
-    /**
-     * parse msg queue by queue json
-     *
-     * @param messageQueueStr
-     * @return
-     */
-    private MessageQueue parseMessageQueueList(String messageQueueStr) {
-        List<String> messageQueueStrList = Splitter.on(SEMICOLON).omitEmptyStrings().trimResults().splitToList(messageQueueStr);
-        if (CollectionUtils.isEmpty(messageQueueStrList) || messageQueueStrList.size() != 3) {
-            return null;
-        }
-        return new MessageQueue(messageQueueStrList.get(0), messageQueueStrList.get(1), Integer.valueOf(messageQueueStrList.get(2)));
     }
 
     /**
@@ -281,11 +311,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * @param topic
      */
     private void subscribe(String topic) {
-        try {
-            pullConsumer.subscribe(topic, "*");
-        } catch (MQClientException exception) {
-            logger.error("rocketmq event subscribe new topic failed, stack trace - ", exception);
-        }
+        pullConsumer.subscribe(topic);
     }
 
     /**
