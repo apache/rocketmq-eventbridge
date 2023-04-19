@@ -88,8 +88,4 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
             listener.onDeleteTargetRunner(targetRunnerConfig);
         }
     }
-
-    public Map<String, List<TargetKeyValue>> getTaskConfigs() {
-        return null;
-    }
 }

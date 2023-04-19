@@ -34,6 +34,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDef
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -161,11 +162,11 @@ public class CirculatorContext implements TargetRunnerListener {
         switch (refreshTypeEnum) {
             case ADD:
             case UPDATE:
-                TargetKeyValue targetKeyValue = new TargetKeyValue();
-                targetRunnerConfig.getComponents().forEach(targetKeyValue::putAll);
-                TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetKeyValue, plugin);
+                TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetRunnerConfig.getComponents(), plugin);
                 taskTransformMap.put(runnerName, transformChain);
 
+                int endIndex = targetRunnerConfig.getComponents().size() -1;
+                TargetKeyValue targetKeyValue = new TargetKeyValue(targetRunnerConfig.getComponents().get(endIndex));
                 SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
                 pusherTaskMap.put(runnerName, sinkTask);
 
@@ -184,6 +185,61 @@ public class CirculatorContext implements TargetRunnerListener {
         }
     }
 
+//    private TargetKeyValue formatTargetKey(List<Map<String, String>> components) {
+//        if(CollectionUtils.isEmpty(components)){
+//            return null;
+//        }
+//
+//        int startIndex = 0;
+//        int endIndex = components.size() - 1;
+//        // int event bus listener configKey first
+//        TargetKeyValue targetKeyValue = new TargetKeyValue(components.get(startIndex));
+//
+//        // then format event rule transfer
+//        formatTargetKeyForTransfer(targetKeyValue, components, startIndex, endIndex);
+//
+//        // last format event target push
+//        formatTargetKeyForPusher(targetKeyValue, components.get(endIndex));
+//
+//        return null;
+//    }
+//
+//    /**
+//     * format pusher config key value
+//     * @param targetKeyValue
+//     * @param pusherMap
+//     */
+//    private void formatTargetKeyForPusher(TargetKeyValue targetKeyValue, Map<String, String> pusherMap) {
+//        for (String pusherKey : pusherMap.keySet()) {
+//            if (pusherKey.equals(RuntimerConfigDefine.RUNNER_CLASS)) {
+//                targetKeyValue.put(RuntimerConfigDefine.TASK_CLASS, pusherMap.get(pusherKey));
+//            } else {
+//                targetKeyValue.put(pusherKey, pusherMap.get(pusherKey));
+//            }
+//        }
+//    }
+//
+//    /**
+//     * format transfer config key value
+//     * @param targetKeyValue
+//     * @param components
+//     * @param startIndex
+//     * @param endIndex
+//     */
+//    private void formatTargetKeyForTransfer(TargetKeyValue targetKeyValue, List<Map<String, String>> components, int startIndex, int endIndex) {
+//        Assert.isTrue(endIndex - startIndex > 2, "runner config must have 2 transfer element at least ");
+//        for (int index = startIndex + 1; index < endIndex; index++) {
+//            Map<String, String> transferMap = components.get(index);
+//            for (String transferKey : transferMap.keySet()) {
+//                if (transferKey.equals(RuntimerConfigDefine.RUNNER_CLASS)) {
+//                    targetKeyValue.put(RuntimerConfigDefine.TRANSFER_CLASS + "-" + startIndex, transferMap.get(transferKey));
+//                } else {
+//                    targetKeyValue.put(transferKey, transferMap.get(transferKey));
+//                }
+//            }
+//        }
+//    }
+
     /**
      * init default thread poll param, support auto config
      * @param threadPollName
@@ -200,7 +256,7 @@ public class CirculatorContext implements TargetRunnerListener {
      * @return
      */
     private SinkTask initTargetSinkTask(TargetKeyValue targetKeyValue) {
-        String taskClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+        String taskClass = targetKeyValue.getString(RuntimerConfigDefine.RUNNER_CLASS);
         ClassLoader loader = plugin.getPluginClassLoader(taskClass);
         Class taskClazz;
         boolean isolationFlag = false;
