@@ -1,9 +1,23 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.rocketmq.eventbridge.runtimer.service.backpressure;
 
 /**
- * @Author lkm
  * @Description 模拟消费速度比生产速度慢时，驻留容量的变化以及生产速度的变化
- * @Date 上午8:43
  */
 public class ConsumerSlowerPIDControllerTest {
 
@@ -31,12 +45,12 @@ public class ConsumerSlowerPIDControllerTest {
         rateEstimatorTargetQueue.start();
 
         // 生产者，模拟从队列获取消息
-        new ProducterTest(pidContextTest,rateEstimatorEventQueue).start();
+        new MockEventBusListenerTest(pidContextTest,rateEstimatorEventQueue).start();
 
         // 转换器，模拟将eventrecord转换成pusherrecord
         new TransformTest(pidContextTest,rateEstimatorTargetQueue).start();
 
         // 模拟消费者
-        new ConsumerTest(pidContextTest).start();
+        new PusherTest(pidContextTest).start();
     }
 }

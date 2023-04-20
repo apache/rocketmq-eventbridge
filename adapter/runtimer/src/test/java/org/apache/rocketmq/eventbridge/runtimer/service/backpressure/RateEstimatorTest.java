@@ -1,20 +1,37 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.rocketmq.eventbridge.runtimer.service.backpressure;
 
 import com.google.common.util.concurrent.RateLimiter;
+import lombok.SneakyThrows;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-/**
- * @Author lkm
- * @Description
- * @Date 下午4:45
- */
 public class RateEstimatorTest extends ServiceThread {
     private PIDContextTest pidContextTest;
 
     private PIDController pid;  // PID控制器
+
+    private volatile long newSpeed;
     private volatile RateLimiter rateLimiter;
+
+    private BlockingQueue<String> speedLimiter = new LinkedBlockingQueue<>(300);
 
     private String queueName;
 
@@ -27,7 +44,7 @@ public class RateEstimatorTest extends ServiceThread {
 
     @Override
     public String getServiceName() {
-        return ProducterTest.class.getSimpleName();
+        return MockEventBusListenerTest.class.getSimpleName();
     }
 
     @Override
@@ -41,18 +58,33 @@ public class RateEstimatorTest extends ServiceThread {
             }
 
             // double output = pid.compute(input, 10000);
-            long newSpeed = pid.mappeSpeed(input, 50000, queueName);
-            rateLimiter = RateLimiter.create(newSpeed);
-            // System.out.printf("newSpeed=>%s;queue size=>%s \n", newSpeed, input);
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            newSpeed = pid.mappeSpeed(input, 50000, queueName);
+            rateLimiter = RateLimiter.create((newSpeed > 0) ? newSpeed : 1);
+            create(newSpeed);
+            this.waitForRunning(500);
         }
+    }
+
+    public long getNewSpeed() {
+        return newSpeed;
     }
 
     public double acquire(int permits) {
         return rateLimiter.acquire(permits);
+    }
+
+    @SneakyThrows
+    private void create(long newSpeed) {
+        if (newSpeed > 0) {
+            speedLimiter.clear();
+        }
+        for (int i = 0; i < newSpeed; i++) {
+            speedLimiter.put(i + "");
+        }
+    }
+
+    @SneakyThrows
+    public String acquire() {
+        return speedLimiter.take();
     }
 }

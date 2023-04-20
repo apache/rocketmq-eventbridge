@@ -18,41 +18,35 @@ package org.apache.rocketmq.eventbridge.runtimer.service.backpressure;
 
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 
-import java.text.SimpleDateFormat;
-import java.util.Objects;
+import java.util.UUID;
 
-public class TransformTest extends ServiceThread {
+public class MockEventBusListenerTest extends ServiceThread {
     private PIDContextTest pidContextTest;
     private RateEstimatorTest rateEstimatorTest;
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    public TransformTest(PIDContextTest pidContextTest, RateEstimatorTest rateEstimatorTest) {
+    public MockEventBusListenerTest(PIDContextTest pidContextTest, RateEstimatorTest rateEstimatorTest) {
         this.pidContextTest = pidContextTest;
         this.rateEstimatorTest = rateEstimatorTest;
     }
 
     @Override
     public String getServiceName() {
-        return TransformTest.class.getSimpleName();
+        return RateEstimatorTest.class.getSimpleName();
     }
 
     @Override
     public void run() {
         while (!stopped) {
+            // 用于控制速度。例如计算得到速度为20条/s，令牌桶设置为20。需要1秒生成20个，每次拿一个，拿20次拿完即止，等待下一次采样
+            if (rateEstimatorTest.getNewSpeed() == 0) {
+                this.waitForRunning(300);
+            }
+            // 通过令牌桶控制速度
+            rateEstimatorTest.acquire(1);
+            // 通过阻塞队列控制速度
+            //rateEstimatorTest.acquire();
             try {
-                String a = pidContextTest.getEventQueue().take();
-                if (Objects.isNull(a)) {
-                    this.waitForRunning(1000);
-                }
-                // 模拟有5个转换器
-                for (int i = 0; i < 5; i++) {
-                    // 通过令牌桶控制速度
-                    rateEstimatorTest.acquire(1);
-                    // 通过阻塞队列控制速度
-                    // rateEstimatorTest.acquire();
-                    pidContextTest.getTargetQueue().put(a);
-                }
+                pidContextTest.getEventQueue().put(UUID.randomUUID().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

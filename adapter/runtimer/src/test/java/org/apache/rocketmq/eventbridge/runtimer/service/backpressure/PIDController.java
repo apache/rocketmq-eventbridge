@@ -1,15 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.rocketmq.eventbridge.runtimer.service.backpressure;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
- * @Author lkm
- * @Description
+ * @Description 　　
  * 　　(1)增大比例系数Kp一般将加快系统的响应，在有静差的情况下有利于减小静差。但过大的比例系数会使系统有较大的超调，并产生振荡，使系统的稳定性变坏；
  * 　　(2)增大积分时间TI一般有利于减小超调，减小振荡，使系统更加稳定，但系统静差的消除将随之减慢；
  * 　　(3)增大微分时间TD亦有利于加快系统的响应，减小振荡，使系统稳定性增加，但系统对干扰的抑制能力减弱，对扰动有较敏感的响应；另外，过大的微分系数也将使系统的稳定性变坏。
- * @Date 上午8:33
  */
 public class PIDController {
     private double Kp;  // 比例系数
@@ -30,6 +43,8 @@ public class PIDController {
 
     // 振幅输出转换成生产速度的缩放因子
     private double speedScalingFactor = 1;
+
+    private volatile static int time = 0;
 
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -104,8 +119,9 @@ public class PIDController {
         } else if (newSpeed < minSpeed) {
             newSpeed = minSpeed;
         }
-//        if ("targetQueue".equals(queueName))
-        System.out.printf("输出振幅：output=>%s,\t上一次采样生产速度：currentSpeed=>%s,\t下次生产速度：newSpeed=>%s,\t (%s)数据容量：input=>%s,\t\tcurrentTime=>%s \n", output, currentSpeed, newSpeed, queueName, input, simpleDateFormat.format(new Date()));
+        if ("targetQueue".equals(queueName))
+            System.out.printf("data.push([" + (time++) + "," + input + "]); \n");
+        //System.out.printf("输出振幅：output=>%s,\t上一次采样生产速度：currentSpeed=>%s,\t下次生产速度：newSpeed=>%s,\t (%s)数据容量：input=>%s,\t\tcurrentTime=>%s \n", output, currentSpeed, newSpeed, queueName, input, simpleDateFormat.format(new Date()));
         currentSpeed = newSpeed;
         return newSpeed;  // 设置新的生产速度
     }

@@ -20,42 +20,44 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 
 import java.text.SimpleDateFormat;
 import java.util.Objects;
+import java.util.Random;
 
-public class TransformTest extends ServiceThread {
+public class PusherTest extends ServiceThread {
     private PIDContextTest pidContextTest;
-    private RateEstimatorTest rateEstimatorTest;
 
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public TransformTest(PIDContextTest pidContextTest, RateEstimatorTest rateEstimatorTest) {
+    public PusherTest(PIDContextTest pidContextTest) {
         this.pidContextTest = pidContextTest;
-        this.rateEstimatorTest = rateEstimatorTest;
     }
 
     @Override
     public String getServiceName() {
-        return TransformTest.class.getSimpleName();
+        return PusherTest.class.getSimpleName();
     }
+
+    Random random = new Random();
 
     @Override
     public void run() {
         while (!stopped) {
             try {
-                String a = pidContextTest.getEventQueue().take();
-                if (Objects.isNull(a)) {
+                if (!pidContextTest.canExecute()) {
                     this.waitForRunning(1000);
                 }
-                // 模拟有5个转换器
-                for (int i = 0; i < 5; i++) {
-                    // 通过令牌桶控制速度
-                    rateEstimatorTest.acquire(1);
-                    // 通过阻塞队列控制速度
-                    // rateEstimatorTest.acquire();
-                    pidContextTest.getTargetQueue().put(a);
+                String a = pidContextTest.getTargetQueue().take();
+                // System.out.printf("处理信息：a=>%s,\t当前队列数据容量：input=>%s,\t\tcurrentTime=>%s \n", a, pidContextTest.getTargetQueue().size(), simpleDateFormat.format(new Date()));
+                if (Objects.isNull(a)) {
+                    this.waitForRunning(random.nextInt(1000));
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            pidContextTest.getThreadPoolExecutor().execute(() -> {
+                // 当下游消费速度在一定范围波动时
+                 this.waitForRunning(random.nextInt(100) + 100);
+            });
         }
     }
 }
