@@ -170,7 +170,7 @@ public class CirculatorContext implements TargetRunnerListener {
                 SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
                 pusherTaskMap.put(runnerName, sinkTask);
 
-                String pusherClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+                String pusherClass = targetKeyValue.getString(RuntimerConfigDefine.RUNNER_CLASS);
                 if (StringUtils.isNotEmpty(pusherClass) && !pusherExecutorMap.containsKey(pusherClass)) {
                     pusherExecutorMap.put(pusherClass, initDefaultThreadPoolExecutor(pusherClass));
                 }
@@ -184,61 +184,6 @@ public class CirculatorContext implements TargetRunnerListener {
                 break;
         }
     }
-
-//    private TargetKeyValue formatTargetKey(List<Map<String, String>> components) {
-//        if(CollectionUtils.isEmpty(components)){
-//            return null;
-//        }
-//
-//        int startIndex = 0;
-//        int endIndex = components.size() - 1;
-//        // int event bus listener configKey first
-//        TargetKeyValue targetKeyValue = new TargetKeyValue(components.get(startIndex));
-//
-//        // then format event rule transfer
-//        formatTargetKeyForTransfer(targetKeyValue, components, startIndex, endIndex);
-//
-//        // last format event target push
-//        formatTargetKeyForPusher(targetKeyValue, components.get(endIndex));
-//
-//        return null;
-//    }
-//
-//    /**
-//     * format pusher config key value
-//     * @param targetKeyValue
-//     * @param pusherMap
-//     */
-//    private void formatTargetKeyForPusher(TargetKeyValue targetKeyValue, Map<String, String> pusherMap) {
-//        for (String pusherKey : pusherMap.keySet()) {
-//            if (pusherKey.equals(RuntimerConfigDefine.RUNNER_CLASS)) {
-//                targetKeyValue.put(RuntimerConfigDefine.TASK_CLASS, pusherMap.get(pusherKey));
-//            } else {
-//                targetKeyValue.put(pusherKey, pusherMap.get(pusherKey));
-//            }
-//        }
-//    }
-//
-//    /**
-//     * format transfer config key value
-//     * @param targetKeyValue
-//     * @param components
-//     * @param startIndex
-//     * @param endIndex
-//     */
-//    private void formatTargetKeyForTransfer(TargetKeyValue targetKeyValue, List<Map<String, String>> components, int startIndex, int endIndex) {
-//        Assert.isTrue(endIndex - startIndex > 2, "runner config must have 2 transfer element at least ");
-//        for (int index = startIndex + 1; index < endIndex; index++) {
-//            Map<String, String> transferMap = components.get(index);
-//            for (String transferKey : transferMap.keySet()) {
-//                if (transferKey.equals(RuntimerConfigDefine.RUNNER_CLASS)) {
-//                    targetKeyValue.put(RuntimerConfigDefine.TRANSFER_CLASS + "-" + startIndex, transferMap.get(transferKey));
-//                } else {
-//                    targetKeyValue.put(transferKey, transferMap.get(transferKey));
-//                }
-//            }
-//        }
-//    }
 
     /**
      * init default thread poll param, support auto config
