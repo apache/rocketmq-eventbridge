@@ -159,7 +159,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                 logger.warn("target runner config components is empty, config info - {}", runnerConfig);
                 continue;
             }
-            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CONNECT_TOPICNAME));
+            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CHANNEL_NAME));
         }
         return listenTopics;
     }
@@ -280,7 +280,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         String bodyStr = new String(body, StandardCharsets.UTF_8);
         sinkRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, schema, bodyStr);
         KeyValue keyValue = new DefaultKeyValue();
-        keyValue.put(RuntimerConfigDefine.CONNECT_TOPICNAME, messageExt.getTopic());
+        keyValue.put(RuntimerConfigDefine.CHANNEL_NAME, messageExt.getTopic());
         if (MapUtils.isNotEmpty(properties)) {
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 keyValue.put(entry.getKey(), entry.getValue());

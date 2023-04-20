@@ -42,6 +42,4 @@ public interface TargetRunnerConfigObserver {
      */
     void registerListener(TargetRunnerListener listener);
 
-    @Deprecated
-    Map<String, List<TargetKeyValue>> getTaskConfigs();
 }
