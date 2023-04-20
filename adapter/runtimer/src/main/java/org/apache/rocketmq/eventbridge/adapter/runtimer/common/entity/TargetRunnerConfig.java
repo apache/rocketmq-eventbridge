@@ -57,11 +57,11 @@ public class TargetRunnerConfig implements Serializable {
 
     @Override
     public String toString() {
-        //TODO
         return "TargetRunnerConfig{" +
-            "connectName='" + name + '\'' +
-            ", properties=" + components +
-            '}';
+                "name='" + name + '\'' +
+                ", components=" + components +
+                ", runOptions=" + runOptions +
+                '}';
     }
 
     private boolean isEqualsComponents(List<Map<String, String>> source, List<Map<String, String>> target) {

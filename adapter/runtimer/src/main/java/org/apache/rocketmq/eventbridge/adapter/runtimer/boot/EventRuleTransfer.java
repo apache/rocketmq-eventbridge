@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
@@ -71,10 +70,10 @@ public class EventRuleTransfer extends ServiceThread {
                 continue;
             }
             // the event channel take rocket mq topic name as default
-            String eventChannelKey = RuntimerConfigDefine.CONNECT_TOPICNAME;
-            String eventChannel = eventRecord.getExtension(eventChannelKey);
+            String eventChannelName = RuntimerConfigDefine.CHANNEL_NAME;
+            String eventChannel = eventRecord.getExtension(eventChannelName);
             Set<TransformEngine<ConnectRecord>> adaptTransformSet = latestTransformMap.values().stream()
-                    .filter(engine -> eventChannel.equals(engine.getConnectConfig(eventChannelKey)))
+                    .filter(engine -> eventChannel.equals(engine.getConnectConfig(eventChannelName)))
                     .collect(Collectors.toSet());
             if(CollectionUtils.isEmpty(adaptTransformSet)){
                     logger.warn("adapt specific topic ref transform engine is empty, eventChannelName- {}", eventChannel);
