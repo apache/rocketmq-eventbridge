@@ -34,6 +34,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDef
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -161,15 +162,15 @@ public class CirculatorContext implements TargetRunnerListener {
         switch (refreshTypeEnum) {
             case ADD:
             case UPDATE:
-                TargetKeyValue targetKeyValue = new TargetKeyValue();
-                targetRunnerConfig.getComponents().forEach(targetKeyValue::putAll);
-                TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetKeyValue, plugin);
+                TransformEngine<ConnectRecord> transformChain = new TransformEngine<>(targetRunnerConfig.getComponents(), plugin);
                 taskTransformMap.put(runnerName, transformChain);
 
+                int endIndex = targetRunnerConfig.getComponents().size() -1;
+                TargetKeyValue targetKeyValue = new TargetKeyValue(targetRunnerConfig.getComponents().get(endIndex));
                 SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
                 pusherTaskMap.put(runnerName, sinkTask);
 
-                String pusherClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+                String pusherClass = targetKeyValue.getString(RuntimerConfigDefine.RUNNER_CLASS);
                 if (StringUtils.isNotEmpty(pusherClass) && !pusherExecutorMap.containsKey(pusherClass)) {
                     pusherExecutorMap.put(pusherClass, initDefaultThreadPoolExecutor(pusherClass));
                 }
@@ -200,7 +201,7 @@ public class CirculatorContext implements TargetRunnerListener {
      * @return
      */
     private SinkTask initTargetSinkTask(TargetKeyValue targetKeyValue) {
-        String taskClass = targetKeyValue.getString(RuntimerConfigDefine.TASK_CLASS);
+        String taskClass = targetKeyValue.getString(RuntimerConfigDefine.RUNNER_CLASS);
         ClassLoader loader = plugin.getPluginClassLoader(taskClass);
         Class taskClazz;
         boolean isolationFlag = false;

@@ -17,16 +17,13 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer;
 
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Splitter;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.Transform;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.internal.DefaultKeyValue;
-import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.LoggerName;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
@@ -35,8 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
@@ -44,7 +41,7 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     private final List<Transform> transformList;
 
-    private Map<String,List<Transform>> transformListMap;
+    private List<Map<String, String>> transferConfigs;
 
     private final KeyValue config;
 
@@ -54,35 +51,25 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     private static final String PREFIX = RuntimerConfigDefine.TRANSFORMS + "-";
 
-    public TransformEngine(KeyValue config, Plugin plugin) {
-        this.config = config;
+    public TransformEngine(List<Map<String, String>> transferConfigs, Plugin plugin) {
+        this.transferConfigs = transferConfigs;
+        this.config = formatTargetKey(transferConfigs);
         this.plugin = plugin;
         transformList = new ArrayList<>(8);
         init();
     }
 
     private void init() {
-        String transformsStr = config.getString(RuntimerConfigDefine.TRANSFORMS);
-        if (StringUtils.isBlank(transformsStr)) {
-            log.warn("no transforms config, {}", JSON.toJSONString(config));
-            return;
-        }
-        List<String> transformList = Splitter.on(COMMA).omitEmptyStrings().trimResults().splitToList(transformsStr);
-        if (CollectionUtils.isEmpty(transformList)) {
-            log.warn("transforms config is null, {}", JSON.toJSONString(config));
-            return;
-        }
-        transformList.stream().forEach(transformStr -> {
-            String transformClassKey = PREFIX + transformStr + "-class";
-            String transformClass = config.getString(transformClassKey);
+        int endIndex = transferConfigs.size() - 1;
+        for (int index = 1; index < endIndex; index++) {
+            Map<String, String> transferMap = transferConfigs.get(index);
+            String transformClass = transferMap.get(RuntimerConfigDefine.RUNNER_CLASS);
             try {
                 Transform transform = getTransform(transformClass);
                 KeyValue transformConfig = new DefaultKeyValue();
-                Set<String> configKeys = config.keySet();
-                for (String key : configKeys) {
-                    if (key.startsWith(PREFIX + transformStr) && !key.equals(transformClassKey)) {
-                        String originKey = key.replace(PREFIX + transformStr + "-", "");
-                        transformConfig.put(originKey, config.getString(key));
+                for (String key : transferMap.keySet()) {
+                    if (!key.equals(RuntimerConfigDefine.RUNNER_CLASS)) {
+                        transformConfig.put(key, transferMap.get(key));
                     }
                 }
                 transform.validate(transformConfig);
@@ -91,7 +78,25 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
             } catch (Exception e) {
                 log.error("transform new instance error", e);
             }
-        });
+        }
+    }
+
+    /**
+     * format listener and pusher key
+     * @param components
+     * @return
+     */
+    private TargetKeyValue formatTargetKey(List<Map<String, String>> components) {
+        if(CollectionUtils.isEmpty(components)){
+            return null;
+        }
+        int startIndex = 0;
+        int endIndex = components.size() - 1;
+        // init listener key
+        TargetKeyValue targetKeyValue = new TargetKeyValue(components.get(startIndex));
+        // init pusher key
+        targetKeyValue.put(RuntimerConfigDefine.TASK_CLASS, components.get(endIndex).get(RuntimerConfigDefine.RUNNER_CLASS));
+        return targetKeyValue;
     }
 
     /**
