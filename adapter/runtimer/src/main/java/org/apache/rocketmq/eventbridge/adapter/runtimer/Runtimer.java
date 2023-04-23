@@ -26,6 +26,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,24 +45,28 @@ public class Runtimer {
 
     private AtomicReference<RuntimerState> runtimerState;
 
+    @Autowired
     private CirculatorContext circulatorContext;
-
     @Autowired
     private TargetRunnerConfigObserver runnerConfigObserver;
     @Autowired
     private OffsetManager offsetManager;
     @Autowired
     private EventSubscriber eventSubscriber;
+    @Autowired
+    private ErrorHandler errorHandler;
 
     public Runtimer(
         CirculatorContext circulatorContext,
         TargetRunnerConfigObserver runnerConfigObserver,
         OffsetManager offsetManager,
-        EventSubscriber eventSubscriber) {
+        EventSubscriber eventSubscriber,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.runnerConfigObserver = runnerConfigObserver;
         this.offsetManager = offsetManager;
         this.eventSubscriber = eventSubscriber;
+        this.errorHandler = errorHandler;
     }
 
     @PostConstruct
@@ -70,9 +75,9 @@ public class Runtimer {
         circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber).start();
-        new EventRuleTransfer(circulatorContext, offsetManager).start();
-        new EventTargetPusher(circulatorContext, offsetManager).start();
+        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
+        new EventTargetPusher(circulatorContext, offsetManager, errorHandler).start();
         startRuntimer();
     }
 

@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +41,13 @@ public class EventTargetPusher extends ServiceThread {
 
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
+    private final ErrorHandler errorHandler;
 
-    public EventTargetPusher(CirculatorContext circulatorContext, OffsetManager offsetManager) {
+    public EventTargetPusher(CirculatorContext circulatorContext, OffsetManager offsetManager,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
+        this.errorHandler = errorHandler;
     }
 
     @Override
