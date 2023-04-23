@@ -41,9 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Slf4j
+@Component
 public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfigObserver {
 
     private String pathName;
