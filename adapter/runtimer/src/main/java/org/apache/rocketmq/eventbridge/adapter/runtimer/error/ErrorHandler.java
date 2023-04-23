@@ -20,6 +20,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.error;
 import com.google.common.base.Strings;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
@@ -37,16 +38,21 @@ public class ErrorHandler {
     @Autowired
     EventSubscriber eventSubscriber;
 
+    @Autowired
+    OffsetManager offsetManager;
+
     public void handle(ConnectRecord connectRecord, Throwable t) {
         String eventRunnerName = connectRecord.getExtension(RUNNER_NAME);
         TargetRunnerConfig targetRunnerConfig = TargetRunnerContext.getTargetRunnerConfig(eventRunnerName);
         String eventBusName = targetRunnerConfig.getEventBusName();
         PushRetryStrategyEnum pushRetryStrategyEnum = PushRetryStrategyEnum.parse(targetRunnerConfig.getRunOptions().getRetryStrategy());
+
         int retryTimes = parseRetryTimes(connectRecord);
         int delaySec = calcDelaySec(retryTimes, pushRetryStrategyEnum);
         if (delaySec > 0) {
             eventSubscriber.put(eventBusName, connectRecord, delaySec);
         }
+        offsetManager.commit(connectRecord);
     }
 
     private int parseRetryTimes(ConnectRecord connectRecord) {
@@ -71,7 +77,6 @@ public class ErrorHandler {
      * @return
      */
     private int calcDelaySec(int retryTimes, PushRetryStrategyEnum pushRetryStrategyEnum) {
-
         switch (pushRetryStrategyEnum) {
             case BACKOFF_RETRY:
                 if (retryTimes >= pushRetryStrategyEnum.getRetryTimes()) {

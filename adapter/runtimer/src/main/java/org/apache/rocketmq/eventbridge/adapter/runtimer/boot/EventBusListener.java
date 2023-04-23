@@ -18,14 +18,14 @@
 package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
+import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * listen the event and offer to queue
@@ -40,22 +40,26 @@ public class EventBusListener extends ServiceThread {
 
     private final EventSubscriber eventSubscriber;
 
-    public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber) {
+    private final ErrorHandler errorHandler;
+
+    public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
+        this.errorHandler = errorHandler;
     }
 
     @Override
     public void run() {
         while (!stopped) {
-            try{
+            try {
                 List<ConnectRecord> recordList = eventSubscriber.pull();
-                if(CollectionUtils.isEmpty(recordList)){
+                if (CollectionUtils.isEmpty(recordList)) {
                     this.waitForRunning(1000);
                     continue;
                 }
                 circulatorContext.offerEventRecords(recordList);
-            }catch (Exception exception) {
+            } catch (Exception exception) {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
             }
         }

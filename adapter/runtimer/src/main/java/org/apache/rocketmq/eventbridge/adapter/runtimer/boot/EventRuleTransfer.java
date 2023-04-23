@@ -33,10 +33,10 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * receive event and transfer the rule to pusher
@@ -49,10 +49,14 @@ public class EventRuleTransfer extends ServiceThread {
     private final CirculatorContext circulatorContext;
     @Autowired
     private final OffsetManager offsetManager;
+    @Autowired
+    private final ErrorHandler errorHandler;
 
-    public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager) {
+    public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
+        this.errorHandler = errorHandler;
     }
 
     @Override
@@ -61,9 +65,10 @@ public class EventRuleTransfer extends ServiceThread {
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         super.start();
     }
+
     @Override
     public void run() {
         while (!stopped) {
@@ -96,6 +101,7 @@ public class EventRuleTransfer extends ServiceThread {
                 CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> transfer.doTransforms(eventRecord))
                     .exceptionally((exception) -> {
                         logger.error("transfer do transform event record failed，stackTrace-", exception);
+                        errorHandler.handle(eventRecord,exception);
                         return null;
                     })
                     .thenAccept(record -> {
@@ -105,7 +111,7 @@ public class EventRuleTransfer extends ServiceThread {
                             record.getExtensions().put(runnerNameKey, transfer.getConnectConfig(runnerNameKey));
                             record.getExtensions().put(taskClassKey, transfer.getConnectConfig(taskClassKey));
                             afterTransformConnect.add(record);
-                        }else{
+                        } else {
                             offsetManager.commit(eventRecord);
                         }
                     });
