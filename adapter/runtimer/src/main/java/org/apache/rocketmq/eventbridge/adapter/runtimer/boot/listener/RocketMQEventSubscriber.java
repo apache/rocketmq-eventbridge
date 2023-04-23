@@ -49,6 +49,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -60,16 +61,19 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.stereotype.Component;
 
 /**
  * RocketMQ implement event subscriber
  */
+@Component
 public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
     private LitePullConsumer pullConsumer;
 
+    @Autowired
     private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;

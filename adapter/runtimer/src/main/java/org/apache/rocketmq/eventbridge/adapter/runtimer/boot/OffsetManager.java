@@ -15,20 +15,31 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.retry;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
+import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import java.util.List;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class EventBusStorageOnRocketMQ implements EventBusStorage {
+@Component
+public class OffsetManager {
 
-    @Override
-    public void put(String eventBusName, ConnectRecord connectRecord, int delaySec) {
+    @Autowired
+    EventSubscriber eventSubscriber;
 
+    public OffsetManager(EventSubscriber eventSubscriber) {
+        this.eventSubscriber = eventSubscriber;
     }
 
-    public List<String> parseEventBusName(String eventBusName) {
-        //TODO
-        return null;
+    public void commit(final List<ConnectRecord> connectRecordList) {
+        this.eventSubscriber.commit(connectRecordList);
     }
+
+    public void commit(final ConnectRecord connectRecord) {
+        this.eventSubscriber.commit(Lists.newArrayList(connectRecord));
+    }
+
 }
