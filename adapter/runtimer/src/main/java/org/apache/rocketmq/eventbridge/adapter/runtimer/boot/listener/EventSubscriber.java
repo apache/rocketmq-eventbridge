@@ -52,8 +52,9 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      * @param connectRecord
      * @param delaySec
      */
-    public  void put(String eventBusName, ConnectRecord connectRecord, int delaySec){
+    public  boolean put(String eventBusName, ConnectRecord connectRecord, int delaySec){
         // convert the eventBusName to Topic ?
+        return true;
     }
 
     /**
