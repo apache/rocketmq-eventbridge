@@ -15,11 +15,8 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.retry;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.error;
 
-import io.openmessaging.connector.api.data.ConnectRecord;
+public class DeadLetterQueueService {
 
-public interface EventBusStorage {
-
-    void put(String eventBusName, ConnectRecord connectRecord, int delaySec);
 }
