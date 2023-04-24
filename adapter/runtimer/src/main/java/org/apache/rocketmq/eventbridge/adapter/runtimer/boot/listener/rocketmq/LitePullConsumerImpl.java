@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -64,12 +64,14 @@ public class LitePullConsumerImpl implements LitePullConsumer {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(
             ThreadUtils.newThreadFactory("PullConsumerExecutorService", false));
 
+    private static final String DEFAULT_INSTANCE_NAME = "EventBridge_Consumer_INSTANCE";
+
     public LitePullConsumerImpl(final ClientConfig clientConfig, final RPCHook rpcHook) {
         this.clientConfig = clientConfig;
         rocketmqPullConsumer = new DefaultMQPullConsumer(clientConfig.getConsumerGroup(), rpcHook);
         rocketmqPullConsumer.setNamesrvAddr(clientConfig.getNameSrvAddr());
         rocketmqPullConsumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueAveragelyByCircle());
-        rocketmqPullConsumer.setInstanceName(buildInstanceName(clientConfig.getNameSrvAddr(), clientConfig.getConsumerGroup()));
+        rocketmqPullConsumer.setInstanceName(DEFAULT_INSTANCE_NAME);
         if (clientConfig.getAccessChannel() != null) {
             rocketmqPullConsumer.setAccessChannel(clientConfig.getAccessChannel());
         }
@@ -145,13 +147,6 @@ public class LitePullConsumerImpl implements LitePullConsumer {
     @Override
     public void setSockProxyJson(final String proxyJson) {
         rocketmqPullConsumer.setSocksProxyConfig(proxyJson);
-    }
-
-    private String buildInstanceName(String nameSrvAddr, String consumerGroup) {
-        return UtilAll.getPid()
-                + "#" + nameSrvAddr.hashCode()
-                + "#" + consumerGroup
-                + "#" + System.nanoTime();
     }
 
     private RetryPolicy getRetryPolicy(MessageQueue messageQueue) {
