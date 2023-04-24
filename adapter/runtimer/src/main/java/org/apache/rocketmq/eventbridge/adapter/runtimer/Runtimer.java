@@ -17,6 +17,11 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
@@ -26,6 +31,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ShutdownHookThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.ConfigModeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnDBObserver;
@@ -70,9 +76,22 @@ public class Runtimer {
         EventSubscriber eventSubscriber = new RocketMQEventSubscriber(runnerConfigObserver);
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber).start();
-        new EventRuleTransfer(circulatorContext).start();
-        new EventTargetPusher(circulatorContext).start();
+
+        EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber);
+        EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext);
+        EventTargetPusher eventTargetPusher = new EventTargetPusher(circulatorContext);
+        ConcurrentHashMap<Thread, ExecutorService> threadThreadPoolExecutorMap = new ConcurrentHashMap<Thread, ExecutorService>() {
+            {
+                put(new Thread(eventBusListener, ""), Executors.newSingleThreadExecutor());
+                put(new Thread(eventRuleTransfer, ""), Executors.newSingleThreadExecutor());
+                put(new Thread(eventTargetPusher, ""), Executors.newSingleThreadExecutor());
+            }
+        };
+        ShutdownHookThread shutdownHookThread = new ShutdownHookThread(logger, () -> {
+            logger.info("守护线程启动");
+            return null;
+        }, threadThreadPoolExecutorMap);
+        shutdownHookThread.start();
         startRuntimer();
     }
 
