@@ -15,20 +15,8 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.error;
 
-import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.List;
-import lombok.Data;
+public class DeadLetterQueueService {
 
-@Data
-public class PushRequest {
-
-    private String targetRunnerName;
-
-    private String targetClass;
-
-    private List<ConnectRecord> connectRecords;
-
-    private PushCallback pushCallback;
 }

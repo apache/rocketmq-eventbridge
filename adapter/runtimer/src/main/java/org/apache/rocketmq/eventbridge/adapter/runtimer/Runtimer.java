@@ -22,17 +22,15 @@ import javax.annotation.PostConstruct;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.RocketMQEventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.ConfigModeEnum;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnDBObserver;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigOnFileObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,32 +45,39 @@ public class Runtimer {
 
     private AtomicReference<RuntimerState> runtimerState;
 
+    @Autowired
     private CirculatorContext circulatorContext;
-
+    @Autowired
     private TargetRunnerConfigObserver runnerConfigObserver;
+    @Autowired
+    private OffsetManager offsetManager;
+    @Autowired
+    private EventSubscriber eventSubscriber;
+    @Autowired
+    private ErrorHandler errorHandler;
 
-    public Runtimer(CirculatorContext circulatorContext, @Value("${rumtimer.config.mode}") String configMode) {
+    public Runtimer(
+        CirculatorContext circulatorContext,
+        TargetRunnerConfigObserver runnerConfigObserver,
+        OffsetManager offsetManager,
+        EventSubscriber eventSubscriber,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
-        switch (ConfigModeEnum.parse(configMode)) {
-            case DB:
-                this.runnerConfigObserver = new TargetRunnerConfigOnDBObserver();
-                break;
-            default:
-                this.runnerConfigObserver = new TargetRunnerConfigOnFileObserver();
-                break;
-        }
+        this.runnerConfigObserver = runnerConfigObserver;
+        this.offsetManager = offsetManager;
+        this.eventSubscriber = eventSubscriber;
+        this.errorHandler = errorHandler;
     }
 
     @PostConstruct
     public void initAndStart() {
-        logger.info("init runtimer task config");
+        logger.info("Start init runtimer.");
         circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
-        EventSubscriber eventSubscriber = new RocketMQEventSubscriber(runnerConfigObserver);
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber).start();
-        new EventRuleTransfer(circulatorContext).start();
-        new EventTargetPusher(circulatorContext).start();
+        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
+        new EventTargetPusher(circulatorContext, offsetManager, errorHandler).start();
         startRuntimer();
     }
 
