@@ -32,6 +32,10 @@ public class RuntimerConfigDefine {
      */
     public static final String CONNECTOR_CLASS = "connector-class";
 
+    public static final String RUNNER_CLASS = "class";
+
+    public static final String TRANSFER_CLASS = "transfer-class";
+
     public static final String CONNECTOR_DIRECT_ENABLE = "connector-direct-enable";
 
     public static final String TASK_CLASS = "task-class";
@@ -79,7 +83,7 @@ public class RuntimerConfigDefine {
 
     public static final String CONNECT_SHARDINGKEY = "connect-shardingkey";
 
-    public static final String CONNECT_TOPICNAME = "connect-topicname";
+    public static final String CHANNEL_NAME = "channel-name";
 
     public static final String CONNECT_RULE_NAME = "connect-rule-name";
 
@@ -100,20 +104,5 @@ public class RuntimerConfigDefine {
     public static final String CONNECT_RECORDS_KEY = "SYSTEM_RETRY_TIMES";
 
     public static final String TARGET_RUNNER_KEY = "eventBusName";
-
-    /**
-     * The required key for all configurations.
-     */
-    public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
-        {
-            add(CONNECTOR_CLASS);
-            add(CONNECT_TOPICNAME);
-        }
-    };
-
-    /**
-     * Maximum allowed message size in bytes, the default vaule is 4M.
-     */
-    public static final int MAX_MESSAGE_SIZE = Integer.parseInt(System.getProperty("rocketmq.runtime.max.message.size", "4194304"));
 
 }

@@ -47,6 +47,17 @@ public abstract class EventSubscriber implements TargetRunnerListener {
     public abstract void commit(List<ConnectRecord> connectRecordList);
 
     /**
+     * Put the connect record to the eventbus.
+     * @param eventBusName
+     * @param connectRecord
+     * @param delaySec
+     */
+    public  boolean put(String eventBusName, ConnectRecord connectRecord, int delaySec){
+        // convert the eventBusName to Topic ?
+        return true;
+    }
+
+    /**
      * Call when add new target runner to runtimer.
      *
      * @param targetRunnerConfig

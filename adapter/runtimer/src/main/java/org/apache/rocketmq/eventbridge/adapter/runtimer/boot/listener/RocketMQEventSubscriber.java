@@ -49,6 +49,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -60,16 +61,19 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.stereotype.Component;
 
 /**
  * RocketMQ implement event subscriber
  */
+@Component
 public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
     private LitePullConsumer pullConsumer;
 
+    @Autowired
     private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;
@@ -159,7 +163,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                 logger.warn("target runner config components is empty, config info - {}", runnerConfig);
                 continue;
             }
-            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CONNECT_TOPICNAME));
+            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CHANNEL_NAME));
         }
         return listenTopics;
     }
@@ -280,7 +284,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         String bodyStr = new String(body, StandardCharsets.UTF_8);
         sinkRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, schema, bodyStr);
         KeyValue keyValue = new DefaultKeyValue();
-        keyValue.put(RuntimerConfigDefine.CONNECT_TOPICNAME, messageExt.getTopic());
+        keyValue.put(RuntimerConfigDefine.CHANNEL_NAME, messageExt.getTopic());
         if (MapUtils.isNotEmpty(properties)) {
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 keyValue.put(entry.getKey(), entry.getValue());

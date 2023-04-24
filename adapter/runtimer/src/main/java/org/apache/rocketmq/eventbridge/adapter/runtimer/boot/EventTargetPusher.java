@@ -21,29 +21,33 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 /**
  * event target push to sink task
  *
  * @author artisan
  */
-public class EventTargetPusher extends ServiceThread{
+public class EventTargetPusher extends ServiceThread {
 
     private static final Logger logger = LoggerFactory.getLogger(EventTargetPusher.class);
 
     private final CirculatorContext circulatorContext;
+    private final OffsetManager offsetManager;
+    private final ErrorHandler errorHandler;
 
-    public EventTargetPusher(CirculatorContext circulatorContext) {
+    public EventTargetPusher(CirculatorContext circulatorContext, OffsetManager offsetManager,
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
+        this.offsetManager = offsetManager;
+        this.errorHandler = errorHandler;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class EventTargetPusher extends ServiceThread{
                 this.waitForRunning(1000);
                 continue;
             }
-            if(logger.isDebugEnabled()){
+            if (logger.isDebugEnabled()) {
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecord));
             }
 
@@ -63,9 +67,10 @@ public class EventTargetPusher extends ServiceThread{
             executorService.execute(() -> {
                 try {
                     String runnerName = targetRecord.getExtensions().getString(RuntimerConfigDefine.RUNNER_NAME);
-                    SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);;
+                    SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);
                     sinkTask.put(Lists.newArrayList(targetRecord));
-                }catch (Exception exception){
+                    offsetManager.commit(targetRecord);
+                } catch (Exception exception) {
                     logger.error(getServiceName() + " push target exception, record - " + targetRecord + " , stackTrace-", exception);
                 }
             });
@@ -76,6 +81,5 @@ public class EventTargetPusher extends ServiceThread{
     public String getServiceName() {
         return EventTargetPusher.class.getSimpleName();
     }
-
 
 }
