@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq;
 
 import com.google.common.base.MoreObjects;
 
