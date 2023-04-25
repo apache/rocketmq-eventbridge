@@ -64,11 +64,6 @@ public class EventRuleTransfer extends ServiceThread {
         return this.getClass().getSimpleName();
     }
 
-    @PostConstruct
-    public void init() {
-        super.start();
-    }
-
     @Override
     public void run() {
         while (!stopped) {
