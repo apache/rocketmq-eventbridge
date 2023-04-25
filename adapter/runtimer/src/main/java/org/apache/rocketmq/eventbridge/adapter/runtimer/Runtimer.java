@@ -93,7 +93,7 @@ public class Runtimer {
             }
         };
         ShutdownHookThread shutdownHookThread = new ShutdownHookThread(logger, () -> {
-            logger.info("守护线程启动");
+            logger.info("daemon thread boot");
             return null;
         }, threadThreadPoolExecutorMap);
         shutdownHookThread.start();
