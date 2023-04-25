@@ -97,6 +97,7 @@ public class Runtimer {
             return null;
         }, threadThreadPoolExecutorMap);
         shutdownHookThread.setDaemon(true);
+        shutdownHookThread.setName("eventbridge-daemon-thread");
         shutdownHookThread.start();
         startRuntimer();
     }
