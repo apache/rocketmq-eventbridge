@@ -96,6 +96,7 @@ public class Runtimer {
             logger.info("daemon thread boot");
             return null;
         }, threadThreadPoolExecutorMap);
+        shutdownHookThread.setDaemon(true);
         shutdownHookThread.start();
         startRuntimer();
     }
