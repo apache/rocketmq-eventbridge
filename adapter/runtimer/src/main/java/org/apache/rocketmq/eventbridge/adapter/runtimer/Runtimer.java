@@ -87,9 +87,9 @@ public class Runtimer {
         EventTargetPusher eventTargetPusher = new EventTargetPusher(circulatorContext, offsetManager, errorHandler);
         ConcurrentHashMap<Thread, ExecutorService> threadThreadPoolExecutorMap = new ConcurrentHashMap<Thread, ExecutorService>() {
             {
-                put(new Thread(eventBusListener, ""), Executors.newSingleThreadExecutor());
-                put(new Thread(eventRuleTransfer, ""), Executors.newSingleThreadExecutor());
-                put(new Thread(eventTargetPusher, ""), Executors.newSingleThreadExecutor());
+                put(new Thread(eventBusListener, eventBusListener.getServiceName()), Executors.newSingleThreadExecutor());
+                put(new Thread(eventRuleTransfer, eventRuleTransfer.getServiceName()), Executors.newSingleThreadExecutor());
+                put(new Thread(eventTargetPusher, eventTargetPusher.getServiceName()), Executors.newSingleThreadExecutor());
             }
         };
         ShutdownHookThread shutdownHookThread = new ShutdownHookThread(logger, () -> {

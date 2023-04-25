@@ -5,6 +5,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.GsonUtils;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.slf4j.Logger;
 
 public class ShutdownHookThread extends Thread {
@@ -24,6 +27,7 @@ public class ShutdownHookThread extends Thread {
     public ShutdownHookThread(Logger log, Callable callback) {
         this.log = log;
         this.callback = callback;
+        call();
 
     }
 
@@ -46,6 +50,17 @@ public class ShutdownHookThread extends Thread {
             }
         }
     }
+
+    private void call()  {
+        Object result = new Object();
+        try {
+            result = callback.call();
+        } catch (Exception e) {
+            throw new EventBridgeException(String.format("current daemon thread execute call failed!, call result: %s ", GsonUtils.toJson(result)), e);
+        }
+
+    }
+
     private void register(){
         Runtime.getRuntime().addShutdownHook( new ShutdownHookThread(log,() -> {
             poolExecuteConcurrentHashMap.forEach( (k,v) -> {
