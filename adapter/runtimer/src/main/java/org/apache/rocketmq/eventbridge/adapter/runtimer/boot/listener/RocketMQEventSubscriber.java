@@ -37,9 +37,10 @@ import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.utils.NetworkUtil;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.ClientConfig;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.LitePullConsumer;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.consumer.LitePullConsumerImpl;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq.ClientConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq.LitePullConsumer;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq.LitePullConsumerImpl;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
@@ -49,27 +50,35 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.stereotype.Component;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * RocketMQ implement event subscriber
  */
+@Component
 public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
-    private LitePullConsumer pullConsumer;
+    private final BlockingQueue<MessageExt> messageBuffer = new LinkedBlockingQueue<>(50000);
 
+    @Autowired
     private final TargetRunnerConfigObserver runnerConfigObserver;
 
     private Integer pullTimeOut;
@@ -78,46 +87,42 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private ClientConfig clientConfig;
     private SessionCredentials sessionCredentials;
     private String socksProxy;
+    private Map<String, ConsumeWorker> consumeWorkerMap = new ConcurrentHashMap<>();
 
     private static final String SEMICOLON = ";";
 
     private static final String SYS_DEFAULT_GROUP = "event-bridge-default-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
+    private static final String RUNNER_NAME = "runnerName";
 
     public RocketMQEventSubscriber(TargetRunnerConfigObserver runnerConfigObserver) {
         this.runnerConfigObserver = runnerConfigObserver;
         this.initMqProperties();
-        this.initPullConsumer();
+        this.initConsumeWorkers(runnerConfigObserver);
     }
 
     @Override
     public void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum) {
-        if(Objects.isNull(pullConsumer)){
-            pullConsumer = initLitePullConsumer();
-            return;
-        }
-        Set<String> currentTopics = parseTopicsByRunnerConfigs(Sets.newHashSet(targetRunnerConfig));
-        for (String topic : currentTopics){
-            switch (refreshTypeEnum){
-                case ADD:
-                case UPDATE:
-                        subscribe(topic);
-                        break;
-                case DELETE:
-                        unSubscribe(topic);
-                        break;
-                default:
-                    break;
-            }
+        switch (refreshTypeEnum) {
+            case ADD:
+            case UPDATE:
+                putConsumeWorker(targetRunnerConfig);
+                break;
+            case DELETE:
+                removeConsumeWorker(targetRunnerConfig);
+                break;
+            default:
+                break;
         }
     }
 
     @Override
     public List<ConnectRecord> pull() {
-        List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
+        ArrayList<MessageExt> messages = new ArrayList<>();
+        messageBuffer.drainTo(messages, pullBatchSize);
         if (CollectionUtils.isEmpty(messages)) {
-            logger.info("consumer poll message empty , consumer - {}", JSON.toJSONString(pullConsumer));
+            logger.info("consumer poll message empty.");
             return null;
         }
         List<ConnectRecord> connectRecords = Lists.newArrayList();
@@ -144,23 +149,17 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     /**
      * parse topics by specific target runner configs
-     * @param targetRunnerConfigs
+     * @param targetRunnerConfig
      * @return
      */
-    public Set<String> parseTopicsByRunnerConfigs(Set<TargetRunnerConfig> targetRunnerConfigs){
-        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
-            logger.warn("target runner config is empty, parse to topic failed!");
-            return null;
-        }
+    public Set<String> parseTopicsByRunnerConfig(TargetRunnerConfig targetRunnerConfig){
         Set<String> listenTopics = Sets.newHashSet();
-        for(TargetRunnerConfig runnerConfig : targetRunnerConfigs){
-            List<Map<String,String>> runnerConfigMap = runnerConfig.getComponents();
-            if(CollectionUtils.isEmpty(runnerConfigMap)){
-                logger.warn("target runner config components is empty, config info - {}", runnerConfig);
-                continue;
-            }
-            listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CHANNEL_NAME));
+        List<Map<String,String>> runnerConfigMap = targetRunnerConfig.getComponents();
+        if (CollectionUtils.isEmpty(runnerConfigMap)){
+            logger.warn("target runner config components is empty, config info - {}", targetRunnerConfig);
+            return listenTopics;
         }
+        listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CHANNEL_NAME));
         return listenTopics;
     }
 
@@ -214,28 +213,25 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     /**
      * init rocket mq pull consumer
      */
-    private void initPullConsumer() {
-        pullConsumer = initLitePullConsumer();
+    private void initConsumeWorkers(TargetRunnerConfigObserver runnerConfigObserver) {
+        for (TargetRunnerConfig targetRunnerConfig : runnerConfigObserver.getTargetRunnerConfig()) {
+            LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerConfig);
+            ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, targetRunnerConfig.getName());
+            consumeWorkerMap.put(targetRunnerConfig.getName(), consumeWorker);
+            consumeWorker.start();
+        }
+
     }
 
     /**
      * first init default rocketmq pull consumer
      * @return
      */
-    public LitePullConsumer initLitePullConsumer() {
-        if (pullConsumer != null) {
-            try {
-                pullConsumer.shutdown();
-            } catch (Exception e) {
-                logger.error("Consumer shutdown failed.", e);
-            }
-        }
-
-        Set<TargetRunnerConfig> targetRunnerConfigs = runnerConfigObserver.getTargetRunnerConfig();
-        Set<String> topics = parseTopicsByRunnerConfigs(targetRunnerConfigs);
+    public LitePullConsumer initLitePullConsumer(TargetRunnerConfig targetRunnerConfig) {
+        Set<String> topics = parseTopicsByRunnerConfig(targetRunnerConfig);
 
         RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
-        this.pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
+        LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
         if (StringUtils.isNotBlank(this.socksProxy)) {
             pullConsumer.setSockProxyJson(this.socksProxy);
         }
@@ -306,20 +302,59 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return recordOffset;
     }
 
-    /**
-     * new topic for subscribe
-     * @param topic
-     */
-    private void subscribe(String topic) {
-        pullConsumer.subscribe(topic);
+    private void putConsumeWorker(TargetRunnerConfig targetRunnerConfig) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.get(targetRunnerConfig.getName());
+        if (!Objects.isNull(consumeWorker)){
+            consumeWorker.shutdown();
+        }
+        LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerConfig);
+        ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, targetRunnerConfig.getName());
+        consumeWorkerMap.put(targetRunnerConfig.getName(), newWorker);
+        newWorker.start();
     }
 
-    /**
-     * unsubscribe old topic
-     * @param topic
-     */
-    private void unSubscribe(String topic) {
-        pullConsumer.unsubscribe(topic);
+    private void removeConsumeWorker(TargetRunnerConfig targetRunnerConfig) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.remove(targetRunnerConfig.getName());
+        if (!Objects.isNull(consumeWorker)){
+            consumeWorker.shutdown();
+        }
+    }
+
+    class ConsumeWorker extends ServiceThread {
+
+        private final LitePullConsumer pullConsumer;
+        private final String runnerName;
+
+        public ConsumeWorker(LitePullConsumer pullConsumer, String runnerName) {
+            this.pullConsumer = pullConsumer;
+            this.runnerName = runnerName;
+        }
+
+        @Override
+        public String getServiceName() {
+            return ConsumeWorker.class.getSimpleName();
+        }
+
+        @Override
+        public void run() {
+            while (!stopped) {
+                try {
+                    List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
+                    for (MessageExt message : messages) {
+                        message.putUserProperty(RUNNER_NAME, runnerName);
+                        messageBuffer.put(message);
+                    }
+                } catch (Exception exception) {
+                    logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
+                }
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            pullConsumer.shutdown();
+            super.shutdown();
+        }
     }
 
 }

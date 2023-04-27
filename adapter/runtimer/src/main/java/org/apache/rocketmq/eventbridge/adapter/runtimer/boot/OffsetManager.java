@@ -15,25 +15,31 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.pusher;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-public class PushCallback {
+@Component
+public class OffsetManager {
 
     @Autowired
     EventSubscriber eventSubscriber;
 
-    public void completed(ConnectRecord connectRecord) {
-        eventSubscriber.commit(Lists.newArrayList(connectRecord));
+    public OffsetManager(EventSubscriber eventSubscriber) {
+        this.eventSubscriber = eventSubscriber;
     }
 
-    public void completed(List<ConnectRecord> connectRecords) {
-        eventSubscriber.commit(connectRecords);
+    public void commit(final List<ConnectRecord> connectRecordList) {
+        this.eventSubscriber.commit(connectRecordList);
+    }
+
+    public void commit(final ConnectRecord connectRecord) {
+        this.eventSubscriber.commit(Lists.newArrayList(connectRecord));
     }
 
 }
