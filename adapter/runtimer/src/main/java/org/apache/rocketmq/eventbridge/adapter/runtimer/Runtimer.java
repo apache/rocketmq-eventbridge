@@ -27,6 +27,9 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.AbsRateEstimator;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.PIDRateEstimator;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.RunnerMetrics;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,10 @@ public class Runtimer {
     @Autowired
     private ErrorHandler errorHandler;
 
+    private AbsRateEstimator absRateEstimator;
+
+    private RunnerMetrics runnerMetrics;
+
     public Runtimer(
         CirculatorContext circulatorContext,
         TargetRunnerConfigObserver runnerConfigObserver,
@@ -75,8 +82,12 @@ public class Runtimer {
         circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
-        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
+
+        absRateEstimator=new PIDRateEstimator(circulatorContext,runnerMetrics);
+        absRateEstimator.start();
+
+        new EventBusListener(circulatorContext, eventSubscriber, errorHandler,absRateEstimator).start();
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler,absRateEstimator).start();
         new EventTargetPusher(circulatorContext, offsetManager, errorHandler).start();
         startRuntimer();
     }

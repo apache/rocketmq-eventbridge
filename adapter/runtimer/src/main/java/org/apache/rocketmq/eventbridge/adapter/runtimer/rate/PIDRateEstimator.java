@@ -31,9 +31,9 @@ public class PIDRateEstimator extends AbsRateEstimator {
 
     private RunnerMetrics runnerMetrics;
 
-    public PIDRateEstimator(CirculatorContext circulatorContext, RunnerMetrics runnerMetrics) {
+    public PIDRateEstimator(CirculatorContext circulatorContext) {
         this.circulatorContext = circulatorContext;
-        this.runnerMetrics = runnerMetrics;
+        this.runnerMetrics = circulatorContext.getRunnerMetrics();
         eventQueueSpeedLimiter = new LinkedBlockingQueue<>(runnerMetrics.getResidentCapacity());
         targetQueueSpeedLimiter = new LinkedBlockingQueue<>(runnerMetrics.getResidentCapacity());
         //Kp=1,Ki=0.2,kD=0 此处是参考Spark 默认参数

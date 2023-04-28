@@ -31,6 +31,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshType
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.RunnerMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -60,8 +61,17 @@ public class CirculatorContext implements TargetRunnerListener {
 
     private Plugin plugin;
 
+    //
+    private RunnerMetrics runnerMetrics;
+
     public CirculatorContext(Plugin plugin){
         this.plugin = plugin;
+
+        runnerMetrics = new RunnerMetrics();
+        runnerMetrics.setMinRate(0);
+        runnerMetrics.setMaxRate(300);
+        runnerMetrics.setQueueCapacity(50000);
+        runnerMetrics.setResidentCapacity(500);
     }
 
     /**
@@ -98,6 +108,10 @@ public class CirculatorContext implements TargetRunnerListener {
 
     public BlockingQueue<ConnectRecord> getTargetQueue() {
         return targetQueue;
+    }
+
+    public RunnerMetrics getRunnerMetrics() {
+        return runnerMetrics;
     }
 
     /**
