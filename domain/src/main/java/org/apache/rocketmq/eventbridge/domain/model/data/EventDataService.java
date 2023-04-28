@@ -18,7 +18,7 @@
 package org.apache.rocketmq.eventbridge.domain.model.data;
 
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.tools.EventTool;
 import org.springframework.stereotype.Service;

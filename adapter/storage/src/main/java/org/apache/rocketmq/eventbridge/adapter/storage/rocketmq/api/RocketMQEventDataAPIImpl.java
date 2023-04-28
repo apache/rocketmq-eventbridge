@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.rpc.impl;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.api;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.eventbridge.adapter.persistence.rpc.EventDataOnRocketMQConnectAPI;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;

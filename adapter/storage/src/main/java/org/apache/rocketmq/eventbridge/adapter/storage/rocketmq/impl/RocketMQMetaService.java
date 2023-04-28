@@ -14,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.adapter.persistence.data.rocketmq.repository;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 
 import com.google.common.collect.Maps;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -33,6 +29,11 @@ import org.apache.rocketmq.remoting.protocol.body.ClusterInfo;
 import org.apache.rocketmq.remoting.protocol.route.BrokerData;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
