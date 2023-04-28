@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.persistence.data.rocketmq.repository;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;

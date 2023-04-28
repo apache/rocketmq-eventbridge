@@ -32,7 +32,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyV
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.TargetRunnerAPI;
 import org.apache.rocketmq.eventbridge.tools.transform.TransformParam;
 

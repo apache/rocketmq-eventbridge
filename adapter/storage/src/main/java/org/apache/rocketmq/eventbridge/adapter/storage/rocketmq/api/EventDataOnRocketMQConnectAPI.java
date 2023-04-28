@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.persistence.rpc;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.api;
 
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;

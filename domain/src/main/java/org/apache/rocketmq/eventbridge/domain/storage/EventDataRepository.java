@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.repository;
+package org.apache.rocketmq.eventbridge.domain.storage;
 
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
