@@ -20,13 +20,6 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
@@ -37,6 +30,14 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * receive event and transfer the rule to pusher
@@ -53,7 +54,7 @@ public class EventRuleTransfer extends ServiceThread {
     private final ErrorHandler errorHandler;
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
-        ErrorHandler errorHandler) {
+                             ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
@@ -72,7 +73,7 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            ConnectRecord eventRecord = circulatorContext.takeEventRecord();
+            ConnectRecord eventRecord = circulatorContext.takeEventRecord(true, 1);
             if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);
@@ -88,8 +89,8 @@ public class EventRuleTransfer extends ServiceThread {
             String eventChannelName = RuntimerConfigDefine.CHANNEL_NAME;
             String eventChannel = eventRecord.getExtension(eventChannelName);
             Set<TransformEngine<ConnectRecord>> adaptTransformSet = latestTransformMap.values().stream()
-                .filter(engine -> eventChannel.equals(engine.getConnectConfig(eventChannelName)))
-                .collect(Collectors.toSet());
+                    .filter(engine -> eventChannel.equals(engine.getConnectConfig(eventChannelName)))
+                    .collect(Collectors.toSet());
             if (CollectionUtils.isEmpty(adaptTransformSet)) {
                 logger.warn("adapt specific topic ref transform engine is empty, eventChannelName- {}", eventChannel);
                 this.waitForRunning(3000);
@@ -99,22 +100,22 @@ public class EventRuleTransfer extends ServiceThread {
             List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
             adaptTransformSet.forEach(transfer -> {
                 CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> transfer.doTransforms(eventRecord))
-                    .exceptionally((exception) -> {
-                        logger.error("transfer do transform event record failed，stackTrace-", exception);
-                        errorHandler.handle(eventRecord,exception);
-                        return null;
-                    })
-                    .thenAccept(record -> {
-                        if (Objects.nonNull(record)) {
-                            String runnerNameKey = RuntimerConfigDefine.RUNNER_NAME;
-                            String taskClassKey = RuntimerConfigDefine.TASK_CLASS;
-                            record.getExtensions().put(runnerNameKey, transfer.getConnectConfig(runnerNameKey));
-                            record.getExtensions().put(taskClassKey, transfer.getConnectConfig(taskClassKey));
-                            afterTransformConnect.add(record);
-                        } else {
-                            offsetManager.commit(eventRecord);
-                        }
-                    });
+                        .exceptionally((exception) -> {
+                            logger.error("transfer do transform event record failed，stackTrace-", exception);
+                            errorHandler.handle(eventRecord, exception);
+                            return null;
+                        })
+                        .thenAccept(record -> {
+                            if (Objects.nonNull(record)) {
+                                String runnerNameKey = RuntimerConfigDefine.RUNNER_NAME;
+                                String taskClassKey = RuntimerConfigDefine.TASK_CLASS;
+                                record.getExtensions().put(runnerNameKey, transfer.getConnectConfig(runnerNameKey));
+                                record.getExtensions().put(taskClassKey, transfer.getConnectConfig(taskClassKey));
+                                afterTransformConnect.add(record);
+                            } else {
+                                offsetManager.commit(eventRecord);
+                            }
+                        });
                 completableFutures.add(transformFuture);
             });
 

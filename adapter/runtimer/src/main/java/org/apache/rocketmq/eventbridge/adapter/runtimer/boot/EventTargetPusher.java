@@ -53,7 +53,7 @@ public class EventTargetPusher extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            ConnectRecord targetRecord = circulatorContext.takeTargetMap();
+            ConnectRecord targetRecord = circulatorContext.takeTargetMap(true,1);
             if (Objects.isNull(targetRecord)) {
                 logger.info("current target pusher is empty");
                 this.waitForRunning(1000);

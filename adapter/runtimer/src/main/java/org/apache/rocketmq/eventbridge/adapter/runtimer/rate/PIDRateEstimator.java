@@ -14,34 +14,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.runtimer.service.backpressure;
+package org.apache.rocketmq.eventbridge.adapter.runtimer.rate;
 
 import lombok.SneakyThrows;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class RateEstimatorTest extends ServiceThread {
-    private PIDContextTest pidContextTest;
-
-    private PIDController pid;  // PID控制器
+public class PIDRateEstimator extends AbsRateEstimator {
+    private CirculatorContext circulatorContext;
 
     private volatile long newSpeed;
 
-    private BlockingQueue<String> speedLimiter = new LinkedBlockingQueue<>(300);
+    private Map<String, BlockingQueue<String>> speedLimiter = new ConcurrentHashMap<>();
 
-    private String queueName;
+    private int residentCapacity;
 
-    public RateEstimatorTest(PIDContextTest pidContextTest, PIDController pid, String queueName) {
-        this.pidContextTest = pidContextTest;
-        this.pid = pid;
-        this.queueName = queueName;
+    public PIDRateEstimator(CirculatorContext circulatorContext, int residentCapacity) {
+        this.circulatorContext = circulatorContext;
+        this.residentCapacity = residentCapacity;
     }
 
     @Override
     public String getServiceName() {
-        return MockEventBusListenerTest.class.getSimpleName();
+        return PIDRateEstimator.class.getSimpleName();
     }
 
     @Override
@@ -49,9 +47,9 @@ public class RateEstimatorTest extends ServiceThread {
         while (!stopped) {
             long input;
             if ("eventQueue".equals(queueName)) {
-                input = pidContextTest.getEventQueue().size();
+                input = circulatorContext.getEventQueue().size();
             } else {
-                input = pidContextTest.getTargetQueue().size();
+                input = circulatorContext.getTargetQueue().size();
             }
 
             // double output = pid.compute(input, 10000);
@@ -66,17 +64,17 @@ public class RateEstimatorTest extends ServiceThread {
     }
 
     @SneakyThrows
-    private void create(long newSpeed) {
+    private void create(String runnerName, long newSpeed) {
         if (newSpeed > 0) {
-            speedLimiter.clear();
+            speedLimiter.get(runnerName).clear();
         }
         for (int i = 0; i < newSpeed; i++) {
-            speedLimiter.put(i + "");
+            speedLimiter.get(runnerName).put(i + "");
         }
     }
 
     @SneakyThrows
-    public String acquire() {
-        return speedLimiter.take();
+    public String acquire(String runnerName) {
+        return speedLimiter.get(runnerName).take();
     }
 }
