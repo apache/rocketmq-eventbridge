@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.persistence.data.rocketmq.repository;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
@@ -24,11 +24,11 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.dataobject.EventTopicDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.mapper.EventTopicMapper;
-import org.apache.rocketmq.eventbridge.adapter.persistence.rpc.EventDataOnRocketMQConnectAPI;
+import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.api.EventDataOnRocketMQConnectAPI;
 import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.factory.annotation.Value;

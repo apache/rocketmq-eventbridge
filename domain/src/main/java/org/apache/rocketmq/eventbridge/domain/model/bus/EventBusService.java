@@ -21,7 +21,7 @@ import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorC
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.dao.DuplicateKeyException;

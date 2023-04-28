@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.dataobject.EventTopicDO;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.TransformRequest;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.tools.transform.TransformParam;
 
 import static org.apache.rocketmq.eventbridge.config.EventBridgeConstants.ACCOUNT_ID_KEY;
