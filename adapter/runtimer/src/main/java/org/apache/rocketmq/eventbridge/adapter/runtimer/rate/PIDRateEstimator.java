@@ -68,13 +68,19 @@ public class PIDRateEstimator extends AbsRateEstimator {
         if (eventQueueNewSpeed > 0) {
             eventQueueSpeedLimiter.clear();
         }
-        for (int i = 0; i < eventQueueNewSpeed; i++) {
+
+        int eventBatch = Math.round(eventQueueNewSpeed / runnerMetrics.getEventBusBatchSize());
+
+        for (int i = 0; i < eventBatch; i++) {
             eventQueueSpeedLimiter.put(i);
         }
         if (targetQueueNewSpeed > 0) {
             targetQueueSpeedLimiter.clear();
         }
-        for (int i = 0; i < targetQueueNewSpeed; i++) {
+
+        int targetBatch = Math.round(targetQueueNewSpeed / runnerMetrics.getEventRuleBatchSize());
+
+        for (int i = 0; i < targetBatch; i++) {
             targetQueueSpeedLimiter.put(i);
         }
     }
