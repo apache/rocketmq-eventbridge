@@ -19,5 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.rate;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 
 public abstract class AbsRateEstimator extends ServiceThread {
+    public abstract Integer acquireEventQueueLimiter() throws InterruptedException;
 
+    public abstract Integer acquireTargetQueueLimiter() throws InterruptedException;
 }

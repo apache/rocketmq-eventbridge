@@ -47,10 +47,8 @@ public class TransformTest extends ServiceThread {
                 }
                 // 模拟有5个转换器
                 for (int i = 0; i < 5; i++) {
-                    // 通过令牌桶控制速度
-                    rateEstimatorTest.acquire(1);
                     // 通过阻塞队列控制速度
-                    // rateEstimatorTest.acquire();
+                     rateEstimatorTest.acquire();
                     pidContextTest.getTargetQueue().put(a);
                 }
             } catch (InterruptedException e) {

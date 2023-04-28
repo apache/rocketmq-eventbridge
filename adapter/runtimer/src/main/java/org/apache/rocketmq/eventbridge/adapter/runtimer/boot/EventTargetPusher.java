@@ -53,7 +53,8 @@ public class EventTargetPusher extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            ConnectRecord targetRecord = circulatorContext.takeTargetMap(true,1);
+
+            ConnectRecord targetRecord = circulatorContext.takeTargetMap();
             if (Objects.isNull(targetRecord)) {
                 logger.info("current target pusher is empty");
                 this.waitForRunning(1000);
@@ -63,6 +64,7 @@ public class EventTargetPusher extends ServiceThread {
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecord));
             }
 
+            // 当executorService 等待队列满300 时会触发线程池拒绝策略
             ExecutorService executorService = circulatorContext.getExecutorService(targetRecord.getExtensions().getString(RuntimerConfigDefine.TASK_CLASS));
             executorService.execute(() -> {
                 try {

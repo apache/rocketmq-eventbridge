@@ -27,6 +27,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformE
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.AbsRateEstimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +54,14 @@ public class EventRuleTransfer extends ServiceThread {
     @Autowired
     private final ErrorHandler errorHandler;
 
+    private final AbsRateEstimator rateEstimator;
+
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
-                             ErrorHandler errorHandler) {
+                             ErrorHandler errorHandler, AbsRateEstimator rateEstimator) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.rateEstimator = rateEstimator;
     }
 
     @Override
@@ -73,7 +77,12 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            ConnectRecord eventRecord = circulatorContext.takeEventRecord(true, 1);
+            try {
+                rateEstimator.acquireTargetQueueLimiter();
+            } catch (InterruptedException e) {
+                logger.error("acquireTargetQueueLimiter exception - stack-> ", e);
+            }
+            ConnectRecord eventRecord = circulatorContext.takeEventRecord();
             if (Objects.isNull(eventRecord)) {
                 logger.info("listen eventRecord is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);

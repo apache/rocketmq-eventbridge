@@ -92,6 +92,14 @@ public class CirculatorContext implements TargetRunnerListener {
         refreshRunnerMetadata(targetRunnerConfig, RefreshTypeEnum.DELETE);
     }
 
+    public BlockingQueue<ConnectRecord> getEventQueue() {
+        return eventQueue;
+    }
+
+    public BlockingQueue<ConnectRecord> getTargetQueue() {
+        return targetQueue;
+    }
+
     /**
      * offer event records
      *

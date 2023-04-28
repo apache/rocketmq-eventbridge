@@ -41,10 +41,8 @@ public class MockEventBusListenerTest extends ServiceThread {
             if (rateEstimatorTest.getNewSpeed() == 0) {
                 this.waitForRunning(300);
             }
-            // 通过令牌桶控制速度
-            rateEstimatorTest.acquire(1);
             // 通过阻塞队列控制速度
-            //rateEstimatorTest.acquire();
+            rateEstimatorTest.acquire();
             try {
                 pidContextTest.getEventQueue().put(UUID.randomUUID().toString());
             } catch (InterruptedException e) {

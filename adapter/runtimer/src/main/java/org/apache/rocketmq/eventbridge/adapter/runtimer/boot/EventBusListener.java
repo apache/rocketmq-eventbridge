@@ -24,6 +24,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.rate.AbsRateEstimator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +43,22 @@ public class EventBusListener extends ServiceThread {
 
     private final ErrorHandler errorHandler;
 
+    private final AbsRateEstimator rateEstimator;
+
     public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber,
-        ErrorHandler errorHandler) {
+        ErrorHandler errorHandler,AbsRateEstimator rateEstimator) {
         this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
         this.errorHandler = errorHandler;
+        this.rateEstimator=rateEstimator;
     }
 
     @Override
     public void run() {
         while (!stopped) {
             try {
+                // 通过阻塞队列控制速度
+                rateEstimator.acquireEventQueueLimiter();
                 List<ConnectRecord> recordList = eventSubscriber.pull();
                 if (CollectionUtils.isEmpty(recordList)) {
                     this.waitForRunning(1000);

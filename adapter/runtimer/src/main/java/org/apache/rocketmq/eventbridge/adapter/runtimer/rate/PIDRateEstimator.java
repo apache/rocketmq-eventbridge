@@ -16,25 +16,29 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.runtimer.rate;
 
-import lombok.SneakyThrows;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 
-import java.util.Map;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PIDRateEstimator extends AbsRateEstimator {
     private CirculatorContext circulatorContext;
 
-    private volatile long newSpeed;
+    private BlockingQueue<Integer> eventQueueSpeedLimiter;
+    private BlockingQueue<Integer> targetQueueSpeedLimiter;
+    private PIDController pid;
 
-    private Map<String, BlockingQueue<String>> speedLimiter = new ConcurrentHashMap<>();
+    private RunnerMetrics runnerMetrics;
 
-    private int residentCapacity;
-
-    public PIDRateEstimator(CirculatorContext circulatorContext, int residentCapacity) {
+    public PIDRateEstimator(CirculatorContext circulatorContext, RunnerMetrics runnerMetrics) {
         this.circulatorContext = circulatorContext;
-        this.residentCapacity = residentCapacity;
+        this.runnerMetrics = runnerMetrics;
+        eventQueueSpeedLimiter = new LinkedBlockingQueue<>(runnerMetrics.getResidentCapacity());
+        targetQueueSpeedLimiter = new LinkedBlockingQueue<>(runnerMetrics.getResidentCapacity());
+        //Kp=1,Ki=0.2,kD=0 此处是参考Spark 默认参数
+        pid = new PIDController(1, 0.008f, 0, runnerMetrics.getResidentCapacity(), runnerMetrics.getMinRate(), runnerMetrics.getMaxRate());
+
     }
 
     @Override
@@ -45,36 +49,130 @@ public class PIDRateEstimator extends AbsRateEstimator {
     @Override
     public void run() {
         while (!stopped) {
-            long input;
-            if ("eventQueue".equals(queueName)) {
-                input = circulatorContext.getEventQueue().size();
-            } else {
-                input = circulatorContext.getTargetQueue().size();
-            }
+            int eventQueueInput = circulatorContext.getEventQueue().size();
+            int targetQueueInput = circulatorContext.getTargetQueue().size();
 
             // double output = pid.compute(input, 10000);
-            newSpeed = pid.mappeSpeed(input, 50000, queueName);
-            create(newSpeed);
+            int eventQueueNewSpeed = pid.mappeSpeed(eventQueueInput, runnerMetrics.getQueueCapacity());
+            int targetQueueNewSpeed = pid.mappeSpeed(targetQueueInput, runnerMetrics.getQueueCapacity());
+            try {
+                create(eventQueueNewSpeed, targetQueueNewSpeed);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             this.waitForRunning(500);
         }
     }
 
-    public long getNewSpeed() {
-        return newSpeed;
+    private void create(int eventQueueNewSpeed, int targetQueueNewSpeed) throws InterruptedException {
+        if (eventQueueNewSpeed > 0) {
+            eventQueueSpeedLimiter.clear();
+        }
+        for (int i = 0; i < eventQueueNewSpeed; i++) {
+            eventQueueSpeedLimiter.put(i);
+        }
+        if (targetQueueNewSpeed > 0) {
+            targetQueueSpeedLimiter.clear();
+        }
+        for (int i = 0; i < targetQueueNewSpeed; i++) {
+            targetQueueSpeedLimiter.put(i);
+        }
     }
 
-    @SneakyThrows
-    private void create(String runnerName, long newSpeed) {
-        if (newSpeed > 0) {
-            speedLimiter.get(runnerName).clear();
-        }
-        for (int i = 0; i < newSpeed; i++) {
-            speedLimiter.get(runnerName).put(i + "");
-        }
+    public Integer acquireEventQueueLimiter() throws InterruptedException {
+        return eventQueueSpeedLimiter.take();
     }
 
-    @SneakyThrows
-    public String acquire(String runnerName) {
-        return speedLimiter.get(runnerName).take();
+    public Integer acquireTargetQueueLimiter() throws InterruptedException {
+        return targetQueueSpeedLimiter.take();
+    }
+
+    private static class PIDController {
+        private float Kp;  // 比例系数
+        private float Ki;  // 积分系数
+        private float Kd;  // 微分系数
+
+        private int residentCapacity;  // 目标值 队列容量
+        private int integral;  // 积分累计值
+        private int lastError; // 上一次误差值
+
+        // 最小生产速度
+        private int minSpeed = 0;
+        // 最大生产速度
+        private int maxSpeed = 300;
+
+        // 当前速度
+        private int currentSpeed = 20;
+
+        // 振幅输出转换成生产速度的缩放因子
+        private float speedScalingFactor = 1;
+
+        private volatile static int time = 0;
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        public PIDController(float kp, float ki, float kd, int residentCapacity, int minSpeed, int maxSpeed) {
+            Kp = kp;
+            Ki = ki;
+            Kd = kd;
+            this.residentCapacity = residentCapacity;
+            this.minSpeed = minSpeed;
+            this.maxSpeed = maxSpeed;
+        }
+
+        /**
+         * PID算法实现
+         *
+         * @param input         当前队列容量
+         * @param queueCapacity 队列最大初始化大小
+         * @return
+         */
+        public int compute(int input, int queueCapacity) {
+            int error = residentCapacity - input;
+
+            // 计算积分值
+            integral += error;
+
+            // 防止积分值过大或过小
+            if (integral > queueCapacity) {
+                integral = queueCapacity;
+            } else if (integral < -queueCapacity) {
+                integral = -queueCapacity;
+            }
+
+            // 计算微分值
+            int derivative = error - lastError;
+
+            // 计算输出值
+            int output = Math.round(Kp * error + Ki * integral + Kd * derivative);
+
+            // 保存上一次误差值
+            lastError = error;
+
+            return output;
+        }
+
+        /**
+         * 将输出振幅映射到速度，此处speedScalingFactor默认为1 直接映射成速度
+         *
+         * @param input
+         * @param queueCapacity
+         * @return
+         */
+        public int mappeSpeed(int input, int queueCapacity) {
+            int output = compute(input, queueCapacity);
+
+            int speedIncrement = Math.round(output * speedScalingFactor);  // 根据实际情况调整比例系数，将输出值转换为速度增量
+            int newSpeed = currentSpeed + speedIncrement;
+            if (newSpeed > maxSpeed) {
+                newSpeed = maxSpeed;
+            } else if (newSpeed < minSpeed) {
+                newSpeed = minSpeed;
+            }
+//            System.out.printf("data.push([" + (time++) + "," + input + "]); \n");
+            //System.out.printf("输出振幅：output=>%s,\t上一次采样生产速度：currentSpeed=>%s,\t下次生产速度：newSpeed=>%s,\t (%s)数据容量：input=>%s,\t\tcurrentTime=>%s \n", output, currentSpeed, newSpeed, queueName, input, simpleDateFormat.format(new Date()));
+            currentSpeed = newSpeed;
+            return newSpeed;  // 设置新的生产速度
+        }
     }
 }
