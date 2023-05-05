@@ -33,8 +33,6 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook.StartAndShutdo
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ShutdownHookThread;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.ConfigModeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
