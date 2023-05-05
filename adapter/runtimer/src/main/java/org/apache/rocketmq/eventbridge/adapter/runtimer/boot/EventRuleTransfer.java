@@ -34,6 +34,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.transfer.TransformE
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ public class EventRuleTransfer extends ServiceThread {
     private final OffsetManager offsetManager;
     @Autowired
     private final ErrorHandler errorHandler;
+
+    private List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
         ErrorHandler errorHandler) {
@@ -91,7 +94,7 @@ public class EventRuleTransfer extends ServiceThread {
                 continue;
             }
             List<ConnectRecord> afterTransformConnect = Lists.newArrayList();
-            List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+
             adaptTransformSet.forEach(transfer -> {
                 CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> transfer.doTransforms(eventRecord))
                     .exceptionally((exception) -> {
@@ -121,6 +124,21 @@ public class EventRuleTransfer extends ServiceThread {
                 logger.error("transfer event record failed, stackTrace-", exception);
             }
 
+        }
+    }
+
+    @Override
+    public void start() {
+        thread.start();
+    }
+
+    @Override
+    public void shutdown() {
+        ShutdownUtils.completedFuture(completableFutures);
+        try {
+            circulatorContext.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

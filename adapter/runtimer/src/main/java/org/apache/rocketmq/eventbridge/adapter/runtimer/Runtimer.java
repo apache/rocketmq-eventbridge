@@ -28,6 +28,8 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventBusListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.EventTargetPusher;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.OffsetManager;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook.AbstractStartAndShutdown;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook.StartAndShutdown;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.RuntimerState;
@@ -51,6 +53,8 @@ public class Runtimer {
     private static final Logger logger = LoggerFactory.getLogger(Runtimer.class);
 
     private AtomicReference<RuntimerState> runtimerState;
+
+    private static final RuntimeStartAndShutdown RUNTIME_START_AND_SHUTDOWN = new RuntimeStartAndShutdown();
 
     @Autowired
     private CirculatorContext circulatorContext;
@@ -77,7 +81,7 @@ public class Runtimer {
     }
 
     @PostConstruct
-    public void initAndStart() {
+    public void initAndStart() throws Exception {
         logger.info("Start init runtimer.");
         circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
@@ -85,21 +89,30 @@ public class Runtimer {
         EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber, errorHandler);
         EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext, offsetManager, errorHandler);
         EventTargetPusher eventTargetPusher = new EventTargetPusher(circulatorContext, offsetManager, errorHandler);
-        ConcurrentHashMap<Thread, ExecutorService> threadThreadPoolExecutorMap = new ConcurrentHashMap<Thread, ExecutorService>() {
-            {
-                put(new Thread(eventBusListener, eventBusListener.getServiceName()), Executors.newSingleThreadExecutor());
-                put(new Thread(eventRuleTransfer, eventRuleTransfer.getServiceName()), Executors.newSingleThreadExecutor());
-                put(new Thread(eventTargetPusher, eventTargetPusher.getServiceName()), Executors.newSingleThreadExecutor());
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventBusListener);
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventRuleTransfer);
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventTargetPusher);
+
+        // start servers one by one.
+        RUNTIME_START_AND_SHUTDOWN.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("try to shutdown server");
+            try {
+                RUNTIME_START_AND_SHUTDOWN.shutdown();
+            } catch (Exception e) {
+                logger.error("err when shutdown rocketmq-proxy", e);
             }
-        };
-        ShutdownHookThread shutdownHookThread = new ShutdownHookThread(logger, () -> {
-            logger.info("daemon thread boot");
-            return null;
-        }, threadThreadPoolExecutorMap);
-        shutdownHookThread.setDaemon(true);
-        shutdownHookThread.setName("eventbridge-daemon-thread");
-        shutdownHookThread.start();
+        }));
+
         startRuntimer();
+    }
+
+    private static class RuntimeStartAndShutdown extends AbstractStartAndShutdown {
+        @Override
+        public void appendStartAndShutdown(StartAndShutdown startAndShutdown) {
+            super.appendStartAndShutdown(startAndShutdown);
+        }
     }
 
     public void startRuntimer() {

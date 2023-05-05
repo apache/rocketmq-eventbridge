@@ -146,6 +146,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         // TODO
     }
 
+    @Override
+    public void close() {
+        pullConsumer.shutdown();
+    }
+
     /**
      * parse topics by specific target runner configs
      * @param targetRunnerConfigs

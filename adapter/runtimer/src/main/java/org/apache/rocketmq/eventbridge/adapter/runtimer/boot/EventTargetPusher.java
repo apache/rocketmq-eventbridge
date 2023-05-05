@@ -27,6 +27,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.Circulator
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,7 @@ public class EventTargetPusher extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
+    private ExecutorService executorService;
 
     public EventTargetPusher(CirculatorContext circulatorContext, OffsetManager offsetManager,
         ErrorHandler errorHandler) {
@@ -63,7 +65,7 @@ public class EventTargetPusher extends ServiceThread {
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecord));
             }
 
-            ExecutorService executorService = circulatorContext.getExecutorService(targetRecord.getExtensions().getString(RuntimerConfigDefine.TASK_CLASS));
+            executorService = circulatorContext.getExecutorService(targetRecord.getExtensions().getString(RuntimerConfigDefine.TASK_CLASS));
             executorService.execute(() -> {
                 try {
                     String runnerName = targetRecord.getExtensions().getString(RuntimerConfigDefine.RUNNER_NAME);
@@ -82,4 +84,18 @@ public class EventTargetPusher extends ServiceThread {
         return EventTargetPusher.class.getSimpleName();
     }
 
+    @Override
+    public void start() {
+        thread.start();
+    }
+
+    @Override
+    public void shutdown() {
+        ShutdownUtils.shutdownThreadPool(executorService);
+        try {
+            circulatorContext.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

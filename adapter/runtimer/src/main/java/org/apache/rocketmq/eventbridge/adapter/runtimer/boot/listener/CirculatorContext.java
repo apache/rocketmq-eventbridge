@@ -31,6 +31,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshType
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.plugin.PluginClassLoader;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -190,7 +191,7 @@ public class CirculatorContext implements TargetRunnerListener {
      * @param threadPollName
      * @return
      */
-    private ExecutorService initDefaultThreadPoolExecutor(String threadPollName) {
+    public ExecutorService initDefaultThreadPoolExecutor(String threadPollName) {
         ThreadFactoryBuilder threadFactory = new ThreadFactoryBuilder().setNameFormat(threadPollName);
         return new ThreadPoolExecutor(200, 300, 1, TimeUnit.SECONDS, new LinkedBlockingQueue<>(300), threadFactory.build());
     }
@@ -225,4 +226,27 @@ public class CirculatorContext implements TargetRunnerListener {
         }
         return null;
     }
+
+    public void close() throws Exception {
+
+        for (Map.Entry<String, TransformEngine<ConnectRecord>> taskTransform : taskTransformMap.entrySet()) {
+            TransformEngine<ConnectRecord> recordTransformEngine = taskTransform.getValue();
+            String runnerName = taskTransform.getKey();
+            recordTransformEngine.close();
+            taskTransformMap.remove(runnerName);
+        }
+        for (Map.Entry<String, SinkTask> pusherTask: pusherTaskMap.entrySet()) {
+            SinkTask sinkTask = pusherTask.getValue();
+            String runnerName = pusherTask.getKey();
+            sinkTask.stop();
+            pusherTaskMap.remove(runnerName);
+        }
+        for (Map.Entry<String, ExecutorService> pusherExecutor: pusherExecutorMap.entrySet()) {
+            String runnerName = pusherExecutor.getKey();
+            ExecutorService pusher = pusherExecutor.getValue();
+            ShutdownUtils.shutdownThreadPool(pusher);
+            pusherTaskMap.remove(runnerName);
+        }
+    }
+
 }
