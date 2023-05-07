@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.domain.repository;
 
+import java.util.List;
 import java.util.Map;
 import org.apache.rocketmq.eventbridge.domain.model.run.EventTargetRunner;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
@@ -34,5 +35,7 @@ public interface EventTargetRunnerRepository {
 
     boolean deleteEventTargetRunner(String accountId, String eventBusName, String eventRuleName,
         String eventTargetName);
+
+    List<EventTargetRunner> listEventTargetRunners(String accountId, String eventBusName, String eventRuleName);
 
 }
