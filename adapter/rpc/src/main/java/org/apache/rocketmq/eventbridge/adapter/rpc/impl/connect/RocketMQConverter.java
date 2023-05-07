@@ -55,7 +55,7 @@ public class RocketMQConverter {
         this.eventDataRepository = eventDataRepository;
     }
 
-    protected TransformRequest buildEventBridgeTransform(Map<String, TransformParam> targetTransform) {
+    public static TransformRequest buildEventBridgeTransform(Map<String, TransformParam> targetTransform) {
         Map<String, Object> config = Maps.newHashMap();
         targetTransform.entrySet()
             .forEach(entry -> {
@@ -65,28 +65,28 @@ public class RocketMQConverter {
         return new TransformRequest(EB_TRANSFORM_NAME, config);
     }
 
-    protected TransformRequest buildEventBridgeFilterTransform(String filterPattern) {
+    public static TransformRequest buildEventBridgeFilterTransform(String filterPattern) {
         Map<String, Object> config = Maps.newHashMap();
         config.put(FILTER_TRANSFORM_NAME_KEY, filterPattern);
         config.put(KEY_CLASS, FILTER_TRANSFORM_CLASS);
         return new TransformRequest(FILTER_TRANSFORM_NAME, config);
     }
 
-    protected TransformRequest buildCloudEventTransform(Map<String, Object> transformPattern) {
+    public static TransformRequest buildCloudEventTransform(Map<String, Object> transformPattern) {
         transformPattern.put(KEY_CLASS, EB_CLOUD_EVENTTRANSFORM_CLASS);
         return new TransformRequest(CLOUD_EVENT_TRANSFORM_NAME, transformPattern);
     }
 
-    protected Map<String, Object> parseConnectorConfig(Component component) {
+    public Map<String, Object> parseConnectorConfig(Component component) {
         return component.getConfig();
     }
 
-    protected String parseConnectorClass(Component component) {
+    public String parseConnectorClass(Component component) {
         return (String) component.getConfig()
             .get(KEY_CLASS);
     }
 
-    protected String parseTopicName(Component source) {
+    public String parseTopicName(Component source) {
         String eventBusName = (String) (source.getConfig()
             .get(EVENT_BUS_NAME_KEY));
         String accountId = (String) (source.getConfig()

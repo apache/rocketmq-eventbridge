@@ -160,8 +160,9 @@ public class EventTargetService extends AbstractRunnerService {
     public boolean enableTargets(String accountId, String eventBusName, String eventRuleName) {
         List<EventTarget> eventTargetList = eventTargetRepository.listEventTargets(accountId, eventBusName,
             eventRuleName);
+        EventRule eventRule = eventRuleService.getEventRule(accountId, eventBusName, eventRuleName);
         eventTargetList.forEach(eventTarget -> {
-            eventTargetRunnerService.start(accountId, eventBusName, eventRuleName, eventTarget.getName());
+            eventTargetRunnerService.start(accountId, eventBusName, eventRuleName, eventTarget, eventRule.getFilterPattern());
         });
         return true;
     }
