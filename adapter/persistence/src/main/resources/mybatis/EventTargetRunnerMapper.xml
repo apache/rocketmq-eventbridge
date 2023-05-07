@@ -57,9 +57,17 @@
         <include refid="COLUMN_LIST"/>
         FROM
         <include refid="TABLE_NAME"/>
-        WHERE account_id = #{accountId}
-        AND bus = #{eventBusName}
-        AND rule = #{eventRuleName}
+        WHERE
+        id>=0
+        <if test="accountId != null">
+            AND account_id = #{accountId}
+        </if>
+        <if test="eventBusName != null">
+            AND bus = #{eventBusName}
+        </if>
+        <if test="eventRuleName != null">
+            AND rule = #{eventRuleName}
+        </if>
     </select>
 
     <delete id="deleteEventTargetRunner">

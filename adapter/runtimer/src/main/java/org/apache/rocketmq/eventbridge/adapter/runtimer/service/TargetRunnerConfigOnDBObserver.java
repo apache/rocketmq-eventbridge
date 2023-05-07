@@ -17,30 +17,63 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.domain.model.run.EventTargetRunner;
+import org.apache.rocketmq.eventbridge.domain.repository.EventTargetRepository;
+import org.apache.rocketmq.eventbridge.domain.repository.EventTargetRunnerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.TARGET_RUNNER_KEY;
 
 @Slf4j
+@Component
 public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigObserver {
 
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
         ThreadUtils.newThreadFactory("TargetRunnerConfigOnDBObserver", false));
 
+    @Autowired
+    EventTargetRunnerRepository eventTargetRunnerRepository;
+
+    @Autowired
+    EventTargetRepository eventTargetRepository;
+
     public TargetRunnerConfigOnDBObserver() {
     }
 
     @Override
+    @Transactional
     public Set<TargetRunnerConfig> getLatestTargetRunnerConfig() {
-        return null;
+        List<EventTargetRunner> eventTargetRunners = eventTargetRunnerRepository.listEventTargetRunners(null, null, null);
+        Set<TargetRunnerConfig> targetRunnerConfigs = Sets.newHashSet();
+        for (EventTargetRunner eventTargetRunner : eventTargetRunners) {
+            targetRunnerConfigs.add(new Gson().fromJson(eventTargetRunner.getRunContext(), TargetRunnerConfig.class));
+        }
+        return targetRunnerConfigs;
     }
 
-    public void addListen(
-        TargetRunnerConfigOnDBObserver pusherConfigOnFileService) {
+    private Map<String, String> buildEventBusComponent(String eventBusName) {
+        Map<String, String> component = Maps.newHashMap();
+        component.put(TARGET_RUNNER_KEY, eventBusName);
+        return component;
+    }
+
+    @PostConstruct
+    public void addListen() {
         service.scheduleAtFixedRate(() -> {
             try {
                 Set<TargetRunnerConfig> latest = this.getLatestTargetRunnerConfig();
@@ -52,7 +85,7 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
             } catch (Throwable e) {
                 log.error("Watch failed.", e);
             }
-        }, 0, 3, TimeUnit.SECONDS);
+        }, 0, 30, TimeUnit.SECONDS);
     }
 
 }
