@@ -25,7 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.dto.TransformReq
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventSourceStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
-import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.domain.rpc.SourceRunnerAPI;
 import org.springframework.stereotype.Service;
 

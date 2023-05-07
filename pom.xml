@@ -137,6 +137,11 @@
                 <artifactId>rocketmq-eventbridge-adapter-runtimer</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-eventbridge-adapter-storage</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Framework -->
             <dependency>
