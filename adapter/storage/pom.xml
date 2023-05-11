@@ -39,6 +39,10 @@
       <groupId>org.apache.rocketmq</groupId>
       <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-eventbridge-adapter-runtimer</artifactId>
+    </dependency>
     <!-- Framework -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -61,6 +65,10 @@
     <dependency>
       <groupId>org.apache.rocketmq</groupId>
       <artifactId>rocketmq-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-acl</artifactId>
     </dependency>
 
     <dependency>

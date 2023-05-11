@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.rocketmq;
+package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer;
 
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
