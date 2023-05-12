@@ -24,6 +24,7 @@ import java.util.Objects;
 import lombok.Data;
 
 import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.TARGET_RUNNER_KEY;
+import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.ACCOUNT_ID;
 
 /**
  * pusher target key config
@@ -106,5 +107,17 @@ public class TargetRunnerConfig implements Serializable {
 
     public String getEventBusName() {
         return components.get(0).get(TARGET_RUNNER_KEY);
+    }
+
+    public String getAccountId() {
+        return components.get(0).get(ACCOUNT_ID);
+    }
+
+    public TargetRunnerLite getRunnerLite(){
+        TargetRunnerLite targetRunnerLite = new TargetRunnerLite();
+        targetRunnerLite.setRunnerName(this.getName());
+        targetRunnerLite.setAccountId(this.getAccountId());
+        targetRunnerLite.setEventBusName(this.getEventBusName());
+        return targetRunnerLite;
     }
 }

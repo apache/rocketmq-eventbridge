@@ -19,6 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 
 import java.util.List;
@@ -27,10 +28,10 @@ public abstract class EventSubscriber implements TargetRunnerListener {
 
     /**
      * Refresh subscriber inner data when runner config changed
-     * @param targetRunnerConfig
+     * @param targetRunnerLite
      * @param refreshTypeEnum
      */
-    public abstract void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum);
+    public abstract void refresh(TargetRunnerLite targetRunnerLite, RefreshTypeEnum refreshTypeEnum);
 
     /**
      * Pull connect records from store, Blocking method when is empty.
@@ -64,7 +65,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig, RefreshTypeEnum.ADD);
+        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.ADD);
     }
 
     /**
@@ -74,7 +75,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig, RefreshTypeEnum.UPDATE);
+        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.UPDATE);
     }
 
     /**
@@ -84,7 +85,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig, RefreshTypeEnum.DELETE);
+        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.DELETE);
     }
 
 }

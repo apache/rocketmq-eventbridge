@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.trace;
+package org.apache.rocketmq.eventbridge.infrastructure.trace;
 
 
 /**

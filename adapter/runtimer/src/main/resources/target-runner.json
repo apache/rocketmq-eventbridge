@@ -3,8 +3,8 @@
     "name":"demo-runner",
     "components":[
       {
-        "runner-name": "demo-runner",
-        "channel-name":"eventbridge%654321%demo-bus_1678348282165"
+        "accountId": "654321",
+        "eventBusName":"demo-bus"
       },
       {
         "filterPattern":"{}",

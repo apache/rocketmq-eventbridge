@@ -90,6 +90,7 @@ public class RocketMQEventDataRepository implements EventDataRepository {
     }
 
     @Cacheable(value = "topicCache")
+    @Override
     public String getTopicName(String accountId, String eventBusName) {
         String topicName = null;
         EventTopicDO eventTopicDO = eventTopicMapper.getTopic(accountId, eventBusName);

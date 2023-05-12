@@ -22,9 +22,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -40,6 +44,20 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
 
     public Set<TargetRunnerConfig> getTargetRunnerConfig() {
         return targetRunnerConfigs;
+    }
+
+    @Override
+    public Set<TargetRunnerLite> getTargetRunnerLite() {
+        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
+            return null;
+        }
+        return targetRunnerConfigs.stream().map(item -> {
+            TargetRunnerLite targetRunnerLite = new TargetRunnerLite();
+            targetRunnerLite.setRunnerName(item.getName());
+            targetRunnerLite.setAccountId(item.getAccountId());
+            targetRunnerLite.setEventBusName(item.getEventBusName());
+            return targetRunnerLite;
+        }).collect(Collectors.toSet());
     }
 
     public abstract Set<TargetRunnerConfig> getLatestTargetRunnerConfig();

@@ -20,7 +20,6 @@ package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.data.ConnectRecord;
@@ -39,13 +38,14 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.utils.NetworkUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer.ClientConfig;
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer.LitePullConsumer;
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer.LitePullConsumerImpl;
+import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
@@ -57,17 +57,12 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 /**
  * RocketMQ implement event subscriber
@@ -77,10 +72,10 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
-    private final BlockingQueue<MessageExt> messageBuffer = new LinkedBlockingQueue<>(50000);
-
     @Autowired
-    private final TargetRunnerConfigObserver runnerConfigObserver;
+    EventDataRepository eventDataRepository;
+
+    private final BlockingQueue<MessageExt> messageBuffer = new LinkedBlockingQueue<>(50000);
 
     private Integer pullTimeOut;
     private Integer pullBatchSize;
@@ -95,23 +90,22 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private static final String SYS_DEFAULT_GROUP = "event-bridge-default-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
-    private static final String RUNNER_NAME = "runnerName";
+    public static final String MSG_ID = "msgId";
 
     public RocketMQEventSubscriber(TargetRunnerConfigObserver runnerConfigObserver) {
-        this.runnerConfigObserver = runnerConfigObserver;
         this.initMqProperties();
         this.initConsumeWorkers(runnerConfigObserver);
     }
 
     @Override
-    public void refresh(TargetRunnerConfig targetRunnerConfig, RefreshTypeEnum refreshTypeEnum) {
+    public void refresh(TargetRunnerLite targetRunnerLite, RefreshTypeEnum refreshTypeEnum) {
         switch (refreshTypeEnum) {
             case ADD:
             case UPDATE:
-                putConsumeWorker(targetRunnerConfig);
+                putConsumeWorker(targetRunnerLite);
                 break;
             case DELETE:
-                removeConsumeWorker(targetRunnerConfig);
+                removeConsumeWorker(targetRunnerLite);
                 break;
             default:
                 break;
@@ -143,25 +137,20 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return connectRecords;
     }
 
+    /**
+     * group by runner name batch commit
+     * @param connectRecordList
+     */
     @Override
     public void commit(List<ConnectRecord> connectRecordList) {
-        // TODO
-    }
-
-    /**
-     * parse topics by specific target runner configs
-     * @param targetRunnerConfig
-     * @return
-     */
-    public Set<String> parseTopicsByRunnerConfig(TargetRunnerConfig targetRunnerConfig){
-        Set<String> listenTopics = Sets.newHashSet();
-        List<Map<String,String>> runnerConfigMap = targetRunnerConfig.getComponents();
-        if (CollectionUtils.isEmpty(runnerConfigMap)){
-            logger.warn("target runner config components is empty, config info - {}", targetRunnerConfig);
-            return listenTopics;
+        if(CollectionUtils.isEmpty(connectRecordList)){
+            logger.warn("commit event record data empty!");
+            return;
         }
-        listenTopics.add(runnerConfigMap.iterator().next().get(RuntimerConfigDefine.CHANNEL_NAME));
-        return listenTopics;
+        String runnerName = connectRecordList.iterator().next().getExtension(RuntimerConfigDefine.RUNNER_NAME);
+        List<String> msgIds = connectRecordList.stream().map(item -> item.getPosition()
+                .getPartition().getPartition().get(MSG_ID).toString()).collect(Collectors.toList());
+        consumeWorkerMap.get(runnerName).commit(msgIds);
     }
 
     /**
@@ -215,37 +204,37 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initConsumeWorkers(TargetRunnerConfigObserver runnerConfigObserver) {
-        for (TargetRunnerConfig targetRunnerConfig : runnerConfigObserver.getTargetRunnerConfig()) {
-            LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerConfig);
-            ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, targetRunnerConfig.getName());
-            consumeWorkerMap.put(targetRunnerConfig.getName(), consumeWorker);
+        for (TargetRunnerLite targetRunnerLite : runnerConfigObserver.getTargetRunnerLite()) {
+            LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerLite);
+            ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, targetRunnerLite.getRunnerName());
+            consumeWorkerMap.put(targetRunnerLite.getRunnerName(), consumeWorker);
             consumeWorker.start();
         }
-
     }
 
     /**
      * first init default rocketmq pull consumer
      * @return
      */
-    public LitePullConsumer initLitePullConsumer(TargetRunnerConfig targetRunnerConfig) {
-        Set<String> topics = parseTopicsByRunnerConfig(targetRunnerConfig);
-
+    public LitePullConsumer initLitePullConsumer(TargetRunnerLite targetRunnerLite) {
+        String topic = getTopicName(targetRunnerLite);
         RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
         LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
         if (StringUtils.isNotBlank(this.socksProxy)) {
             pullConsumer.setSockProxyJson(this.socksProxy);
         }
         try {
-            for(String topic : topics){
-                pullConsumer.attachTopic(topic, "*");
-            }
+            pullConsumer.attachTopic(topic, "*");
             pullConsumer.startup();
         } catch (Exception exception) {
-            logger.error("init default pull consumer exception, topic -" + topics.toString() + "-stackTrace-", exception);
+            logger.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
             throw new EventBridgeException(" init rocketmq consumer failed");
         }
         return pullConsumer;
+    }
+
+    private String getTopicName(TargetRunnerLite targetRunnerLite) {
+        return eventDataRepository.getTopicName(targetRunnerLite.getAccountId(), targetRunnerLite.getEventBusName());
     }
 
     private String createGroupName(String prefix) {
@@ -272,12 +261,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         String connectSchema = properties.get(RuntimerConfigDefine.CONNECT_SCHEMA);
         schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
         byte[] body = messageExt.getBody();
-        RecordPartition recordPartition = convertToRecordPartition(messageExt.getTopic(), messageExt.getBrokerName(), messageExt.getQueueId());
+        RecordPartition recordPartition = convertToRecordPartition(messageExt.getTopic(), messageExt.getBrokerName(), messageExt.getQueueId(), messageExt.getMsgId());
         RecordOffset recordOffset = convertToRecordOffset(messageExt.getQueueOffset());
         String bodyStr = new String(body, StandardCharsets.UTF_8);
         sinkRecord = new ConnectRecord(recordPartition, recordOffset, timestamp, schema, bodyStr);
         KeyValue keyValue = new DefaultKeyValue();
-        keyValue.put(RuntimerConfigDefine.CHANNEL_NAME, messageExt.getTopic());
         if (MapUtils.isNotEmpty(properties)) {
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 keyValue.put(entry.getKey(), entry.getValue());
@@ -287,11 +275,12 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return sinkRecord;
     }
 
-    private RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {
+    private RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId, String msgId) {
         Map<String, String> map = new HashMap<>();
         map.put("topic", topic);
         map.put("brokerName", brokerName);
         map.put("queueId", queueId + "");
+        map.put(MSG_ID, msgId);
         RecordPartition recordPartition = new RecordPartition(map);
         return recordPartition;
     }
@@ -303,19 +292,19 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return recordOffset;
     }
 
-    private void putConsumeWorker(TargetRunnerConfig targetRunnerConfig) {
-        ConsumeWorker consumeWorker = consumeWorkerMap.get(targetRunnerConfig.getName());
+    private void putConsumeWorker(TargetRunnerLite targetRunnerLite) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.get(targetRunnerLite.getRunnerName());
         if (!Objects.isNull(consumeWorker)){
             consumeWorker.shutdown();
         }
-        LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerConfig);
-        ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, targetRunnerConfig.getName());
-        consumeWorkerMap.put(targetRunnerConfig.getName(), newWorker);
+        LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerLite);
+        ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, targetRunnerLite.getRunnerName());
+        consumeWorkerMap.put(targetRunnerLite.getRunnerName(), newWorker);
         newWorker.start();
     }
 
-    private void removeConsumeWorker(TargetRunnerConfig targetRunnerConfig) {
-        ConsumeWorker consumeWorker = consumeWorkerMap.remove(targetRunnerConfig.getName());
+    private void removeConsumeWorker(TargetRunnerLite targetRunnerLite) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.remove(targetRunnerLite.getRunnerName());
         if (!Objects.isNull(consumeWorker)){
             consumeWorker.shutdown();
         }
@@ -342,13 +331,17 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                 try {
                     List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
                     for (MessageExt message : messages) {
-                        message.putUserProperty(RUNNER_NAME, runnerName);
+                        message.putUserProperty(RuntimerConfigDefine.RUNNER_NAME, runnerName);
                         messageBuffer.put(message);
                     }
                 } catch (Exception exception) {
                     logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 }
             }
+        }
+
+        public void commit(List<String> messageIds){
+            this.pullConsumer.commit(messageIds);
         }
 
         @Override

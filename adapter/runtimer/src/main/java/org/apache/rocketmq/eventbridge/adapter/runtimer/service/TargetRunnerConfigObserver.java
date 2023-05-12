@@ -17,12 +17,11 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
+
+import java.util.Set;
 
 /**
  * manage the pusher connector/task config info
@@ -34,6 +33,12 @@ public interface TargetRunnerConfigObserver {
      * @return
      */
     Set<TargetRunnerConfig> getTargetRunnerConfig();
+
+    /**
+     * Get the target runner key which relevant as event bus name
+     * @return
+     */
+    Set<TargetRunnerLite> getTargetRunnerLite();
 
     /**
      * Register a listener to listen all config update operations.

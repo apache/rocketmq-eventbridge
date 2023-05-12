@@ -15,7 +15,17 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.trace;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
-public class TraceException extends Exception{
+import java.util.Map;
+
+public class MonitorFactory {
+
+    public void createSpan(Map<String,String> content){
+
+    }
+
+    public void finishSpan(Map<String,String> content){
+
+    }
 }

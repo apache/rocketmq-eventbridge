@@ -52,4 +52,11 @@ public interface EventDataRepository {
      */
     String getEventBusPersistentContext(String accountId, String eventBusName);
 
+    /**
+     * @param accountId
+     * @param eventBusName
+     * @return
+     */
+    String getTopicName(String accountId, String eventBusName);
+
 }
