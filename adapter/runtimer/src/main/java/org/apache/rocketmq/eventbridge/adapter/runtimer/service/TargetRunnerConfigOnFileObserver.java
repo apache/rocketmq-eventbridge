@@ -111,34 +111,6 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
         }, 0, 3, TimeUnit.SECONDS);
     }
 
-    public void diff() {
-        Map<String, TargetRunnerConfig> lastMap = toMap(super.getTargetRunnerConfig());
-        Map<String, TargetRunnerConfig> latestMap = toMap(this.getLatestTargetRunnerConfig());
-        lastMap.entrySet().forEach(entry -> {
-            TargetRunnerConfig latest = latestMap.get(entry.getKey());
-            if (latest == null) {
-                super.onDeleteTargetRunner(entry.getValue());
-            } else if (!latest.equals(entry.getValue())) {
-                super.onUpdateTargetRunner(entry.getValue());
-            }
-        });
-
-        latestMap.entrySet().forEach(entry -> {
-            TargetRunnerConfig latest = lastMap.get(entry.getKey());
-            if (latest == null) {
-                super.onAddTargetRunner(entry.getValue());
-            }
-        });
-    }
-
-    private Map<String, TargetRunnerConfig> toMap(Set<TargetRunnerConfig> targetRunnerConfigs) {
-        if (targetRunnerConfigs == null || targetRunnerConfigs.isEmpty()) {
-            return Maps.newHashMapWithExpectedSize(0);
-        }
-        Map<String, TargetRunnerConfig> map = Maps.newHashMap();
-        targetRunnerConfigs.forEach(entry -> map.put(entry.getName(), entry));
-        return map;
-    }
 
     private String getConfigFilePath() {
         return this.getClass().getClassLoader().getResource(DEFAULT_TARGET_RUNNER_CONFIG_FILE_NAME).getPath();
