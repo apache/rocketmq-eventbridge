@@ -17,11 +17,9 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,8 +34,6 @@ import org.apache.rocketmq.eventbridge.domain.repository.EventTargetRunnerReposi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.TARGET_RUNNER_KEY;
 
 @Slf4j
 @Component
@@ -66,26 +62,15 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
         return targetRunnerConfigs;
     }
 
-    private Map<String, String> buildEventBusComponent(String eventBusName) {
-        Map<String, String> component = Maps.newHashMap();
-        component.put(TARGET_RUNNER_KEY, eventBusName);
-        return component;
-    }
-
     @PostConstruct
     public void addListen() {
         service.scheduleAtFixedRate(() -> {
             try {
-                Set<TargetRunnerConfig> latest = this.getLatestTargetRunnerConfig();
-                Set<TargetRunnerConfig> last = super.getTargetRunnerConfig();
-                TargetRunnerConfig changed = null;
-                super.onAddTargetRunner(changed);
-                super.onUpdateTargetRunner(changed);
-                super.onDeleteTargetRunner(changed);
+                super.diff();
             } catch (Throwable e) {
-                log.error("Watch failed.", e);
+                log.error("Watch file failed.", e);
             }
-        }, 0, 30, TimeUnit.SECONDS);
+        }, 0, 3, TimeUnit.SECONDS);
     }
 
 }
