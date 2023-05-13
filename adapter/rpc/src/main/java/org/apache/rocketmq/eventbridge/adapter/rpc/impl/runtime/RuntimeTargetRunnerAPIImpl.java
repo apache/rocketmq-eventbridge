@@ -69,6 +69,7 @@ public class RuntimeTargetRunnerAPIImpl implements TargetRunnerAPI {
         components.add(filterComponent);
         components.add(transformComponent);
         components.add(targetComponent);
+        targetRunnerConfig.setRunOptions(runOptions);
         return targetRunnerConfig;
     }
 

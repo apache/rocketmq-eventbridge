@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -87,5 +86,34 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
         for (TargetRunnerListener listener : this.targetRunnerConfigListeners) {
             listener.onDeleteTargetRunner(targetRunnerConfig);
         }
+    }
+
+    protected void diff() {
+        Map<String, TargetRunnerConfig> lastMap = toMap(this.getTargetRunnerConfig());
+        Map<String, TargetRunnerConfig> latestMap = toMap(this.getLatestTargetRunnerConfig());
+        lastMap.entrySet().forEach(entry -> {
+            TargetRunnerConfig latest = latestMap.get(entry.getKey());
+            if (latest == null) {
+                this.onDeleteTargetRunner(entry.getValue());
+            } else if (!latest.equals(entry.getValue())) {
+                this.onUpdateTargetRunner(entry.getValue());
+            }
+        });
+
+        latestMap.entrySet().forEach(entry -> {
+            TargetRunnerConfig latest = lastMap.get(entry.getKey());
+            if (latest == null) {
+                this.onAddTargetRunner(entry.getValue());
+            }
+        });
+    }
+
+    protected Map<String, TargetRunnerConfig> toMap(Set<TargetRunnerConfig> targetRunnerConfigs) {
+        if (targetRunnerConfigs == null || targetRunnerConfigs.isEmpty()) {
+            return Maps.newHashMapWithExpectedSize(0);
+        }
+        Map<String, TargetRunnerConfig> map = Maps.newHashMap();
+        targetRunnerConfigs.forEach(entry -> map.put(entry.getName(), entry));
+        return map;
     }
 }
