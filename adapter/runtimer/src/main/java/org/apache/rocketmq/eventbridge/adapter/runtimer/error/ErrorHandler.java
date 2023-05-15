@@ -45,7 +45,7 @@ public class ErrorHandler {
         String eventRunnerName = connectRecord.getExtension(RUNNER_NAME);
         TargetRunnerConfig targetRunnerConfig = TargetRunnerContext.getTargetRunnerConfig(eventRunnerName);
         String eventBusName = targetRunnerConfig.getEventBusName();
-        PushRetryStrategyEnum pushRetryStrategyEnum = PushRetryStrategyEnum.parse(targetRunnerConfig.getRunOptions().getRetryStrategy());
+        PushRetryStrategyEnum pushRetryStrategyEnum = targetRunnerConfig.getRunOptions().getRetryStrategy().getPushRetryStrategy();
 
         int retryTimes = parseRetryTimes(connectRecord);
         int delaySec = calcDelaySec(retryTimes, pushRetryStrategyEnum);

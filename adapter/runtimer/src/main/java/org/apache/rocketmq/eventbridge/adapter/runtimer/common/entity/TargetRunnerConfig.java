@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Data;
+import org.apache.rocketmq.eventbridge.domain.model.run.RetryStrategy;
+import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;
+import org.apache.rocketmq.eventbridge.enums.ErrorToleranceEnum;
+import org.apache.rocketmq.eventbridge.enums.PushRetryStrategyEnum;
 
 import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.TARGET_RUNNER_KEY;
 import static org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine.ACCOUNT_ID;
@@ -39,7 +43,7 @@ public class TargetRunnerConfig implements Serializable {
      */
     private List<Map<String, String>> components;
 
-    private RunOptions runOptions = new RunOptions();
+    private RunOptions runOptions = RunOptions.builder().errorsTolerance(ErrorToleranceEnum.ALL).retryStrategy(RetryStrategy.builder().pushRetryStrategy(PushRetryStrategyEnum.EXPONENTIAL_DECAY_RETRY).build()).build();
 
     @Override
     public boolean equals(Object o) {
@@ -59,10 +63,10 @@ public class TargetRunnerConfig implements Serializable {
     @Override
     public String toString() {
         return "TargetRunnerConfig{" +
-                "name='" + name + '\'' +
-                ", components=" + components +
-                ", runOptions=" + runOptions +
-                '}';
+            "name='" + name + '\'' +
+            ", components=" + components +
+            ", runOptions=" + runOptions +
+            '}';
     }
 
     private boolean isEqualsComponents(List<Map<String, String>> source, List<Map<String, String>> target) {
