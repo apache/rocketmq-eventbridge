@@ -38,7 +38,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.utils.NetworkUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.ServiceThread;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.SubscribeRunnerKeys;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.service.TargetRunnerConfigObserver;
@@ -98,14 +98,14 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     }
 
     @Override
-    public void refresh(TargetRunnerLite targetRunnerLite, RefreshTypeEnum refreshTypeEnum) {
+    public void refresh(SubscribeRunnerKeys subscribeRunnerKeys, RefreshTypeEnum refreshTypeEnum) {
         switch (refreshTypeEnum) {
             case ADD:
             case UPDATE:
-                putConsumeWorker(targetRunnerLite);
+                putConsumeWorker(subscribeRunnerKeys);
                 break;
             case DELETE:
-                removeConsumeWorker(targetRunnerLite);
+                removeConsumeWorker(subscribeRunnerKeys);
                 break;
             default:
                 break;
@@ -204,10 +204,10 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initConsumeWorkers(TargetRunnerConfigObserver runnerConfigObserver) {
-        for (TargetRunnerLite targetRunnerLite : runnerConfigObserver.getTargetRunnerLite()) {
-            LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerLite);
-            ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, targetRunnerLite.getRunnerName());
-            consumeWorkerMap.put(targetRunnerLite.getRunnerName(), consumeWorker);
+        for (SubscribeRunnerKeys subscribeRunnerKeys : runnerConfigObserver.getTargetRunnerLite()) {
+            LitePullConsumer litePullConsumer = initLitePullConsumer(subscribeRunnerKeys);
+            ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, subscribeRunnerKeys.getRunnerName());
+            consumeWorkerMap.put(subscribeRunnerKeys.getRunnerName(), consumeWorker);
             consumeWorker.start();
         }
     }
@@ -216,8 +216,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * first init default rocketmq pull consumer
      * @return
      */
-    public LitePullConsumer initLitePullConsumer(TargetRunnerLite targetRunnerLite) {
-        String topic = getTopicName(targetRunnerLite);
+    public LitePullConsumer initLitePullConsumer(SubscribeRunnerKeys subscribeRunnerKeys) {
+        String topic = getTopicName(subscribeRunnerKeys);
         RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
         LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
         if (StringUtils.isNotBlank(this.socksProxy)) {
@@ -233,8 +233,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return pullConsumer;
     }
 
-    private String getTopicName(TargetRunnerLite targetRunnerLite) {
-        return eventDataRepository.getTopicName(targetRunnerLite.getAccountId(), targetRunnerLite.getEventBusName());
+    private String getTopicName(SubscribeRunnerKeys subscribeRunnerKeys) {
+        return eventDataRepository.getTopicName(subscribeRunnerKeys.getAccountId(), subscribeRunnerKeys.getEventBusName());
     }
 
     private String createGroupName(String prefix) {
@@ -292,19 +292,19 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return recordOffset;
     }
 
-    private void putConsumeWorker(TargetRunnerLite targetRunnerLite) {
-        ConsumeWorker consumeWorker = consumeWorkerMap.get(targetRunnerLite.getRunnerName());
+    private void putConsumeWorker(SubscribeRunnerKeys subscribeRunnerKeys) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.get(subscribeRunnerKeys.getRunnerName());
         if (!Objects.isNull(consumeWorker)){
             consumeWorker.shutdown();
         }
-        LitePullConsumer litePullConsumer = initLitePullConsumer(targetRunnerLite);
-        ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, targetRunnerLite.getRunnerName());
-        consumeWorkerMap.put(targetRunnerLite.getRunnerName(), newWorker);
+        LitePullConsumer litePullConsumer = initLitePullConsumer(subscribeRunnerKeys);
+        ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, subscribeRunnerKeys.getRunnerName());
+        consumeWorkerMap.put(subscribeRunnerKeys.getRunnerName(), newWorker);
         newWorker.start();
     }
 
-    private void removeConsumeWorker(TargetRunnerLite targetRunnerLite) {
-        ConsumeWorker consumeWorker = consumeWorkerMap.remove(targetRunnerLite.getRunnerName());
+    private void removeConsumeWorker(SubscribeRunnerKeys subscribeRunnerKeys) {
+        ConsumeWorker consumeWorker = consumeWorkerMap.remove(subscribeRunnerKeys.getRunnerName());
         if (!Objects.isNull(consumeWorker)){
             consumeWorker.shutdown();
         }

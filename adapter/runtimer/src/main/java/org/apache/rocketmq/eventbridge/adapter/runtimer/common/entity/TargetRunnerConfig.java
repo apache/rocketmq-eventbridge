@@ -113,11 +113,11 @@ public class TargetRunnerConfig implements Serializable {
         return components.get(0).get(ACCOUNT_ID);
     }
 
-    public TargetRunnerLite getRunnerLite(){
-        TargetRunnerLite targetRunnerLite = new TargetRunnerLite();
-        targetRunnerLite.setRunnerName(this.getName());
-        targetRunnerLite.setAccountId(this.getAccountId());
-        targetRunnerLite.setEventBusName(this.getEventBusName());
-        return targetRunnerLite;
+    public SubscribeRunnerKeys getSubscribeRunnerKeys(){
+        SubscribeRunnerKeys subscribeRunnerKeys = new SubscribeRunnerKeys();
+        subscribeRunnerKeys.setRunnerName(this.getName());
+        subscribeRunnerKeys.setAccountId(this.getAccountId());
+        subscribeRunnerKeys.setEventBusName(this.getEventBusName());
+        return subscribeRunnerKeys;
     }
 }

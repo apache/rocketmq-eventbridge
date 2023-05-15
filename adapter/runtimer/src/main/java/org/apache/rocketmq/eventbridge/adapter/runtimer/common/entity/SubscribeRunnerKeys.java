@@ -23,10 +23,10 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Simplify target runner config with lite keys
+ * Support target runner config with few keys for subscriber
  */
 @Data
-public class TargetRunnerLite implements Serializable {
+public class SubscribeRunnerKeys implements Serializable {
 
     private String accountId;
 
@@ -38,7 +38,7 @@ public class TargetRunnerLite implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TargetRunnerLite that = (TargetRunnerLite) o;
+        SubscribeRunnerKeys that = (SubscribeRunnerKeys) o;
         return Objects.equals(accountId, that.accountId) && Objects.equals(runnerName, that.runnerName) && Objects.equals(eventBusName, that.eventBusName);
     }
 
@@ -49,7 +49,7 @@ public class TargetRunnerLite implements Serializable {
 
     @Override
     public String toString() {
-        return "TargetRunnerLite{" +
+        return "SubscribeRunnerKeys{" +
                 "accountId='" + accountId + '\'' +
                 ", runnerName='" + runnerName + '\'' +
                 ", eventBusName='" + eventBusName + '\'' +

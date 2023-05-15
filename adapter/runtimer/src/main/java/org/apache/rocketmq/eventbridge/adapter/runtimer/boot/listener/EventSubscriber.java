@@ -19,7 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.SubscribeRunnerKeys;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.enums.RefreshTypeEnum;
 
 import java.util.List;
@@ -27,11 +27,11 @@ import java.util.List;
 public abstract class EventSubscriber implements TargetRunnerListener {
 
     /**
-     * Refresh subscriber inner data when runner config changed
-     * @param targetRunnerLite
+     * Refresh subscriber inner data when runner keys changed
+     * @param subscribeRunnerKeys
      * @param refreshTypeEnum
      */
-    public abstract void refresh(TargetRunnerLite targetRunnerLite, RefreshTypeEnum refreshTypeEnum);
+    public abstract void refresh(SubscribeRunnerKeys subscribeRunnerKeys, RefreshTypeEnum refreshTypeEnum);
 
     /**
      * Pull connect records from store, Blocking method when is empty.
@@ -65,7 +65,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onAddTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.ADD);
+        this.refresh(targetRunnerConfig.getSubscribeRunnerKeys(), RefreshTypeEnum.ADD);
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onUpdateTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.UPDATE);
+        this.refresh(targetRunnerConfig.getSubscribeRunnerKeys(), RefreshTypeEnum.UPDATE);
     }
 
     /**
@@ -85,7 +85,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     @Override
     public void onDeleteTargetRunner(TargetRunnerConfig targetRunnerConfig) {
-        this.refresh(targetRunnerConfig.getRunnerLite(), RefreshTypeEnum.DELETE);
+        this.refresh(targetRunnerConfig.getSubscribeRunnerKeys(), RefreshTypeEnum.DELETE);
     }
 
 }

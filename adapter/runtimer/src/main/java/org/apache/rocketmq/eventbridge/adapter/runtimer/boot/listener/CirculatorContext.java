@@ -65,7 +65,7 @@ public class CirculatorContext implements TargetRunnerListener {
 
     private Map<String/*RunnerName*/, SinkTask> pusherTaskMap = new ConcurrentHashMap<>(20);
 
-    private Map<String/*PusherCLass*/, ExecutorService> pusherExecutorMap = new ConcurrentHashMap<>(10);
+    private Map<String/*RunnerName*/, ExecutorService> pusherExecutorMap = new ConcurrentHashMap<>(10);
 
     private Plugin plugin;
 
@@ -161,18 +161,6 @@ public class CirculatorContext implements TargetRunnerListener {
         return targetQueue.addAll(connectRecords);
     }
 
-    public ConnectRecord takeTargetRecord() {
-        if (targetQueue.isEmpty()) {
-            return null;
-        }
-        try {
-            return targetQueue.take();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
     /**
      * take batch target records
      * @param batchSize
@@ -186,7 +174,6 @@ public class CirculatorContext implements TargetRunnerListener {
         targetQueue.drainTo(targetRecords, batchSize);
         return buildWithRunnerNameKeyMap(targetRecords);
     }
-
 
     /**
      * user runner-name as key

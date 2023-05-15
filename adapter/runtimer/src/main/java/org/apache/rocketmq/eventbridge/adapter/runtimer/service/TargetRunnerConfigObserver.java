@@ -19,7 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.SubscribeRunnerKeys;
 
 import java.util.Set;
 
@@ -38,7 +38,7 @@ public interface TargetRunnerConfigObserver {
      * Get the target runner key which relevant as event bus name
      * @return
      */
-    Set<TargetRunnerLite> getTargetRunnerLite();
+    Set<SubscribeRunnerKeys> getTargetRunnerLite();
 
     /**
      * Register a listener to listen all config update operations.

@@ -19,16 +19,12 @@ package org.apache.rocketmq.eventbridge.adapter.runtimer.service;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.listener.TargetRunnerListener;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerLite;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.config.RuntimerConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.SubscribeRunnerKeys;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -47,16 +43,16 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
     }
 
     @Override
-    public Set<TargetRunnerLite> getTargetRunnerLite() {
+    public Set<SubscribeRunnerKeys> getTargetRunnerLite() {
         if(CollectionUtils.isEmpty(targetRunnerConfigs)){
             return null;
         }
         return targetRunnerConfigs.stream().map(item -> {
-            TargetRunnerLite targetRunnerLite = new TargetRunnerLite();
-            targetRunnerLite.setRunnerName(item.getName());
-            targetRunnerLite.setAccountId(item.getAccountId());
-            targetRunnerLite.setEventBusName(item.getEventBusName());
-            return targetRunnerLite;
+            SubscribeRunnerKeys subscribeRunnerKeys = new SubscribeRunnerKeys();
+            subscribeRunnerKeys.setRunnerName(item.getName());
+            subscribeRunnerKeys.setAccountId(item.getAccountId());
+            subscribeRunnerKeys.setEventBusName(item.getEventBusName());
+            return subscribeRunnerKeys;
         }).collect(Collectors.toSet());
     }
 
