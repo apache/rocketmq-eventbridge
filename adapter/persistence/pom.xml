@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-eventbridge-adapter-runtimer</artifactId>
+            <artifactId>rocketmq-eventbridge-adapter-runtime</artifactId>
         </dependency>
         <!-- Framework -->
         <dependency>
