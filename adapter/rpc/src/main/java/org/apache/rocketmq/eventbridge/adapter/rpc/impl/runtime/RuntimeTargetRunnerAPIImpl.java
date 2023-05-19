@@ -23,7 +23,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.rpc.impl.connect.RocketMQConverter;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.domain.common.enums.EventTargetStatusEnum;
 import org.apache.rocketmq.eventbridge.domain.model.Component;
 import org.apache.rocketmq.eventbridge.domain.model.run.RunOptions;

@@ -102,6 +102,7 @@
         <module>adapter</module>
         <module>domain</module>
         <module>common</module>
+        <module>infrastructure</module>
     </modules>
 
     <dependencyManagement>
@@ -134,12 +135,17 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
-                <artifactId>rocketmq-eventbridge-adapter-runtimer</artifactId>
+                <artifactId>rocketmq-eventbridge-adapter-runtime</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-storage</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-eventbridge-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

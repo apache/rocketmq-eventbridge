@@ -25,7 +25,7 @@
         <module>persistence</module>
         <module>api</module>
         <module>rpc</module>
-        <module>runtimer</module>
+        <module>runtime</module>
         <module>storage</module>
     </modules>
 
