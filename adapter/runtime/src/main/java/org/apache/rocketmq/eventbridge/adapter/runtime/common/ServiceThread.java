@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.common;
 
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook.AbstractStartAndShutdown;
 import org.apache.rocketmq.common.CountDownLatch2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class ServiceThread implements Runnable {
+public abstract class ServiceThread extends AbstractStartAndShutdown implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
 
@@ -34,6 +35,8 @@ public abstract class ServiceThread implements Runnable {
     protected final CountDownLatch2 waitPoint = new CountDownLatch2(1);
     protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);
     protected volatile boolean stopped = false;
+    protected boolean isDaemon = false;
+
 
     public ServiceThread() {
         this.thread = new Thread(this, this.getServiceName());
@@ -42,7 +45,14 @@ public abstract class ServiceThread implements Runnable {
     public abstract String getServiceName();
 
     public void start() {
+        logger.info("Try to start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
+        if (!hasNotified.compareAndSet(false, true)) {
+            return;
+        }
+        stopped = false;
+        this.thread.setDaemon(isDaemon);
         this.thread.start();
+        logger.info("Start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
     }
 
     public void shutdown() {

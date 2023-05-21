@@ -158,6 +158,14 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         consumeWorkerMap.get(runnerName).commit(msgIds);
     }
 
+    @Override
+    public void close() {
+        for (Map.Entry<String, ConsumeWorker> item : consumeWorkerMap.entrySet()) {
+            ConsumeWorker consumeWorker =  item.getValue();
+            consumeWorker.shutdown();
+        }
+    }
+
     /**
      * init rocketmq ref config
      */

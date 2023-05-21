@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.utils;
+package org.apache.rocketmq.eventbridge.adapter.runtime.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

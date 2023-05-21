@@ -15,8 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook;
+package org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook;
 
-public interface Shutdown {
-    void shutdown() throws Exception;
+public interface StartAndShutdown extends Start, Shutdown {
 }
