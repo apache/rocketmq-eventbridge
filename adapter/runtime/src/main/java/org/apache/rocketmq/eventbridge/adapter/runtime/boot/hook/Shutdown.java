@@ -14,8 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook;
 
-public interface Start {
-    void start() throws Exception;
+package org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook;
+
+public interface Shutdown {
+    void shutdown() throws Exception;
 }

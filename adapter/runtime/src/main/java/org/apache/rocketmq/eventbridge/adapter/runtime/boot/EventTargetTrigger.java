@@ -89,4 +89,23 @@ public class EventTargetTrigger extends ServiceThread {
         return EventTargetTrigger.class.getSimpleName();
     }
 
+    @Override
+    public void start() {
+        thread.start();
+    }
+
+    @Override
+    public void shutdown() {
+        Map<String, SinkTask> sinkTaskMap =  circulatorContext.getPusherTaskMap();
+        for (Map.Entry<String, SinkTask> item : sinkTaskMap.entrySet()) {
+            SinkTask sinkTask = item.getValue();
+            sinkTask.stop();
+        }
+        try {
+            circulatorContext.releaseExecutorService();
+            circulatorContext.releaseTriggerTask();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

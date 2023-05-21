@@ -32,6 +32,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.enums.RefreshTypeE
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.plugin.PluginClassLoader;
 import org.apache.rocketmq.eventbridge.adapter.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -289,6 +290,30 @@ public class CirculatorContext implements TargetRunnerListener {
             logger.error("task class -" + taskClass + "- init its sinkTask failed, ex- ", exception);
         }
         return null;
+    }
+
+
+    public void releaseTaskTransform() {
+        for (Map.Entry<String, TransformEngine<ConnectRecord>> taskTransform : taskTransformMap.entrySet()) {
+            String runnerName = taskTransform.getKey();
+            taskTransformMap.remove(runnerName);
+        }
+    }
+
+    public void releaseTriggerTask() {
+        for (Map.Entry<String, SinkTask> triggerTask: pusherTaskMap.entrySet()) {
+            SinkTask sinkTask = triggerTask.getValue();
+            String runnerName = triggerTask.getKey();
+            sinkTask.stop();
+            pusherTaskMap.remove(runnerName);
+        }
+    }
+
+    public void releaseExecutorService() throws Exception {
+        for (Map.Entry<String, ExecutorService> pusherExecutor: pusherExecutorMap.entrySet()) {
+            ExecutorService pusher = pusherExecutor.getValue();
+            ShutdownUtils.shutdownThreadPool(pusher);
+        }
     }
 
 }
