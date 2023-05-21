@@ -1,0 +1,24 @@
+[
+  {
+    "name":"demo-runner",
+    "components":[
+      {
+        "accountId": "654321",
+        "eventBusName":"demo-bus"
+      },
+      {
+        "filterPattern":"{}",
+        "class":"org.apache.rocketmq.connect.transform.eventbridge.EventBridgeFilterTransform"
+      },
+      {
+        "data":"{\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\",\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\"}",
+        "class": "org.apache.rocketmq.connect.transform.eventbridge.EventBridgeTransform"
+      },
+      {
+        "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkTask",
+        "webHook":"https://oapi.dingtalk.com/robot/send?access_token=7f78aa4734ea9bd245984e47b6764ccb950b4292e4f6f9424dff92909f485f16",
+        "secretKey":"SEC8a898c9df7b6415090a8f1341d9eed000c815a89f301f2de87302a1e802dbd69"
+      }
+    ]
+  }
+]
