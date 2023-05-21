@@ -31,6 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook.StartAndShutdown;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook.AbstractStartAndShutdown;
+
+
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,6 +50,8 @@ public class Runtime {
 
     private AtomicReference<RuntimeState> runtimerState;
 
+    private static final RuntimeStartAndShutdown RUNTIME_START_AND_SHUTDOWN = new RuntimeStartAndShutdown();
+
     @Autowired
     private CirculatorContext circulatorContext;
     @Autowired
@@ -58,15 +64,38 @@ public class Runtime {
     private ErrorHandler errorHandler;
 
     @PostConstruct
-    public void initAndStart() {
-        logger.info("Start init runtime.");
+    public void initAndStart() throws Exception {
+        logger.info("Start init runtimer.");
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
-        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
-        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler).start();
+        EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber, errorHandler);
+        EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext, offsetManager, errorHandler);
+        EventTargetTrigger eventTargetPusher = new EventTargetTrigger(circulatorContext, offsetManager, errorHandler);
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventBusListener);
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventRuleTransfer);
+        RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventTargetPusher);
+
+        // start servers one by one.
+        RUNTIME_START_AND_SHUTDOWN.start();
+
+        java.lang.Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("try to shutdown server");
+            try {
+                RUNTIME_START_AND_SHUTDOWN.shutdown();
+            } catch (Exception e) {
+                logger.error("err when shutdown rocketmq-proxy", e);
+            }
+        }));
+
         startRuntimer();
+    }
+
+    private static class RuntimeStartAndShutdown extends AbstractStartAndShutdown {
+        @Override
+        protected void appendStartAndShutdown(StartAndShutdown startAndShutdown) {
+            super.appendStartAndShutdown(startAndShutdown);
+        }
     }
 
     public void startRuntimer() {
