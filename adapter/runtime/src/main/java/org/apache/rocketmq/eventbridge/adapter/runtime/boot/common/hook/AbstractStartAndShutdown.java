@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook;
+package org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.hook;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

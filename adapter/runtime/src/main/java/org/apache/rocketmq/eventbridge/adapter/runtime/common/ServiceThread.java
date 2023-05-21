@@ -18,7 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.common;
 
 import org.apache.rocketmq.common.CountDownLatch2;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.boot.hook.AbstractStartAndShutdown;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.hook.AbstractStartAndShutdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

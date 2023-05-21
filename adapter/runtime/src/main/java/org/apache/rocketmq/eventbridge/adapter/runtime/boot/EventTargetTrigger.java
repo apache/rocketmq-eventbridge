@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,9 +98,14 @@ public class EventTargetTrigger extends ServiceThread {
 
     @Override
     public void shutdown() {
-        ShutdownUtils.shutdownThreadPool(executorService);
+        Map<String, SinkTask> sinkTaskMap =  circulatorContext.getPusherTaskMap();
+        for (Map.Entry<String, SinkTask> item : sinkTaskMap.entrySet()) {
+            SinkTask sinkTask = item.getValue();
+            sinkTask.stop();
+        }
         try {
-            circulatorContext.close();
+            circulatorContext.releaseExecutorService();
+            circulatorContext.releaseTriggerTask();
         } catch (Exception e) {
             e.printStackTrace();
         }

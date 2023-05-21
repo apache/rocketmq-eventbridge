@@ -32,9 +32,9 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * receive event and transfer the rule to pusher
@@ -48,6 +48,8 @@ public class EventRuleTransfer extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
+    private Map<String, TransformEngine<ConnectRecord>> latestTransformMap;
+    private List<CompletableFuture<Void>> completableFutures;
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
         ErrorHandler errorHandler) {
@@ -75,7 +77,7 @@ public class EventRuleTransfer extends ServiceThread {
                 this.waitForRunning(1000);
                 continue;
             }
-            Map<String, TransformEngine<ConnectRecord>> latestTransformMap = circulatorContext.getTaskTransformMap();
+            latestTransformMap = circulatorContext.getTaskTransformMap();
             if (MapUtils.isEmpty(latestTransformMap)) {
                 logger.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(3000);
@@ -83,7 +85,7 @@ public class EventRuleTransfer extends ServiceThread {
             }
 
             List<ConnectRecord> afterTransformConnect = Lists.newArrayList();
-            List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+            completableFutures = Lists.newArrayList();
             for(String runnerName: eventRecordMap.keySet()){
                 TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
                 List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
@@ -124,10 +126,16 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public void shutdown() {
-        ShutdownUtils.completedFuture(completableFutures);
+
         try {
-            circulatorContext.close();
+            for (Map.Entry<String, TransformEngine<ConnectRecord>> taskTransform : latestTransformMap.entrySet()) {
+                TransformEngine<ConnectRecord> transformEngine = taskTransform.getValue();
+                transformEngine.close();
+            }
+            ShutdownUtils.completedFuture(completableFutures);
+            circulatorContext.releaseTaskTransform();
         } catch (Exception e) {
+            logger.error("当前");
             e.printStackTrace();
         }
     }

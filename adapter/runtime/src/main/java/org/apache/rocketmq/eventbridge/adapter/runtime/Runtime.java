@@ -31,6 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.hook.StartAndShutdown;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.hook.AbstractStartAndShutdown;
+
+
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,6 +50,8 @@ public class Runtime {
 
     private AtomicReference<RuntimeState> runtimerState;
 
+    private static final RuntimeStartAndShutdown RUNTIME_START_AND_SHUTDOWN = new RuntimeStartAndShutdown();
+
     @Autowired
     private CirculatorContext circulatorContext;
     @Autowired
@@ -60,12 +66,12 @@ public class Runtime {
     @PostConstruct
     public void initAndStart() throws Exception {
         logger.info("Start init runtimer.");
-        circulatorContext.initListenerMetadata(runnerConfigObserver.getTargetRunnerConfig());
+        circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
         EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber, errorHandler);
         EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext, offsetManager, errorHandler);
-        EventTargetPusher eventTargetPusher = new EventTargetPusher(circulatorContext, offsetManager, errorHandler);
+        EventTargetTrigger eventTargetPusher = new EventTargetTrigger(circulatorContext, offsetManager, errorHandler);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventBusListener);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventRuleTransfer);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventTargetPusher);
@@ -73,7 +79,7 @@ public class Runtime {
         // start servers one by one.
         RUNTIME_START_AND_SHUTDOWN.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        java.lang.Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("try to shutdown server");
             try {
                 RUNTIME_START_AND_SHUTDOWN.shutdown();
@@ -87,7 +93,7 @@ public class Runtime {
 
     private static class RuntimeStartAndShutdown extends AbstractStartAndShutdown {
         @Override
-        public void appendStartAndShutdown(StartAndShutdown startAndShutdown) {
+        protected void appendStartAndShutdown(StartAndShutdown startAndShutdown) {
             super.appendStartAndShutdown(startAndShutdown);
         }
     }
