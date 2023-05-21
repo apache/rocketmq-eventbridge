@@ -19,6 +19,7 @@ package org.apache.rocketmq.eventbridge.domain.model.source;
 import java.util.List;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.repository.EventTypeRepository;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,7 +41,7 @@ public class EventTypeService {
         PaginationResult<List<EventType>> result = new PaginationResult();
         result.setData(pageResult);
         result.setTotal(this.getEventTypeCount(accountId, eventBusName, eventSourceName));
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setNextToken(NextTokenUtil.findNextToken(this.getEventTypeCount(accountId, eventBusName, eventSourceName), Integer.parseInt(nextToken), maxResults));
         return result;
     }
 

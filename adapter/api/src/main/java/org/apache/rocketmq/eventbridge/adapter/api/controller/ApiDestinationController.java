@@ -168,9 +168,11 @@ public class ApiDestinationController {
                     return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(
                         errMessage.toString());
                 }
+                listApiDestinationsRequest.checkMaxResultsAndNextToken();
                 final PaginationResult<List<ApiDestinationDTO>> listPaginationResult
                     = apiDestinationService.listApiDestinations(accountAPI.getResourceOwnerAccountId(ctx),
-                    listApiDestinationsRequest.getApiDestinationNamePrefix(), listApiDestinationsRequest.getNextToken(),
+                    listApiDestinationsRequest.getApiDestinationNamePrefix(),
+                        listApiDestinationsRequest.getConnectionName(), listApiDestinationsRequest.getNextToken(),
                     listApiDestinationsRequest.getMaxResults());
                 List<ApiDestinationsResponse> apiDestinationsResponses = Lists.newArrayList();
                 listPaginationResult.getData()

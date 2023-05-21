@@ -26,6 +26,8 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 
+import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.RequestParameterInvalid;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -57,7 +59,7 @@ public class GetApiDestinationResponse extends BaseResponse {
     }
 
     public GetApiDestinationResponse parameterCheckFailRes(String errorMsg) {
-        setCode(Integer.toString(409));
+        setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
         return this;
     }

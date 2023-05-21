@@ -63,7 +63,7 @@
         from event_api_destination
         where id = #{id,jdbcType=INTEGER}
     </select>
-    <select id="listApiDestinations" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer">
+    <select id="listApiDestinations" resultMap="ResultMapWithBLOBs" parameterType="java.util.Map">
         select
         <include refid="Base_Column_List"/>
         ,
@@ -72,6 +72,7 @@
         <where>
             <if test="accountId != null and accountId != ''">account_id = #{accountId}</if>
             <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
+            <if test="connectionName != null and connectionName != ''">and connection_name = #{connectionName}</if>
         </where>
         order by gmt_modify desc LIMIT #{nextToken} , #{maxResults}
     </select>
@@ -297,6 +298,16 @@
         from event_api_destination
         <where>
             <if test="accountId != null and accountId != ''">account_id = #{accountId}</if>
+        </where>
+    </select>
+    <select id="getApiDestinationByAccountIdAndNameCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select
+        count(1)
+        from event_api_destination
+        <where>
+            <if test="accountId != null and accountId != ''">account_id = #{accountId}</if>
+            <if test="name != null and name != ''">and name like concat('%',#{name},'%')</if>
+            <if test="connectionName != null and connectionName != ''">and connection_name = #{connectionName}</if>
         </where>
     </select>
     <select id="queryApiDestinationByConnectionName" resultMap="ResultMapWithBLOBs" parameterType="java.util.Map">

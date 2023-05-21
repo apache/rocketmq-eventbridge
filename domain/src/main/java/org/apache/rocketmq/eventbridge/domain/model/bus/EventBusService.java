@@ -23,6 +23,7 @@ import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.repository.EventBusRepository;
 import org.apache.rocketmq.eventbridge.domain.repository.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,7 +85,7 @@ public class EventBusService extends AbstractResourceService {
         PaginationResult<List<EventBus>> result = new PaginationResult();
         result.setData(eventBuses);
         result.setTotal(total);
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setNextToken(NextTokenUtil.findNextToken(total, Integer.parseInt(nextToken), maxResults));
         return result;
     }
 

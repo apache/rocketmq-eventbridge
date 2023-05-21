@@ -31,11 +31,13 @@ public interface ConnectionRepository {
     List<ConnectionDTO> getConnection(String accountId, String connectionName);
 
     List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
-        int maxResults);
+                                        int maxResults);
 
     int getConnectionCount(String accountId);
 
+    int getConnectionCount(String accountId, String connectionName);
+
     ConnectionDTO getConnectionById(Integer id);
 
-    ConnectionDTO getConnectionByName(String name);
+    ConnectionDTO getConnectionByNameAccountId(String name, String accountId);
 }

@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter;
+package org.apache.rocketmq.eventbridge.tools;
 
-import com.google.gson.annotations.SerializedName;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+public class NextTokenUtil {
 
-@Getter
-@Setter
-@ToString
-public class HttpApiParameters {
-
-    @SerializedName("Endpoint")
-    private String endpoint;
-
-    @SerializedName("Method")
-    private String method;
-
-    @SerializedName("ApiParameters")
-    private List<ApiParameter> apiParameters;
+    public static String findNextToken(int totalSize, int skipIdx, int limit) {
+        if (skipIdx + limit < totalSize) {
+            return String.valueOf(skipIdx + limit);
+        } else {
+            return null;
+        }
+    }
 }

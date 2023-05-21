@@ -43,6 +43,4 @@ public class ConnectionDTO implements Serializable {
     private AuthParameters authParameters;
 
     private Date gmtCreate;
-
-    private String apiDestinationName;
 }

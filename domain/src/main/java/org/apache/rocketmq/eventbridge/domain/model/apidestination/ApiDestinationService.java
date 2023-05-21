@@ -18,12 +18,18 @@
 package org.apache.rocketmq.eventbridge.domain.model.apidestination;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.domain.common.EventBridgeConstants;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.AbstractResourceService;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
+import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
+import org.apache.rocketmq.eventbridge.domain.model.quota.QuotaService;
+import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,8 +44,14 @@ public class ApiDestinationService extends AbstractResourceService {
 
     private final ApiDestinationRepository apiDestinationRepository;
 
-    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository) {
+    private final ConnectionService connectionService;
+
+    private final QuotaService quotaService;
+
+    public ApiDestinationService(ApiDestinationRepository apiDestinationRepository, QuotaService quotaService, ConnectionService connectionService) {
         this.apiDestinationRepository = apiDestinationRepository;
+        this.quotaService = quotaService;
+        this.connectionService = connectionService;
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -47,8 +59,10 @@ public class ApiDestinationService extends AbstractResourceService {
         if (checkApiDestination(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getName()) != null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
         }
-        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), EventBridgeConstants.API_DESTINATION_COUNT_LIMIT,
+        super.checkQuota(this.getApiDestinationCount(eventApiDestinationDTO.getAccountId()), quotaService.getTotalQuota(eventApiDestinationDTO.getAccountId(), TotalQuotaEnum.API_DESTINATION_COUNT),
                 ApiDestinationCountExceedLimit);
+        checkHttpApiParameters(eventApiDestinationDTO.getApiParams());
+        checkConnection(eventApiDestinationDTO);
         final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
         if (apiDestination) {
             return eventApiDestinationDTO.getName();
@@ -56,11 +70,33 @@ public class ApiDestinationService extends AbstractResourceService {
         return null;
     }
 
+    private void checkConnection(ApiDestinationDTO eventApiDestinationDTO) {
+        connectionService.getConnection(eventApiDestinationDTO.getAccountId(), eventApiDestinationDTO.getConnectionName());
+    }
+
+    private void checkHttpApiParameters(HttpApiParameters httpApiParameters) {
+        if (httpApiParameters == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.HttpApiParametersIsNull);
+        }
+        if (StringUtils.isBlank(httpApiParameters.getEndpoint())) {
+            throw new EventBridgeException(EventBridgeErrorCode.EndpointIsBlank);
+        }
+        if (StringUtils.isBlank(httpApiParameters.getMethod())) {
+            throw new EventBridgeException(EventBridgeErrorCode.MethodIsBlank);
+        }
+        int len = httpApiParameters.getEndpoint().length();
+        if (len > EventBridgeConstants.EVENT_ENDPOINT_MAX_LENGTH || len < EventBridgeConstants.EVENT_ENDPOINT_MIN_LENGTH) {
+            throw new EventBridgeException(EventBridgeErrorCode.EndpointLengthExceed);
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean updateApiDestination(ApiDestinationDTO apiDestinationDTO) {
         if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
         }
+        checkHttpApiParameters(apiDestinationDTO.getApiParams());
+        checkConnection(apiDestinationDTO);
         return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
     }
 
@@ -83,17 +119,22 @@ public class ApiDestinationService extends AbstractResourceService {
         return apiDestinationRepository.deleteApiDestination(accountId, apiDestinationName);
     }
 
-    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String nextToken,
-                                                                         int maxResults) {
-        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, nextToken, maxResults);
+    public PaginationResult<List<ApiDestinationDTO>> listApiDestinations(String accountId, String apiDestinationName, String connectionName, String nextToken,
+                                                                         Integer maxResults) {
+        final List<ApiDestinationDTO> apiDestinationDTOS = apiDestinationRepository.listApiDestinations(accountId, apiDestinationName, connectionName, nextToken, maxResults);
         PaginationResult<List<ApiDestinationDTO>> result = new PaginationResult();
+        int apiDestinationCount = this.getApiDestinationCount(accountId, apiDestinationName, connectionName);
         result.setData(apiDestinationDTOS);
-        result.setTotal(this.getApiDestinationCount(accountId));
-        result.setNextToken(String.valueOf(Integer.parseInt(nextToken) + maxResults));
+        result.setTotal(apiDestinationCount);
+        result.setNextToken(NextTokenUtil.findNextToken(apiDestinationCount, Integer.parseInt(nextToken), maxResults));
         return result;
     }
 
     private int getApiDestinationCount(String accountId) {
         return apiDestinationRepository.getApiDestinationCount(accountId);
+    }
+
+    private int getApiDestinationCount(String accountId, String apiDestinationName, String connectionName) {
+        return apiDestinationRepository.getApiDestinationCount(accountId, apiDestinationName, connectionName);
     }
 }
