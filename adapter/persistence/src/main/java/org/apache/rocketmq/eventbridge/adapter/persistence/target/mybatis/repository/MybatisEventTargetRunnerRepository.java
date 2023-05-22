@@ -21,6 +21,8 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.converter.EventTargetRunnerConverter;
 import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.dataobject.EventTargetRunnerDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.target.mybatis.mapper.EventTargetRunnerMapper;
@@ -72,6 +74,9 @@ public class MybatisEventTargetRunnerRepository implements EventTargetRunnerRepo
 
     @Override
     public List<EventTargetRunner> listEventTargetRunners(String accountId, String eventBusName, String eventRuleName) {
+        if (StringUtils.isBlank(accountId) || StringUtils.isBlank(eventBusName) || StringUtils.isBlank(eventRuleName)) {
+            return Lists.newArrayListWithCapacity(0);
+        }
         List<EventTargetRunnerDO> eventTargetRunnerDOS = eventTargetRunnerMapper.listEventTargetRunners(accountId, eventBusName, eventRuleName);
         if (eventTargetRunnerDOS == null || eventTargetRunnerDOS.isEmpty()) {
             return Lists.newArrayListWithCapacity(0);

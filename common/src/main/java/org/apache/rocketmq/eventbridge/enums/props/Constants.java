@@ -14,7 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.eventbridge.enums.props;
 
-INSERT INTO `event_target_class` (`name`,`api_params`,`target_transform`,`required_params`,`visual_config`,`description`,`gmt_create`,`gmt_modify`)
-VALUES
-('acs.dingtalk','{\n    \"WebHook\":{\n        \"type\":\"String\",\n        \"desc\":\"the endpoint of webhook.\",\n        \"required\":true\n    },\n    \"SecretKey\":{\n        \"type\":\"String\",\n        \"desc\":\"the secret key.\",\n        \"required\":true\n    },\n    \"Body\":{\n        \"type\":\"boolean\",\n        \"desc\":\"the content of request\"\n    }\n}','{     \"data\":\"${Body}\" }','{\n    \"webHook\":\"${WebHook}\",\n    \"secretKey\":\"${SecretKey}\",\n    \"class\":\"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector\"\n}',NULL,'aliyun dingtalk connector config',now(),now());
+/**
+ * Constants
+ */
+public enum Constants {
+    HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID("resourceOwnerAccountId"),
+    HEADER_KEY_LOGIN_ACCOUNT_ID("loginAccountId"),
+    HEADER_KEY_PARENT_ACCOUNT_ID("parentAccountId"),
+    ;
+
+    private String name;
+
+    Constants(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+}

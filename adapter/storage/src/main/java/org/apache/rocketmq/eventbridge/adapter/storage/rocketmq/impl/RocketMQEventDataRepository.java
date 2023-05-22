@@ -20,6 +20,7 @@ package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.dataobject.EventTopicDO;
@@ -92,12 +93,14 @@ public class RocketMQEventDataRepository implements EventDataRepository {
     @Cacheable(value = "topicCache")
     @Override
     public String getTopicName(String accountId, String eventBusName) {
-        String topicName = null;
+        String topicName = eventDataOnRocketMQConnectAPI.buildTopicName(accountId, eventBusName);
+        if (StringUtils.isBlank(AppConfig.getGlobalConfig().getDefaultDataPersistentClusterName())) {
+            return topicName;
+        }
         EventTopicDO eventTopicDO = eventTopicMapper.getTopic(accountId, eventBusName);
         if (eventTopicDO != null) {
             topicName = eventTopicDO.getName();
         } else {
-            topicName = eventDataOnRocketMQConnectAPI.buildTopicName(accountId, eventBusName);
             eventTopicMapper.createTopic(accountId, eventBusName, topicName, AppConfig.getGlobalConfig()
                 .getDefaultDataPersistentClusterName());
         }
