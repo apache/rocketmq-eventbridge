@@ -15,6 +15,28 @@
  * limitations under the License.
  */
 
-INSERT INTO `event_target_class` (`name`,`api_params`,`target_transform`,`required_params`,`visual_config`,`description`,`gmt_create`,`gmt_modify`)
-VALUES
-('acs.dingtalk','{\n    \"WebHook\":{\n        \"type\":\"String\",\n        \"desc\":\"the endpoint of webhook.\",\n        \"required\":true\n    },\n    \"SecretKey\":{\n        \"type\":\"String\",\n        \"desc\":\"the secret key.\",\n        \"required\":true\n    },\n    \"Body\":{\n        \"type\":\"boolean\",\n        \"desc\":\"the content of request\"\n    }\n}','{     \"data\":\"${Body}\" }','{\n    \"webHook\":\"${WebHook}\",\n    \"secretKey\":\"${SecretKey}\",\n    \"class\":\"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector\"\n}',NULL,'aliyun dingtalk connector config',now(),now());
+package org.apache.rocketmq.eventbridge.infrastructure.validate;
+
+
+import org.apache.rocketmq.eventbridge.infrastructure.validate.spi.ServiceLifecycle;
+import org.apache.rocketmq.eventbridge.infrastructure.validate.spi.typed.TypedSPI;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import reactor.util.context.Context;
+
+/**
+ * AuthValidation
+ */
+public interface AuthValidation extends ServiceLifecycle, TypedSPI {
+
+    Context validate(ServerHttpRequest request, Context ctx);
+
+    @Override
+    default void init() {
+
+    }
+
+    @Override
+    default void shutdown(){
+
+    }
+}
