@@ -16,8 +16,10 @@
  */
 package org.apache.rocketmq.eventbridge.filter;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.infrastructure.validate.AuthValidation;
+import org.apache.rocketmq.eventbridge.infrastructure.validate.spi.ValidationServiceFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -25,28 +27,37 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
-import static org.apache.rocketmq.eventbridge.enums.props.Constants.HEADER_KEY_LOGIN_ACCOUNT_ID;
-import static org.apache.rocketmq.eventbridge.enums.props.Constants.HEADER_KEY_PARENT_ACCOUNT_ID;
+import javax.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-@Order(value = 2)
+@Order(value = 3)
 @Slf4j
-public class LoginFilter implements WebFilter {
+public class ValidateFilter implements WebFilter {
+
+    private List<AuthValidation> validations = new CopyOnWriteArrayList<>();
+
+    @Value(value="${auth.validation:default}")
+    private String validationName;
+
+    @PostConstruct
+    public void init() {
+        Arrays.stream(validationName.split(",")).forEach(action->validations.add(ValidationServiceFactory.getInstance(action)));
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         return chain.filter(exchange)
-            .subscriberContext(ctx -> {
-                List<String> parentAccountIds = request.getHeaders()
-                    .get(HEADER_KEY_PARENT_ACCOUNT_ID.getName());
-                List<String> loginAccountIds = request.getHeaders()
-                    .get(HEADER_KEY_LOGIN_ACCOUNT_ID.getName());
-                return ctx.put(HEADER_KEY_PARENT_ACCOUNT_ID.getName(),
-                    parentAccountIds != null && !parentAccountIds.isEmpty() ? parentAccountIds.get(0) : "")
-                    .put(HEADER_KEY_LOGIN_ACCOUNT_ID.getName(),
-                        loginAccountIds != null && !loginAccountIds.isEmpty() ? loginAccountIds.get(0) : "");
-            });
+                .subscriberContext(ctx -> {
+                    AtomicReference<Context> result = new AtomicReference<Context>();
+                    validations.forEach(validation-> result.set(validation.validate(request, ctx)));
+                    return result.get();
+                });
     }
 }

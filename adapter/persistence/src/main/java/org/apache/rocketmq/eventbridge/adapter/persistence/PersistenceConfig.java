@@ -20,13 +20,11 @@ package org.apache.rocketmq.eventbridge.adapter.persistence;
 import lombok.SneakyThrows;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan(basePackages = "org.apache.rocketmq.eventbridge.adapter.persistence.*.mybatis.*")
 public class PersistenceConfig {
 
     @SneakyThrows
