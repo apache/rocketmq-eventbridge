@@ -15,6 +15,31 @@
  * limitations under the License.
  */
 
-INSERT INTO `event_target_class` (`name`,`api_params`,`target_transform`,`required_params`,`visual_config`,`description`,`gmt_create`,`gmt_modify`)
-VALUES
-('acs.dingtalk','{\n    \"WebHook\":{\n        \"type\":\"String\",\n        \"desc\":\"the endpoint of webhook.\",\n        \"required\":true\n    },\n    \"SecretKey\":{\n        \"type\":\"String\",\n        \"desc\":\"the secret key.\",\n        \"required\":true\n    },\n    \"Body\":{\n        \"type\":\"boolean\",\n        \"desc\":\"the content of request\"\n    }\n}','{     \"data\":\"${Body}\" }','{\n    \"webHook\":\"${WebHook}\",\n    \"secretKey\":\"${SecretKey}\",\n    \"class\":\"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector\"\n}',NULL,'aliyun dingtalk connector config',now(),now());
+package org.apache.rocketmq.eventbridge.infrastructure.validate.spi.typed;
+
+import java.util.Collection;
+import java.util.Collections;
+
+/**
+ * Typed SPI.
+ */
+public interface TypedSPI {
+    
+    /**
+     * Get type.
+     * 
+     * @return type
+     */
+    default String getType() {
+        return "";
+    }
+    
+    /**
+     * Get type aliases.
+     *
+     * @return type aliases
+     */
+    default Collection<String> getTypeAliases() {
+        return Collections.emptyList();
+    }
+}
