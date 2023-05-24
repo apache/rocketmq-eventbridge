@@ -265,3 +265,5 @@ generated CloudEvent demo
 }
 ```
 
+# 基于TPS实现反压逻辑
+![未命名文件](https://github.com/lkmxsxd/rocketmq-eventbridge/assets/34312552/ec7f4f3f-d79c-4413-848f-d1eb94aa2439)
