@@ -79,7 +79,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     @Autowired
     private TargetRunnerConfigObserver runnerConfigObserver;
 
-    private final BlockingQueue<MessageExt> messageBuffer = new LinkedBlockingQueue<>(50000);
+    private static Integer QUEUE_CAPACITY = 50000;
+    private final Map<String/*runnerName*/, BlockingQueue<MessageExt>> messageBuffer = new ConcurrentHashMap<>();
 
     private Integer pullTimeOut;
     private Integer pullBatchSize;
@@ -118,9 +119,17 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     }
 
     @Override
-    public List<ConnectRecord> pull() {
+    public List<ConnectRecord> pull(String runnerName,int batchSize) {
         ArrayList<MessageExt> messages = new ArrayList<>();
-        messageBuffer.drainTo(messages, pullBatchSize);
+
+
+        if (Objects.isNull(messageBuffer.get(runnerName))){
+            logger.info("runnerName is not exist.");
+            return null;
+        }
+
+        messageBuffer.get(runnerName).drainTo(messages, batchSize);
+
         if (CollectionUtils.isEmpty(messages)) {
             logger.info("consumer poll message empty.");
             return null;
@@ -304,12 +313,16 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         }
         LitePullConsumer litePullConsumer = initLitePullConsumer(subscribeRunnerKeys);
         ConsumeWorker newWorker = new ConsumeWorker(litePullConsumer, subscribeRunnerKeys.getRunnerName());
+        // 初始化消息缓存队列
+        messageBuffer.put(subscribeRunnerKeys.getRunnerName(), new LinkedBlockingQueue<>(QUEUE_CAPACITY));
         consumeWorkerMap.put(subscribeRunnerKeys.getRunnerName(), newWorker);
         newWorker.start();
     }
 
     private void removeConsumeWorker(SubscribeRunnerKeys subscribeRunnerKeys) {
         ConsumeWorker consumeWorker = consumeWorkerMap.remove(subscribeRunnerKeys.getRunnerName());
+        // 移除消息缓存队列 以及队列中的消息
+        messageBuffer.remove(subscribeRunnerKeys.getRunnerName());
         if (!Objects.isNull(consumeWorker)){
             consumeWorker.shutdown();
         }
@@ -337,7 +350,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                     List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
                     for (MessageExt message : messages) {
                         message.putUserProperty(RuntimeConfigDefine.RUNNER_NAME, runnerName);
-                        messageBuffer.put(message);
+                        messageBuffer.get(runnerName).put(message);
                     }
                 } catch (Exception exception) {
                     logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);

@@ -25,6 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.RuntimeState;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtime.rate.AbsRateEstimator;
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,8 @@ public class Runtime {
     private EventSubscriber eventSubscriber;
     @Autowired
     private ErrorHandler errorHandler;
+    @Autowired
+    private AbsRateEstimator absRateEstimator;
 
     @PostConstruct
     public void initAndStart() {
@@ -64,8 +67,8 @@ public class Runtime {
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
         new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
-        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
-        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler).start();
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler,absRateEstimator).start();
+        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler,absRateEstimator).start();
         startRuntimer();
     }
 

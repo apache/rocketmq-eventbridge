@@ -171,4 +171,8 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
             transform.stop();
         }
     }
+
+    public int getTransformSize() {
+        return transformList.size();
+    }
 }

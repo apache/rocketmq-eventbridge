@@ -20,21 +20,25 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.boot;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
+import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtime.rate.AbsRateEstimator;
+import org.apache.rocketmq.eventbridge.adapter.runtime.rate.EstimateMetrics;
+import org.apache.rocketmq.eventbridge.adapter.runtime.rate.RunnerMetrics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.collections.MapUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
-import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
-import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
-import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
-import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * receive event and transfer the rule to pusher
@@ -48,12 +52,14 @@ public class EventRuleTransfer extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
+    private final AbsRateEstimator absRateEstimator;
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
-        ErrorHandler errorHandler) {
+                             ErrorHandler errorHandler,AbsRateEstimator absRateEstimator) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.absRateEstimator = absRateEstimator;
     }
 
     @Override
@@ -69,8 +75,27 @@ public class EventRuleTransfer extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
-            if(MapUtils.isEmpty(eventRecordMap)){
+            // 获取transform完成的runnerName进行推送
+            String runnerName = circulatorContext.takeRuleRunnerName();
+            // 开始处理本批次数据同时，立刻通知bus获取下一批次的数据
+            circulatorContext.offerBusQueue(runnerName);
+
+            if (StringUtils.isBlank(runnerName)) {
+                logger.info("no push data ");
+                this.waitForRunning(1000);
+                continue;
+            }
+
+            // 获取可以拉取的runnerName
+            RunnerMetrics transformMetrics = circulatorContext.getTransformMetrics(runnerName);
+            if (Objects.isNull(transformMetrics)) {
+                continue;
+            }
+
+            //Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
+            List<ConnectRecord> curEventRecords = circulatorContext.takeEventRecord(runnerName, transformMetrics.getCwnd());
+
+            if (CollectionUtils.isEmpty(curEventRecords)) {
                 logger.info("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
                 this.waitForRunning(1000);
                 continue;
@@ -82,39 +107,79 @@ public class EventRuleTransfer extends ServiceThread {
                 continue;
             }
 
+            // 开始执行时间戳，用于计算本次tps
+            long startTimestamp = System.currentTimeMillis();
             List<ConnectRecord> afterTransformConnect = Lists.newArrayList();
             List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
-            for(String runnerName: eventRecordMap.keySet()){
-                TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
-                List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
-                curEventRecords.forEach(pullRecord -> {
-                    CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
-                            .exceptionally((exception) -> {
-                                logger.error("transfer do transform event record failed，stackTrace-", exception);
-                                errorHandler.handle(pullRecord, exception);
-                                return null;
-                            })
-                            .thenAccept(pushRecord -> {
-                                if (Objects.nonNull(pushRecord)) {
-                                    afterTransformConnect.add(pushRecord);
-                                } else {
-                                    offsetManager.commit(pullRecord);
-                                }
-                            });
-                    completableFutures.add(transformFuture);
-                });
-            }
+
+            TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
+            curEventRecords.forEach(pullRecord -> {
+                CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
+                        .exceptionally((exception) -> {
+                            logger.error("transfer do transform event record failed，stackTrace-", exception);
+                            errorHandler.handle(pullRecord, exception);
+                            return null;
+                        })
+                        .thenAccept(pushRecord -> {
+                            if (Objects.nonNull(pushRecord)) {
+                                afterTransformConnect.add(pushRecord);
+                            } else {
+                                offsetManager.commit(pullRecord);
+                            }
+                        });
+                completableFutures.add(transformFuture);
+            });
+
+
+            int cwnd = transformMetrics.getCwnd();
+            int ssthresh = transformMetrics.getSsthresh();
 
             try {
-                CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
+                CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[curEventRecords.size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
+
+                // 写入pusher的任务队列通知pusher数据转换完成
+                circulatorContext.offerTargetQueue(runnerName);
+
+                // 计算本次处理速率，作用于下一次
+                EstimateMetrics estimateMetrics = new EstimateMetrics(runnerName, EstimateMetrics.CommonTypeEnum.TRANS);
+                estimateMetrics.setRunnerName(runnerName);
+                estimateMetrics.setBatchSize(afterTransformConnect.size());
+                estimateMetrics.setSsthresh(ssthresh);
+
+                RunnerMetrics pushMetrics = circulatorContext.getpushMetrics(runnerName);
+                int rwnd = pushMetrics.getCwnd();
+
+                int transformers = (curTransformEngine.getTransformSize() > 0) ? curTransformEngine.getTransformSize(): 1;
+                int finalCwnd = cwnd * transformers;
+                estimateMetrics.setCwnd(finalCwnd);
+                estimateMetrics.setRwnd(rwnd);
+                estimateMetrics.setStartTimestamp(startTimestamp);
+                estimateMetrics.setEndTimestamp(System.currentTimeMillis());
+
+                RunnerMetrics compute = absRateEstimator.compute(estimateMetrics);
+                // 发布本次接收窗口
+                circulatorContext.publishTransformMetrics(compute);
+                // 计算本次处理速率，作用于下一次
+
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 logger.error("transfer event record failed, stackTrace-", exception);
+
+                // 异常TPS计算
+                EstimateMetrics estimateMetrics = new EstimateMetrics(runnerName, EstimateMetrics.CommonTypeEnum.TRANS);
+                estimateMetrics.setRunnerName(runnerName);
+                estimateMetrics.setSsthresh(ssthresh);
+                estimateMetrics.setCwnd(cwnd);
+                estimateMetrics.setError(true);
+
+                RunnerMetrics compute = absRateEstimator.compute(estimateMetrics);
+                // 发布本次接收窗口
+                circulatorContext.publishTransformMetrics(compute);
+                // 异常TPS计算
+
                 afterTransformConnect.forEach(transferRecord -> errorHandler.handle(transferRecord, exception));
             }
-
         }
     }
-
 }
