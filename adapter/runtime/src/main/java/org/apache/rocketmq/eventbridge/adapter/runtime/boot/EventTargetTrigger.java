@@ -31,7 +31,6 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,11 +97,6 @@ public class EventTargetTrigger extends ServiceThread {
 
     @Override
     public void shutdown() {
-        Map<String, SinkTask> sinkTaskMap =  circulatorContext.getPusherTaskMap();
-        for (Map.Entry<String, SinkTask> item : sinkTaskMap.entrySet()) {
-            SinkTask sinkTask = item.getValue();
-            sinkTask.stop();
-        }
         try {
             circulatorContext.releaseExecutorService();
             circulatorContext.releaseTriggerTask();

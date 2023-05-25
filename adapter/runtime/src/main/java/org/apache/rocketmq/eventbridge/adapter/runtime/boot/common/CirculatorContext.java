@@ -32,7 +32,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.enums.RefreshTypeE
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.plugin.Plugin;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.plugin.PluginClassLoader;
 import org.apache.rocketmq.eventbridge.adapter.runtime.config.RuntimeConfigDefine;
-import org.apache.rocketmq.eventbridge.adapter.runtimer.utils.ShutdownUtils;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -293,9 +293,11 @@ public class CirculatorContext implements TargetRunnerListener {
     }
 
 
-    public void releaseTaskTransform() {
+    public void releaseTaskTransform() throws Exception {
         for (Map.Entry<String, TransformEngine<ConnectRecord>> taskTransform : taskTransformMap.entrySet()) {
             String runnerName = taskTransform.getKey();
+            TransformEngine<ConnectRecord> transformEngine = taskTransform.getValue();
+            transformEngine.close();
             taskTransformMap.remove(runnerName);
         }
     }
