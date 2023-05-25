@@ -65,7 +65,7 @@ public class Runtime {
 
     @PostConstruct
     public void initAndStart() throws Exception {
-        logger.info("Start init runtimer.");
+        logger.info("Start init runtime.");
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
@@ -84,7 +84,7 @@ public class Runtime {
             try {
                 RUNTIME_START_AND_SHUTDOWN.shutdown();
             } catch (Exception e) {
-                logger.error("err when shutdown rocketmq-proxy", e);
+                logger.error("err when shutdown runtime ", e);
             }
         }));
 
