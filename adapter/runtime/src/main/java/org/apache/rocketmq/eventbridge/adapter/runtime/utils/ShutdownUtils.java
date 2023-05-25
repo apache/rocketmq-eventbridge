@@ -42,13 +42,4 @@ public class ShutdownUtils {
             }
         }
     }
-
-    /**
-     * set final value
-     * @param completableFutures
-     */
-    public static void completedFuture(List<CompletableFuture<Void>> completableFutures){
-        for (CompletableFuture<Void> future: completableFutures) {
-            future.cancel(true);
-        } }
 }
