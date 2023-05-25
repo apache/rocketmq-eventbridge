@@ -32,7 +32,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
-import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ShutdownUtils;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +127,7 @@ public class EventRuleTransfer extends ServiceThread {
         try {
             circulatorContext.releaseTaskTransform();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
         }
     }
 

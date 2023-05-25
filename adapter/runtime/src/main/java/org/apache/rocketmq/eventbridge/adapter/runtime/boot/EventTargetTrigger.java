@@ -30,6 +30,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +101,7 @@ public class EventTargetTrigger extends ServiceThread {
             circulatorContext.releaseExecutorService();
             circulatorContext.releaseTriggerTask();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
         }
     }
 }
