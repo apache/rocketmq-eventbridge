@@ -293,9 +293,11 @@ public class CirculatorContext implements TargetRunnerListener {
     }
 
 
-    public void releaseTaskTransform() {
+    public void releaseTaskTransform() throws Exception {
         for (Map.Entry<String, TransformEngine<ConnectRecord>> taskTransform : taskTransformMap.entrySet()) {
             String runnerName = taskTransform.getKey();
+            TransformEngine<ConnectRecord> transformEngine = taskTransform.getValue();
+            transformEngine.close();
             taskTransformMap.remove(runnerName);
         }
     }
