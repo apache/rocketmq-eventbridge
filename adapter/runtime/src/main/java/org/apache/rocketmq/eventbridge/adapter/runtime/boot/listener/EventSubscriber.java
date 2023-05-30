@@ -23,6 +23,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.SubscribeRu
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.enums.RefreshTypeEnum;
 import org.apache.rocketmq.eventbridge.metrics.BridgeConfig;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      * fetch metrics configuration
      * @return
      */
-    public abstract BridgeConfig fetchMetricsConf();
+    public abstract BridgeMetricsManager getMetricsManager();
     /**
      * Pull connect records from store, Blocking method when is empty.
      *

@@ -27,6 +27,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscr
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.RuntimeState;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigObserver;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,10 +65,11 @@ public class Runtime {
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
+        BridgeMetricsManager metricsManager = eventSubscriber.getMetricsManager();
         new EventMonitor(eventSubscriber).start();
-        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
-        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
-        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler).start();
+        new EventBusListener(circulatorContext, eventSubscriber, errorHandler, metricsManager).start();
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler, metricsManager).start();
+        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler, metricsManager).start();
         startRuntimer();
     }
 

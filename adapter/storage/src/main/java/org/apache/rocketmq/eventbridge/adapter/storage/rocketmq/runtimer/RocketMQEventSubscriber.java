@@ -48,6 +48,7 @@ import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consume
 import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.metrics.BridgeConfig;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
@@ -120,8 +121,9 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     }
 
     @Override
-    public BridgeConfig fetchMetricsConf() {
-        return bridgeConfig;
+    public BridgeMetricsManager getMetricsManager() {
+        BridgeMetricsManager bridgeMetricsManager = new BridgeMetricsManager(bridgeConfig);
+        return bridgeMetricsManager;
     }
 
     @Override

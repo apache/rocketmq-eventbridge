@@ -25,6 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +41,10 @@ public class EventBusListener extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final EventSubscriber eventSubscriber;
     private final ErrorHandler errorHandler;
+    private BridgeMetricsManager bridgeMetricsManager;
 
     public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber,
-        ErrorHandler errorHandler) {
+        ErrorHandler errorHandler, BridgeMetricsManager bridgeMetricsManager) {
         this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
         this.errorHandler = errorHandler;
@@ -54,6 +56,7 @@ public class EventBusListener extends ServiceThread {
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
                 pullRecordList = eventSubscriber.pull();
+                BridgeMetricsManager.messagesInTotal.add(pullRecordList.size());
                 if (CollectionUtils.isEmpty(pullRecordList)) {
                     this.waitForRunning(1000);
                     continue;

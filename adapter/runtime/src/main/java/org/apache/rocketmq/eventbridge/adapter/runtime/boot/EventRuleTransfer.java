@@ -32,6 +32,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +49,14 @@ public class EventRuleTransfer extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
+    private BridgeMetricsManager bridgeMetricsManager;
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
-        ErrorHandler errorHandler) {
+        ErrorHandler errorHandler, BridgeMetricsManager bridgeMetricsManager) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.bridgeMetricsManager = bridgeMetricsManager;
     }
 
     @Override

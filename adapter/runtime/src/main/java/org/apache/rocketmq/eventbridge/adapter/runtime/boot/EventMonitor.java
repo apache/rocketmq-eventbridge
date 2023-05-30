@@ -7,10 +7,10 @@ import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 
 public class EventMonitor extends ServiceThread {
 
-    private final EventSubscriber eventSubscriber;
+    private BridgeMetricsManager bridgeMetricsManager;
 
     public EventMonitor(EventSubscriber eventSubscriber) {
-        this.eventSubscriber = eventSubscriber;
+        this.bridgeMetricsManager = eventSubscriber.getMetricsManager();
     }
     @Override
     public String getServiceName() {
@@ -19,8 +19,11 @@ public class EventMonitor extends ServiceThread {
 
     @Override
     public void run() {
-        BridgeConfig bridgeConfig = eventSubscriber.fetchMetricsConf();
-        BridgeMetricsManager metricsManager = new BridgeMetricsManager(bridgeConfig);
-        metricsManager.init();
+        bridgeMetricsManager.init();
+    }
+
+    @Override
+    public void shutdown() {
+        bridgeMetricsManager.shutdown();
     }
 }

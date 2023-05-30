@@ -30,6 +30,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +47,14 @@ public class EventTargetTrigger extends ServiceThread {
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
     private volatile Integer batchSize = 100;
+    private BridgeMetricsManager metricsManager;
 
     public EventTargetTrigger(CirculatorContext circulatorContext, OffsetManager offsetManager,
-                              ErrorHandler errorHandler) {
+                              ErrorHandler errorHandler, BridgeMetricsManager bridgeMetricsManager) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.metricsManager = bridgeMetricsManager;
     }
 
     @Override
@@ -67,11 +70,13 @@ public class EventTargetTrigger extends ServiceThread {
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecordMap));
             }
 
+
             for(String runnerName: targetRecordMap.keySet()){
                 ExecutorService executorService = circulatorContext.getExecutorService(runnerName);
                 executorService.execute(() -> {
                     SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);
                     List<ConnectRecord> triggerRecords = targetRecordMap.get(runnerName);
+                    metricsManager.initTriggerMetrics(triggerRecords, runnerName);
                     try {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);

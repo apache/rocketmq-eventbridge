@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.metrcis.NopLongCounter;
@@ -39,18 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.AGGREGATION_DELTA;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_MESSAGES_IN_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_MESSAGES_OUT_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_THROUGHPUT_IN_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_THROUGHPUT_OUT_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.GAUGE_PROCESSOR_WATERMARK;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.HISTOGRAM_MESSAGE_SIZE;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.HISTOGRAM_RPC_LATENCY;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.LABEL_AGGREGATION;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.LABEL_PROCESSOR;
-import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.OPEN_TELEMETRY_METER_NAME;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.*;
 
 /**
  * 待接入Runtimer或者RocketMQEventSubscriber
@@ -58,16 +45,18 @@ import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.OPEN
 public class BridgeMetricsManager  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeMetricsManager.class);
 
-    private final BridgeConfig brokerConfig;
+    private final BridgeConfig bridgeConfig;
     private final static Map<String, String> LABEL_MAP = new HashMap<>();
     private OtlpGrpcMetricExporter metricExporter;
     private PeriodicMetricReader periodicMetricReader;
     private PrometheusHttpServer prometheusHttpServer;
     private LoggingMetricExporter loggingMetricExporter;
-    private Meter brokerMeter;
+    private Meter bridgeMeter;
 
-    // broker stats metrics
-    public static ObservableLongGauge processorWatermark = new NopObservableLongGauge();
+    // queue stats metrics
+    public static ObservableLongGauge targetGauge = new NopObservableLongGauge();
+    public static ObservableLongGauge ruleGauge = new NopObservableLongGauge();
+
 
     //invoke timeout
     public static LongHistogram invokeLatency = new NopLongHistogram();
@@ -79,8 +68,8 @@ public class BridgeMetricsManager  {
     public static LongCounter throughputOutTotal = new NopLongCounter();
     public static LongHistogram messageSize = new NopLongHistogram();
 
-    public BridgeMetricsManager(BridgeConfig brokerConfig) {
-        this.brokerConfig = brokerConfig;
+    public BridgeMetricsManager(BridgeConfig bridgeConfig) {
+        this.bridgeConfig = bridgeConfig;
     }
 
 
@@ -91,17 +80,17 @@ public class BridgeMetricsManager  {
     }
 
     private boolean checkConfig() {
-        if (brokerConfig == null) {
+        if (bridgeConfig == null) {
             return false;
         }
-        BridgeConfig.MetricsExporterType exporterType = brokerConfig.getMetricsExporterType();
+        BridgeConfig.MetricsExporterType exporterType = bridgeConfig.getMetricsExporterType();
         if (!exporterType.isEnable()) {
             return false;
         }
 
         switch (exporterType) {
             case OTLP_GRPC:
-                return StringUtils.isNotBlank(brokerConfig.getMetricsGrpcExporterTarget());
+                return StringUtils.isNotBlank(bridgeConfig.getMetricsGrpcExporterTarget());
             case PROM:
                 return true;
             case LOG:
@@ -111,7 +100,7 @@ public class BridgeMetricsManager  {
     }
 
     public void init() {
-        BridgeConfig.MetricsExporterType metricsExporterType = brokerConfig.getMetricsExporterType();
+        BridgeConfig.MetricsExporterType metricsExporterType = bridgeConfig.getMetricsExporterType();
         if (metricsExporterType == BridgeConfig.MetricsExporterType.DISABLE) {
             return;
         }
@@ -121,7 +110,7 @@ public class BridgeMetricsManager  {
             return;
         }
 
-        String labels = brokerConfig.getMetricsLabel();
+        String labels = bridgeConfig.getMetricsLabel();
         if (StringUtils.isNotBlank(labels)) {
             List<String> kvPairs = Splitter.on(',').omitEmptyStrings().splitToList(labels);
             for (String item : kvPairs) {
@@ -133,7 +122,7 @@ public class BridgeMetricsManager  {
                 LABEL_MAP.put(split[0], split[1]);
             }
         }
-        if (brokerConfig.isMetricsInDelta()) {
+        if (bridgeConfig.isMetricsInDelta()) {
             LABEL_MAP.put(LABEL_AGGREGATION, AGGREGATION_DELTA);
         }
 
@@ -141,22 +130,22 @@ public class BridgeMetricsManager  {
             .setResource(Resource.empty());
 
         if (metricsExporterType == BridgeConfig.MetricsExporterType.OTLP_GRPC) {
-            String endpoint = brokerConfig.getMetricsGrpcExporterTarget();
+            String endpoint = bridgeConfig.getMetricsGrpcExporterTarget();
             if (!endpoint.startsWith("http")) {
                 endpoint = "https://" + endpoint;
             }
             OtlpGrpcMetricExporterBuilder metricExporterBuilder = OtlpGrpcMetricExporter.builder()
                 .setEndpoint(endpoint)
-                .setTimeout(brokerConfig.getMetricGrpcExporterTimeOutInMills(), TimeUnit.MILLISECONDS)
+                .setTimeout(bridgeConfig.getMetricGrpcExporterTimeOutInMills(), TimeUnit.MILLISECONDS)
                 .setAggregationTemporalitySelector(type -> {
-                    if (brokerConfig.isMetricsInDelta() &&
+                    if (bridgeConfig.isMetricsInDelta() &&
                         (type == InstrumentType.COUNTER || type == InstrumentType.OBSERVABLE_COUNTER || type == InstrumentType.HISTOGRAM)) {
                         return AggregationTemporality.DELTA;
                     }
                     return AggregationTemporality.CUMULATIVE;
                 });
 
-            String headers = brokerConfig.getMetricsGrpcExporterHeader();
+            String headers = bridgeConfig.getMetricsGrpcExporterHeader();
             if (StringUtils.isNotBlank(headers)) {
                 Map<String, String> headerMap = new HashMap<>();
                 List<String> kvPairs = Splitter.on(',').omitEmptyStrings().splitToList(headers);
@@ -174,20 +163,20 @@ public class BridgeMetricsManager  {
             metricExporter = metricExporterBuilder.build();
 
             periodicMetricReader = PeriodicMetricReader.builder(metricExporter)
-                .setInterval(brokerConfig.getMetricGrpcExporterIntervalInMills(), TimeUnit.MILLISECONDS)
+                .setInterval(bridgeConfig.getMetricGrpcExporterIntervalInMills(), TimeUnit.MILLISECONDS)
                 .build();
 
             providerBuilder.registerMetricReader(periodicMetricReader);
         }
 
         if (metricsExporterType == BridgeConfig.MetricsExporterType.PROM) {
-            String promExporterHost = brokerConfig.getMetricsPromExporterHost();
+            String promExporterHost = bridgeConfig.getMetricsPromExporterHost();
             if (StringUtils.isBlank(promExporterHost)) {
-                promExporterHost = brokerConfig.getEventBridgeAddress();
+                promExporterHost = bridgeConfig.getEventBridgeAddress();
             }
             prometheusHttpServer = PrometheusHttpServer.builder()
                 .setHost(promExporterHost)
-                .setPort(brokerConfig.getMetricsPromExporterPort())
+                .setPort(bridgeConfig.getMetricsPromExporterPort())
                 .build();
             providerBuilder.registerMetricReader(prometheusHttpServer);
         }
@@ -195,23 +184,23 @@ public class BridgeMetricsManager  {
         if (metricsExporterType == BridgeConfig.MetricsExporterType.LOG) {
             SLF4JBridgeHandler.removeHandlersForRootLogger();
             SLF4JBridgeHandler.install();
-            loggingMetricExporter = LoggingMetricExporter.create(brokerConfig.isMetricsInDelta() ? AggregationTemporality.DELTA : AggregationTemporality.CUMULATIVE);
+            loggingMetricExporter = LoggingMetricExporter.create(bridgeConfig.isMetricsInDelta() ? AggregationTemporality.DELTA : AggregationTemporality.CUMULATIVE);
             java.util.logging.Logger.getLogger(LoggingMetricExporter.class.getName()).setLevel(java.util.logging.Level.FINEST);
             periodicMetricReader = PeriodicMetricReader.builder(loggingMetricExporter)
-                .setInterval(brokerConfig.getMetricLoggingExporterIntervalInMills(), TimeUnit.MILLISECONDS)
+                .setInterval(bridgeConfig.getMetricLoggingExporterIntervalInMills(), TimeUnit.MILLISECONDS)
                 .build();
             providerBuilder.registerMetricReader(periodicMetricReader);
         }
 
         registerMetricsView(providerBuilder);
 
-        brokerMeter = OpenTelemetrySdk.builder()
+        bridgeMeter = OpenTelemetrySdk.builder()
             .setMeterProvider(providerBuilder.build())
             .build()
             .getMeter(OPEN_TELEMETRY_METER_NAME);
 
-        initStatsMetrics();
         initRequestMetrics();
+        initRuleMetrics(bridgeMeter);
     }
 
     private void registerMetricsView(SdkMeterProviderBuilder providerBuilder) {
@@ -238,50 +227,57 @@ public class BridgeMetricsManager  {
         }
     }
 
-    private void initStatsMetrics() {
 
-        BlockingDeque<Integer> eventTargetQueue = new LinkedBlockingDeque<>(100);
-        BlockingDeque<Integer> eventRuleQueue = new LinkedBlockingDeque<>(1000);
-        BlockingDeque<Integer> eventSinkQueue = new LinkedBlockingDeque(1000);
-        processorWatermark = brokerMeter.gaugeBuilder(GAUGE_PROCESSOR_WATERMARK)
-            .setDescription("Request processor watermark")
+    public <T> void initTriggerMetrics(List<T> eventTargetQueue, String label) {
+
+        targetGauge = bridgeMeter.gaugeBuilder(GAUGE_PROCESSOR_GAUGE)
+            .setDescription("Request processor gauge")
             .ofLongs()
             .buildWithCallback(measurement -> {
-                measurement.record(eventTargetQueue.size(), newAttributesBuilder().put(LABEL_PROCESSOR, "send").build());
-                measurement.record(eventRuleQueue.size(), newAttributesBuilder().put(LABEL_PROCESSOR, "async_put").build());
-                measurement.record(eventSinkQueue.size(), newAttributesBuilder().put(LABEL_PROCESSOR, "pull").build());
+                measurement.record(eventTargetQueue.size(), newAttributesBuilder().put(label, "target").build());
             });
+    }
+    
+    public <T> void initRuleMetrics(List<T> eventRuleQueue, String label) {
+        ruleGauge = bridgeMeter.gaugeBuilder(RULE_QUEUE_GAUGE)
+                .setDescription("Request processor gauge")
+                .ofLongs()
+                .buildWithCallback(measurement -> {
+                    measurement.record(eventRuleQueue.size(), newAttributesBuilder().put(label, "rule").build());
+                });
+
     }
 
     private void initRequestMetrics() {
-        messagesInTotal = brokerMeter.counterBuilder(COUNTER_MESSAGES_IN_TOTAL)
+        messagesInTotal = bridgeMeter.counterBuilder(COUNTER_MESSAGES_IN_TOTAL)
             .setDescription("Total number of incoming messages")
             .build();
 
-        messagesOutTotal = brokerMeter.counterBuilder(COUNTER_MESSAGES_OUT_TOTAL)
+        messagesOutTotal = bridgeMeter.counterBuilder(COUNTER_MESSAGES_OUT_TOTAL)
             .setDescription("Total number of outgoing messages")
             .build();
 
-        throughputInTotal = brokerMeter.counterBuilder(COUNTER_THROUGHPUT_IN_TOTAL)
+        throughputInTotal = bridgeMeter.counterBuilder(COUNTER_THROUGHPUT_IN_TOTAL)
             .setDescription("Total traffic of incoming messages")
             .build();
 
-        throughputOutTotal = brokerMeter.counterBuilder(COUNTER_THROUGHPUT_OUT_TOTAL)
+        throughputOutTotal = bridgeMeter.counterBuilder(COUNTER_THROUGHPUT_OUT_TOTAL)
             .setDescription("Total traffic of outgoing messages")
             .build();
 
-        messageSize = brokerMeter.histogramBuilder(HISTOGRAM_MESSAGE_SIZE)
+        messageSize = bridgeMeter.histogramBuilder(HISTOGRAM_MESSAGE_SIZE)
             .setDescription("Incoming messages size")
             .ofLongs()
             .build();
     }
 
-    public static void initMetrics(Meter meter) {
+    public static void initRuleMetrics(Meter meter) {
         invokeLatency = meter.histogramBuilder(HISTOGRAM_RPC_LATENCY)
-                .setDescription("Rpc latency")
+                .setDescription("invoke latency")
                 .setUnit("milliseconds")
                 .ofLongs()
                 .build();
+
     }
 
     public static List<Pair<InstrumentSelector, View>> getMetricsView() {
@@ -308,16 +304,16 @@ public class BridgeMetricsManager  {
 
 
     public void shutdown() {
-        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.OTLP_GRPC) {
+        if (bridgeConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.OTLP_GRPC) {
             periodicMetricReader.forceFlush();
             periodicMetricReader.shutdown();
             metricExporter.shutdown();
         }
-        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.PROM) {
+        if (bridgeConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.PROM) {
             prometheusHttpServer.forceFlush();
             prometheusHttpServer.shutdown();
         }
-        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.LOG) {
+        if (bridgeConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.LOG) {
             periodicMetricReader.forceFlush();
             periodicMetricReader.shutdown();
             loggingMetricExporter.shutdown();
