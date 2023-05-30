@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.eventbridge.domain.model.run;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import java.util.Map;
@@ -29,21 +30,25 @@ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.transform.TransformParam;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+
 import static org.apache.rocketmq.eventbridge.config.EventBridgeConstants.ACCOUNT_ID_KEY;
 import static org.apache.rocketmq.eventbridge.config.EventBridgeConstants.EVENT_BUS_NAME_KEY;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.EventTargetAlreadyExist;
 import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.EventTargetNotExist;
+
 @Service
 public class EventTargetRunnerService extends AbstractRunnerService {
     private final EventTargetRunnerRepository eventTargetRunnerRepository;
     private final TargetRunnerAPI targetRunnerAPI;
     private final EventTargetClassService eventTargetClassService;
+
     public EventTargetRunnerService(EventTargetRunnerRepository eventTargetRunnerRepository,
         TargetRunnerAPI targetRunnerAPI, EventTargetClassService eventTargetClassService) {
         this.eventTargetRunnerRepository = eventTargetRunnerRepository;
         this.targetRunnerAPI = targetRunnerAPI;
         this.eventTargetClassService = eventTargetClassService;
     }
+
     public boolean createEventTargetRunner(String accountId, String eventBusName, String eventRuleName,
         EventTarget eventTarget, String filterPattern) {
         try {
@@ -64,6 +69,7 @@ public class EventTargetRunnerService extends AbstractRunnerService {
         }
         return true;
     }
+
     public boolean deleteTargetRunner(String accountId, String eventBusName, String eventRuleName,
         String eventTargetName) {
         if (Strings.isNullOrEmpty(eventTargetName)) {
@@ -76,6 +82,7 @@ public class EventTargetRunnerService extends AbstractRunnerService {
         eventTargetRunnerRepository.deleteEventTargetRunner(accountId, eventBusName, eventRuleName, eventTargetName);
         return true;
     }
+
     public boolean updateTargetRunner(String accountId, String eventBusName, String eventRuleName,
         EventTarget eventTarget, String filterPattern) {
         this.checkExist(accountId, eventBusName, eventRuleName, eventTarget.getName());
@@ -93,6 +100,7 @@ public class EventTargetRunnerService extends AbstractRunnerService {
             eventTarget.getConfig(), eventTarget.getRunOptions(), runContext);
         return true;
     }
+
     public EventTargetRunner getEventTargetRunner(String accountId, String eventBusName, String eventRuleName,
         String eventTargetName) {
         EventTargetRunner eventTargetRunner = eventTargetRunnerRepository.getEventTargetRunner(accountId, eventBusName,
@@ -101,25 +109,40 @@ public class EventTargetRunnerService extends AbstractRunnerService {
         eventTargetRunner.setStatus(status);
         return eventTargetRunner;
     }
+
     public boolean pause(String accountId, String eventBusName, String eventRuleName,
         String eventTargetName) {
+        return eventTargetRunnerRepository.deleteEventTargetRunner(accountId, eventBusName, eventRuleName,
+            eventTargetName);
+    }
+
+    public boolean start(String accountId, String eventBusName, String eventRuleName, EventTarget eventTarget,
+        String filterPattern) {
         EventTargetRunner eventTargetRunner = eventTargetRunnerRepository.getEventTargetRunner(accountId, eventBusName,
-            eventRuleName, eventTargetName);
-        targetRunnerAPI.pause(eventTargetRunner.getRunContext());
+            eventRuleName, eventTarget.getName());
+        if (eventTargetRunner == null || Strings.isNullOrEmpty(eventTargetRunner.getRunContext())) {
+            Component source = this.buildDefaultSourceComponent(accountId, eventBusName);
+            Component target = eventTargetClassService.renderConfig(accountId, eventTarget.getClassName(),
+                eventTarget.getConfig());
+            Map<String, TransformParam> targetTransform = eventTargetClassService.renderTargetTransform(accountId,
+                eventTarget.getClassName(), eventTarget.getConfig());
+            String runContext = targetRunnerAPI.createAndStartEventTargetRunner(accountId,
+                this.buildRunnerName(accountId, eventBusName, eventRuleName, eventTarget.getName()), source, target,
+                filterPattern, targetTransform, eventTarget.getRunOptions());
+            eventTargetRunnerRepository.createTargetRunner(accountId, eventBusName, eventRuleName,
+                eventTarget.getName(), eventTarget.getClassName(), eventTarget.getConfig(),
+                eventTarget.getRunOptions(), runContext);
+        }
         return true;
     }
-    public boolean start(String accountId, String eventBusName, String eventRuleName, String eventTargetName) {
-        EventTargetRunner eventTargetRunner = eventTargetRunnerRepository.getEventTargetRunner(accountId, eventBusName,
-            eventRuleName, eventTargetName);
-        targetRunnerAPI.start(eventTargetRunner.getRunContext());
-        return true;
-    }
+
     private Component buildDefaultSourceComponent(String accountId, String eventBusName) {
         Map<String, Object> config = Maps.newHashMap();
         config.put(EVENT_BUS_NAME_KEY, eventBusName);
         config.put(ACCOUNT_ID_KEY, accountId);
         return new Component(this.buildDefaultComponentName(), config);
     }
+
     public void checkExist(String accountId, String eventBusName, String eventRuleName, String eventTargetName) {
         EventTargetRunner eventTargetRunner = this.eventTargetRunnerRepository.getEventTargetRunner(accountId,
             eventBusName, eventRuleName, eventTargetName);

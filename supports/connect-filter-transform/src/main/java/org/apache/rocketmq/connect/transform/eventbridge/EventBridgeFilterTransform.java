@@ -34,7 +34,6 @@ public class EventBridgeFilterTransform implements io.openmessaging.connector.ap
 
     @Override
     public ConnectRecord doTransform(ConnectRecord record) {
-        System.out.println("Start to filter transform:::::::::::::::::");
         if (!evaluator.evaluateData(new Gson().toJson(record.getData()))) {
             return null;
         } else if (!evaluator.evaluateSpecAttr(this.buildSpecAttr(record))) {
@@ -42,7 +41,6 @@ public class EventBridgeFilterTransform implements io.openmessaging.connector.ap
         } else if (!evaluator.evaluateExtensionAttr(this.buildExtensionAttr(record))) {
             return null;
         } else {
-            System.out.println("end to filter transform:::::::::::::::::");
             return record;
         }
     }
