@@ -47,6 +47,7 @@ import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consume
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer.LitePullConsumerImpl;
 import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.metrics.BridgeConfig;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
@@ -85,6 +86,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private Integer pullBatchSize;
 
     private ClientConfig clientConfig;
+    private BridgeConfig bridgeConfig;
     private SessionCredentials sessionCredentials;
     private String socksProxy;
     private Map<String, ConsumeWorker> consumeWorkerMap = new ConcurrentHashMap<>();
@@ -115,6 +117,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             default:
                 break;
         }
+    }
+
+    @Override
+    public BridgeConfig fetchMetricsConf() {
+        return bridgeConfig;
     }
 
     @Override
@@ -176,6 +183,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             String socks5UserName = properties.getProperty("rocketmq.consumer.socks5UserName");
             String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
             String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
+            String metricsAddress = properties.getProperty("metrics.endpoint.address");
+            String metricsCollectorMode = properties.getProperty("metrics.collector.mode");
 
             clientConfig.setNameSrvAddr(namesrvAddr);
             clientConfig.setConsumerGroup(StringUtils.isBlank(consumerGroup) ?
@@ -183,7 +192,12 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
                     AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
+
+            BridgeConfig bridgeConfig = new BridgeConfig();
+            bridgeConfig.setEventBridgeAddress(metricsAddress);
+            bridgeConfig.setMetricsExporterType(metricsCollectorMode);
             this.clientConfig = clientConfig;
+            this.bridgeConfig = bridgeConfig;
 
             if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
                 this.sessionCredentials = new SessionCredentials(accessKey, secretKey);

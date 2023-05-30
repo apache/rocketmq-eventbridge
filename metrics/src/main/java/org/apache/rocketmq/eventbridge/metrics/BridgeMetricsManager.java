@@ -1,6 +1,7 @@
 package org.apache.rocketmq.eventbridge.metrics;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,24 +40,25 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.AGGREGATION_DELTA;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.COUNTER_MESSAGES_IN_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.COUNTER_MESSAGES_OUT_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.COUNTER_THROUGHPUT_IN_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.COUNTER_THROUGHPUT_OUT_TOTAL;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.GAUGE_PROCESSOR_WATERMARK;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.HISTOGRAM_MESSAGE_SIZE;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.LABEL_AGGREGATION;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.LABEL_PROCESSOR;
-import static org.apache.rocketmq.eventbridge.metrics.BrokerMetricsConstant.OPEN_TELEMETRY_METER_NAME;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.AGGREGATION_DELTA;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_MESSAGES_IN_TOTAL;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_MESSAGES_OUT_TOTAL;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_THROUGHPUT_IN_TOTAL;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.COUNTER_THROUGHPUT_OUT_TOTAL;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.GAUGE_PROCESSOR_WATERMARK;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.HISTOGRAM_MESSAGE_SIZE;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.HISTOGRAM_RPC_LATENCY;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.LABEL_AGGREGATION;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.LABEL_PROCESSOR;
+import static org.apache.rocketmq.eventbridge.metrics.BridgeMetricsConstant.OPEN_TELEMETRY_METER_NAME;
 
 /**
  * 待接入Runtimer或者RocketMQEventSubscriber
  */
-public class BrokerMetricsManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BrokerMetricsManager.class);
+public class BridgeMetricsManager  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeMetricsManager.class);
 
-    private final BrokerConfig brokerConfig;
+    private final BridgeConfig brokerConfig;
     private final static Map<String, String> LABEL_MAP = new HashMap<>();
     private OtlpGrpcMetricExporter metricExporter;
     private PeriodicMetricReader periodicMetricReader;
@@ -66,6 +69,9 @@ public class BrokerMetricsManager {
     // broker stats metrics
     public static ObservableLongGauge processorWatermark = new NopObservableLongGauge();
 
+    //invoke timeout
+    public static LongHistogram invokeLatency = new NopLongHistogram();
+
     // request metrics
     public static LongCounter messagesInTotal = new NopLongCounter();
     public static LongCounter messagesOutTotal = new NopLongCounter();
@@ -73,7 +79,7 @@ public class BrokerMetricsManager {
     public static LongCounter throughputOutTotal = new NopLongCounter();
     public static LongHistogram messageSize = new NopLongHistogram();
 
-    public BrokerMetricsManager(BrokerConfig brokerConfig) {
+    public BridgeMetricsManager(BridgeConfig brokerConfig) {
         this.brokerConfig = brokerConfig;
     }
 
@@ -88,7 +94,7 @@ public class BrokerMetricsManager {
         if (brokerConfig == null) {
             return false;
         }
-        BrokerConfig.MetricsExporterType exporterType = brokerConfig.getMetricsExporterType();
+        BridgeConfig.MetricsExporterType exporterType = brokerConfig.getMetricsExporterType();
         if (!exporterType.isEnable()) {
             return false;
         }
@@ -104,9 +110,9 @@ public class BrokerMetricsManager {
         return false;
     }
 
-    private void init() {
-        BrokerConfig.MetricsExporterType metricsExporterType = brokerConfig.getMetricsExporterType();
-        if (metricsExporterType == BrokerConfig.MetricsExporterType.DISABLE) {
+    public void init() {
+        BridgeConfig.MetricsExporterType metricsExporterType = brokerConfig.getMetricsExporterType();
+        if (metricsExporterType == BridgeConfig.MetricsExporterType.DISABLE) {
             return;
         }
 
@@ -134,7 +140,7 @@ public class BrokerMetricsManager {
         SdkMeterProviderBuilder providerBuilder = SdkMeterProvider.builder()
             .setResource(Resource.empty());
 
-        if (metricsExporterType == BrokerConfig.MetricsExporterType.OTLP_GRPC) {
+        if (metricsExporterType == BridgeConfig.MetricsExporterType.OTLP_GRPC) {
             String endpoint = brokerConfig.getMetricsGrpcExporterTarget();
             if (!endpoint.startsWith("http")) {
                 endpoint = "https://" + endpoint;
@@ -174,7 +180,7 @@ public class BrokerMetricsManager {
             providerBuilder.registerMetricReader(periodicMetricReader);
         }
 
-        if (metricsExporterType == BrokerConfig.MetricsExporterType.PROM) {
+        if (metricsExporterType == BridgeConfig.MetricsExporterType.PROM) {
             String promExporterHost = brokerConfig.getMetricsPromExporterHost();
             if (StringUtils.isBlank(promExporterHost)) {
                 promExporterHost = brokerConfig.getEventBridgeAddress();
@@ -186,7 +192,7 @@ public class BrokerMetricsManager {
             providerBuilder.registerMetricReader(prometheusHttpServer);
         }
 
-        if (metricsExporterType == BrokerConfig.MetricsExporterType.LOG) {
+        if (metricsExporterType == BridgeConfig.MetricsExporterType.LOG) {
             SLF4JBridgeHandler.removeHandlersForRootLogger();
             SLF4JBridgeHandler.install();
             loggingMetricExporter = LoggingMetricExporter.create(brokerConfig.isMetricsInDelta() ? AggregationTemporality.DELTA : AggregationTemporality.CUMULATIVE);
@@ -227,7 +233,7 @@ public class BrokerMetricsManager {
             .build();
         providerBuilder.registerView(messageSizeSelector, messageSizeView);
 
-        for (Pair<InstrumentSelector, View> selectorViewPair : RemotingMetricsManager.getMetricsView()) {
+        for (Pair<InstrumentSelector, View> selectorViewPair : getMetricsView()) {
             providerBuilder.registerView(selectorViewPair.getObject1(), selectorViewPair.getObject2());
         }
     }
@@ -270,18 +276,48 @@ public class BrokerMetricsManager {
             .build();
     }
 
+    public static void initMetrics(Meter meter) {
+        invokeLatency = meter.histogramBuilder(HISTOGRAM_RPC_LATENCY)
+                .setDescription("Rpc latency")
+                .setUnit("milliseconds")
+                .ofLongs()
+                .build();
+    }
+
+    public static List<Pair<InstrumentSelector, View>> getMetricsView() {
+        List<Double> rpcCostTimeBuckets = Arrays.asList(
+                (double) Duration.ofMillis(1).toMillis(),
+                (double) Duration.ofMillis(3).toMillis(),
+                (double) Duration.ofMillis(5).toMillis(),
+                (double) Duration.ofMillis(7).toMillis(),
+                (double) Duration.ofMillis(10).toMillis(),
+                (double) Duration.ofMillis(100).toMillis(),
+                (double) Duration.ofSeconds(1).toMillis(),
+                (double) Duration.ofSeconds(2).toMillis(),
+                (double) Duration.ofSeconds(3).toMillis()
+        );
+        InstrumentSelector selector = InstrumentSelector.builder()
+                .setType(InstrumentType.HISTOGRAM)
+                .setName(HISTOGRAM_RPC_LATENCY)
+                .build();
+        View view = View.builder()
+                .setAggregation(Aggregation.explicitBucketHistogram(rpcCostTimeBuckets))
+                .build();
+        return Lists.newArrayList(new Pair<>(selector, view));
+    }
+
 
     public void shutdown() {
-        if (brokerConfig.getMetricsExporterType() == BrokerConfig.MetricsExporterType.OTLP_GRPC) {
+        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.OTLP_GRPC) {
             periodicMetricReader.forceFlush();
             periodicMetricReader.shutdown();
             metricExporter.shutdown();
         }
-        if (brokerConfig.getMetricsExporterType() == BrokerConfig.MetricsExporterType.PROM) {
+        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.PROM) {
             prometheusHttpServer.forceFlush();
             prometheusHttpServer.shutdown();
         }
-        if (brokerConfig.getMetricsExporterType() == BrokerConfig.MetricsExporterType.LOG) {
+        if (brokerConfig.getMetricsExporterType() == BridgeConfig.MetricsExporterType.LOG) {
             periodicMetricReader.forceFlush();
             periodicMetricReader.shutdown();
             loggingMetricExporter.shutdown();

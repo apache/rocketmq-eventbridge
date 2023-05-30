@@ -1,6 +1,6 @@
 package org.apache.rocketmq.eventbridge.metrics;
 
-public class BrokerConfig {
+public class BridgeConfig {
 
     public enum MetricsExporterType {
         DISABLE(0),

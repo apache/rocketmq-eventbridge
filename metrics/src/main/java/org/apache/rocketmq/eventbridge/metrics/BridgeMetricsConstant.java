@@ -1,6 +1,6 @@
 package org.apache.rocketmq.eventbridge.metrics;
 
-public class BrokerMetricsConstant {
+public class BridgeMetricsConstant {
     public static final String OPEN_TELEMETRY_METER_NAME = "broker-meter";
 
     public static final String GAUGE_PROCESSOR_WATERMARK = "rocketmq_processor_watermark";
@@ -21,6 +21,9 @@ public class BrokerMetricsConstant {
     public static final String GAUGE_CONSUMER_QUEUEING_LATENCY = "rocketmq_consumer_queueing_latency";
     public static final String GAUGE_CONSUMER_READY_MESSAGES = "rocketmq_consumer_ready_messages";
     public static final String COUNTER_CONSUMER_SEND_TO_DLQ_MESSAGES_TOTAL = "rocketmq_send_to_dlq_messages_total";
+
+    /** eventbridge process message latency**/
+    public static final String HISTOGRAM_RPC_LATENCY = "process_latency";
 
     public static final String LABEL_CLUSTER_NAME = "cluster";
     public static final String LABEL_NODE_TYPE = "node_type";

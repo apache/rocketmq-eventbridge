@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime;
 
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.EventBusListener;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.EventMonitor;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.EventRuleTransfer;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.EventTargetTrigger;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
@@ -63,6 +64,7 @@ public class Runtime {
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
+        new EventMonitor(eventSubscriber).start();
         new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
         new EventRuleTransfer(circulatorContext, offsetManager, errorHandler).start();
         new EventTargetTrigger(circulatorContext, offsetManager, errorHandler).start();
