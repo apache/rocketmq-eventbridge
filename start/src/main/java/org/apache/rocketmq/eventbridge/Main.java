@@ -29,4 +29,3 @@ public class Main {
         app.run(args);
     }
 }
-
