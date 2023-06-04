@@ -37,5 +37,4 @@ public class RuntimeConfiguration {
                 return new TargetRunnerConfigOnFileObserver();
         }
     }
-
 }

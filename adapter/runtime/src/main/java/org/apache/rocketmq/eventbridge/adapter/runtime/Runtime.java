@@ -66,9 +66,9 @@ public class Runtime {
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
-        new EventBusListener(circulatorContext, eventSubscriber, errorHandler).start();
-        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler,absRateEstimator).start();
-        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler,absRateEstimator).start();
+        new EventBusListener(circulatorContext, eventSubscriber, errorHandler,runnerConfigObserver);
+        new EventRuleTransfer(circulatorContext, offsetManager, errorHandler,runnerConfigObserver,absRateEstimator);
+        new EventTargetTrigger(circulatorContext, offsetManager, errorHandler,runnerConfigObserver,absRateEstimator);
         startRuntimer();
     }
 

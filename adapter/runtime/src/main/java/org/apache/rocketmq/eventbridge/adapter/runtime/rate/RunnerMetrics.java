@@ -20,30 +20,24 @@ public class RunnerMetrics {
 
     private String runnerName;
 
-    // 发送窗口
+    // 发送窗口 TPS
     private volatile int cwnd = 1;
+    // cwnd per millisecond
+    private volatile long cwndPerMillisecond = 1000;
+
     // 接收窗口
     private volatile int rwnd;
+    // crwnd millisecond
+    private volatile long rwndPerMillisecond = 1000;
     // 慢启动门限
     private volatile int ssthresh = 20;
 
-    // 速率
-    private volatile int rate;
-
-    // take 次数
-    private volatile int takeTimes;
 
     public RunnerMetrics() {
     }
 
     public RunnerMetrics(String runnerName) {
         this.runnerName = runnerName;
-    }
-
-    public RunnerMetrics(String runnerName, int cwnd, int ssthresh) {
-        this.runnerName = runnerName;
-        this.cwnd = cwnd;
-        this.ssthresh = ssthresh;
     }
 
     public String getRunnerName() {
@@ -62,12 +56,28 @@ public class RunnerMetrics {
         this.cwnd = cwnd;
     }
 
+    public long getCwndMillisecond(int batchSize) {
+        return cwndPerMillisecond * (batchSize / cwnd);
+    }
+
+    public void setCwndPerMillisecond(long cwndPerMillisecond) {
+        this.cwndPerMillisecond = cwndPerMillisecond;
+    }
+
     public int getRwnd() {
         return rwnd;
     }
 
     public void setRwnd(int rwnd) {
         this.rwnd = rwnd;
+    }
+
+    public long getRwndPerMillisecond() {
+        return rwndPerMillisecond;
+    }
+
+    public void setRwndPerMillisecond(int rwndPerMillisecond) {
+        this.rwndPerMillisecond = rwndPerMillisecond;
     }
 
     public int getSsthresh() {
@@ -77,21 +87,4 @@ public class RunnerMetrics {
     public void setSsthresh(int ssthresh) {
         this.ssthresh = ssthresh;
     }
-
-    public int getRate() {
-        return rate;
-    }
-
-    public void setRate(int rate) {
-        this.rate = rate;
-    }
-
-    public int getTakeTimes() {
-        return takeTimes;
-    }
-
-    public void setTakeTimes(int takeTimes) {
-        this.takeTimes = takeTimes;
-    }
-
 }

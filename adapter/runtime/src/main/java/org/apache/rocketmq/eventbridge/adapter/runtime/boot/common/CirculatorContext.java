@@ -73,10 +73,6 @@ public class CirculatorContext implements TargetRunnerListener {
 
     private Map<String/*RunnerName*/, ExecutorService> pusherExecutorMap = new ConcurrentHashMap<>(10);
 
-    private BlockingQueue<String/*runnerName*/> eventBusQueue = new LinkedBlockingQueue<>(1000);
-    private BlockingQueue<String/*runnerName*/> eventRuleQueue = new LinkedBlockingQueue<>(1000);
-    private BlockingQueue<String/*runnerName*/> eventTargetQueue = new LinkedBlockingQueue<>(1000);
-
     private Map<String, RunnerMetrics> transMetricsMap = new ConcurrentHashMap<>();
     private Map<String, RunnerMetrics> pushMetricsMap = new ConcurrentHashMap<>();
 
@@ -258,10 +254,6 @@ public class CirculatorContext implements TargetRunnerListener {
                 // 当添加新的target时触发拉取消息
                 if (!pushMetricsMap.containsKey(runnerName)) {
                     publishPushMetrics(new RunnerMetrics(runnerName));
-                    // 当添加新的target时添加到bus的拉取任务队列中
-                    eventBusQueue.offer(targetRunnerConfig.getName());
-                    eventRuleQueue.offer(targetRunnerConfig.getName());
-                    eventTargetQueue.offer(targetRunnerConfig.getName());
                 }
 
                 if (logger.isInfoEnabled()) {
@@ -327,88 +319,6 @@ public class CirculatorContext implements TargetRunnerListener {
         return null;
     }
 
-
-    /**
-     * take should transform runner name
-     *
-     * @return
-     */
-    public String takeBusRunnerName() {
-        if (eventBusQueue.isEmpty()) {
-            return null;
-        }
-        try {
-            return eventBusQueue.take();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * take can push runner name
-     *
-     * @return
-     */
-    public String takeRuleRunnerName() {
-        if (eventRuleQueue.isEmpty()) {
-            return null;
-        }
-        try {
-            return eventRuleQueue.take();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * take should pull data runner name
-     *
-     * @return
-     */
-    public String takeTargetRunnerName() {
-        if (eventTargetQueue.isEmpty()) {
-            return null;
-        }
-        try {
-            return eventTargetQueue.take();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * offer has pulled data runnerMetrics
-     *
-     * @param runnerName
-     * @return
-     */
-    public boolean offerBusQueue(String runnerName) {
-        return eventBusQueue.offer(runnerName);
-    }
-
-    /**
-     * offer transform completed RunnerMetrics
-     *
-     * @param runnerName
-     * @return
-     */
-    public boolean offerRuleQueue(String runnerName) {
-        return eventRuleQueue.offer(runnerName);
-    }
-
-    /**
-     * offer push completed runner name
-     *
-     * @param runnerName
-     * @return
-     */
-    public boolean offerTargetQueue(String runnerName) {
-        return eventTargetQueue.offer(runnerName);
-    }
-
     public void publishTransformMetrics(RunnerMetrics runnerMetrics) {
         transMetricsMap.put(runnerMetrics.getRunnerName(), runnerMetrics);
     }
@@ -456,5 +366,10 @@ public class CirculatorContext implements TargetRunnerListener {
             exception.printStackTrace();
         }
         return null;
+    }
+
+    public int getExecutorServiceWorkerRemainingCapacity(String runnerName) {
+        int remainingCapacity = ((ThreadPoolExecutor) pusherExecutorMap.get(runnerName)).getQueue().remainingCapacity();
+        return remainingCapacity;
     }
 }

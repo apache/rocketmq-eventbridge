@@ -53,6 +53,9 @@ public class EstimateMetrics {
     private boolean error;
     // 用于通过批次速率等计算方法的计算指标
 
+    // 线程池任务队列当前剩余容量
+    private int workerQueueRemainingCapacity = -1;
+
     public EstimateMetrics(String runnerName, CommonTypeEnum commonType) {
         this.runnerName = runnerName;
         this.commonType = commonType;

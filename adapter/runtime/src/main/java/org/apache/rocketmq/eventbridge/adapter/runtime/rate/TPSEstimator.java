@@ -24,33 +24,37 @@ public class TPSEstimator extends AbsRateEstimator {
     @Override
     public RunnerMetrics compute(EstimateMetrics estimateMetrics) {
         // 发送窗口
-        int cwnd =0;
+        int cwnd = 0;
         // 接收窗
         int rwnd = 0;
+        // 慢启动阈值
+        int ssthresh = estimateMetrics.getSsthresh();
+
+        int remainingCapacity = estimateMetrics.getWorkerQueueRemainingCapacity();
+
+        // 批次数
+        int batchSize = estimateMetrics.getBatchSize();
+        // 批次耗费时间
+        long costTime = estimateMetrics.getEndTimestamp() - estimateMetrics.getStartTimestamp();
 
         switch (estimateMetrics.getCommonType()) {
             case TRANS:
                 // 本身的转换速度及为推送窗口，此推送窗口被listener用于作为批次数
-                cwnd = (int) ((estimateMetrics.getEndTimestamp() - estimateMetrics.getStartTimestamp()) / (estimateMetrics.getBatchSize() * 1000));
+                cwnd = (int) ((batchSize * 1000) / costTime);
                 // pusher的推送窗口为transform 的接收窗口
                 rwnd = estimateMetrics.getRwnd();
                 break;
             case PUSHER:
                 // transform的推送窗口乘以转换器的个数（0=1）为pusher的推送窗口
                 cwnd = estimateMetrics.getCwnd();
-                // target的TPS为接收窗口
-                rwnd = (int) ((estimateMetrics.getEndTimestamp() - estimateMetrics.getStartTimestamp()) / (estimateMetrics.getBatchSize() * 1000));
+                // target的TPS为接收窗口 batchSize/per second
+                rwnd = (int) ((batchSize * 1000) / costTime);
                 break;
         }
 
-
-
-        // 慢启动阈值
-        int ssthresh = estimateMetrics.getSsthresh();
-
         // 是否超时，true超时，false未超时。超时阈值1s
-        boolean timeOut = ((estimateMetrics.getEndTimestamp() - estimateMetrics.getStartTimestamp()) / 1000) > 1;
-        if (estimateMetrics.isError()) {// 错误或者超时
+        boolean timeOut = (costTime / 1000) > 1;
+        if (estimateMetrics.isError() || (remainingCapacity > 0 && remainingCapacity < 10)) {// 错误或者超时
             cwnd = 1;
             ssthresh = Math.max(2, Math.min(estimateMetrics.getCwnd() / 2, rwnd));
         } else if (cwnd <= ssthresh) {// 慢启动
