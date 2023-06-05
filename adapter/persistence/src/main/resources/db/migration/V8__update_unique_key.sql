@@ -1,22 +1,22 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-ALTER TABLE `event_connection` DROP INDEX `name_uniq_key_event_connection`;
-ALTER TABLE `event_connection` ADD UNIQUE INDEX `name_uniq_key_event_connection`(`name`, `account_id`) USING BTREE;
+ALTER TABLE `event_connection`
+DROP INDEX `name_uniq_key`,
+ADD UNIQUE INDEX `name_uniq_key`(`name`, `account_id`) USING BTREE;
 
-ALTER TABLE `event_api_destination` DROP INDEX `name_uniq_key_event_api_destination`;
-ALTER TABLE `event_api_destination` ADD UNIQUE INDEX `name_uniq_key_event_api_destination`(`name`, `account_id`) USING BTREE;
+ALTER TABLE `event_api_destination`
+DROP INDEX `name_uniq_key`,
+ADD UNIQUE INDEX `name_uniq_key`(`name`, `account_id`) USING BTREE;
