@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Component
 @Order(value = 3)
@@ -47,7 +48,12 @@ public class ValidateFilter implements WebFilter {
 
     @PostConstruct
     public void init() {
-        Arrays.stream(validationName.split(",")).forEach(action->validations.add(ValidationServiceFactory.getInstance(action)));
+        List<String> validationNames = Arrays.stream(validationName.split(",")).collect(Collectors.toList());
+        boolean match = Arrays.stream(validationName.split(",")).allMatch(validationName-> validationName.equals("default"));
+        if (!match) {
+            validationNames.add(0, "default");
+        }
+        validationNames.forEach(action->validations.add(ValidationServiceFactory.getInstance(action)));
     }
 
     @Override
