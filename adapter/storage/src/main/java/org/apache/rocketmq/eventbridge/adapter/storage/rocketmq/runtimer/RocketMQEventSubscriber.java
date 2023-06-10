@@ -217,7 +217,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initConsumeWorkers() {
-        for (SubscribeRunnerKeys subscribeRunnerKeys : runnerConfigObserver.getSubscribeRunnerKeys()) {
+        Set<SubscribeRunnerKeys> subscribeRunnerKeysSet =  runnerConfigObserver.getSubscribeRunnerKeys();
+        if(subscribeRunnerKeysSet == null || subscribeRunnerKeysSet.isEmpty()){
+            return;
+        }
+        for (SubscribeRunnerKeys subscribeRunnerKeys : subscribeRunnerKeysSet) {
             LitePullConsumer litePullConsumer = initLitePullConsumer(subscribeRunnerKeys);
             ConsumeWorker consumeWorker = new ConsumeWorker(litePullConsumer, subscribeRunnerKeys.getRunnerName());
             consumeWorkerMap.put(subscribeRunnerKeys.getRunnerName(), consumeWorker);

@@ -21,18 +21,22 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.enums.ConfigModeEn
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigObserver;
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigOnDBObserver;
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigOnFileObserver;
+import org.apache.rocketmq.eventbridge.domain.repository.EventTargetRepository;
+import org.apache.rocketmq.eventbridge.domain.repository.EventTargetRunnerRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 @Configuration
 public class RuntimeConfiguration {
 
     @Bean(name = "runnerConfigObserver")
-    public TargetRunnerConfigObserver targetRunnerConfigObserver(@Value("${runtime.config.mode}") String configMode) {
+    public TargetRunnerConfigObserver targetRunnerConfigObserver(@Value("${runtime.config.mode}") String configMode,
+        EventTargetRunnerRepository eventTargetRunnerRepository, EventTargetRepository eventTargetRepository) {
         switch (ConfigModeEnum.parse(configMode)) {
             case DB:
-                return new TargetRunnerConfigOnDBObserver();
+                return new TargetRunnerConfigOnDBObserver(eventTargetRunnerRepository, eventTargetRepository);
             default:
                 return new TargetRunnerConfigOnFileObserver();
         }
