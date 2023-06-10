@@ -48,7 +48,9 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
     @Autowired
     EventTargetRepository eventTargetRepository;
 
-    public TargetRunnerConfigOnDBObserver() {
+    public TargetRunnerConfigOnDBObserver(EventTargetRunnerRepository eventTargetRunnerRepository, EventTargetRepository eventTargetRepository) {
+        this.eventTargetRunnerRepository = eventTargetRunnerRepository;
+        this.eventTargetRepository = eventTargetRepository;
     }
 
     @Override

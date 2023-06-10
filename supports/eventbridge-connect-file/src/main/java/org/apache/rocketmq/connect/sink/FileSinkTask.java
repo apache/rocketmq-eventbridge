@@ -15,22 +15,36 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect;
+package org.apache.rocketmq.connect.sink;
 
-import com.google.gson.Gson;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.errors.ConnectException;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
-public class StandardSinkTask extends SinkTask {
+public class FileSinkTask extends SinkTask {
+    private String fileName = System.getProperty("user.home") + "/demo.eventbridge";
+    private PrintStream outputStream;
 
     @Override public void put(List<ConnectRecord> sinkRecords) throws ConnectException {
         if (sinkRecords == null || sinkRecords.isEmpty()) {
             return;
         }
-        sinkRecords.forEach(sinkRecord -> System.out.println(new Gson().toJson(sinkRecord)));
+        for (ConnectRecord connectRecord : sinkRecords) {
+            try {
+                outputStream.println(connectRecord.getData());
+            } catch (Throwable e) {
+                throw new ConnectException("Write record to file failed.", e);
+            }
+        }
+
     }
 
     @Override public void pause() {
@@ -46,10 +60,25 @@ public class StandardSinkTask extends SinkTask {
     }
 
     @Override public void init(KeyValue config) {
+        String inputFileName = config.getString(FileConstant.FILE_NAME);
+        if (inputFileName != null) {
+            fileName = inputFileName;
+        }
+        try {
+
+            outputStream = new PrintStream(
+                Files.newOutputStream(Paths.get(fileName), StandardOpenOption.CREATE, StandardOpenOption.APPEND),
+                false,
+                StandardCharsets.UTF_8.name());
+        } catch (IOException e) {
+            throw new ConnectException("Create outputStream: " + fileName + " for FileSinkTask failed", e);
+        }
 
     }
 
     @Override public void stop() {
-
+        if (outputStream != null) {
+            outputStream.close();
+        }
     }
 }

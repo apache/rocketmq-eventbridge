@@ -41,7 +41,7 @@ import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+//@Component
 public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfigObserver {
 
     private String pathName;
