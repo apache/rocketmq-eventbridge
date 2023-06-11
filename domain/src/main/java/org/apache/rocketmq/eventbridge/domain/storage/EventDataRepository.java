@@ -59,4 +59,11 @@ public interface EventDataRepository {
      */
     String getTopicName(String accountId, String eventBusName);
 
+    /**
+     * @param accountId
+     * @param eventBusName
+     * @return
+     */
+    String getTopicNameWithOutCache(String accountId, String eventBusName);
+
 }

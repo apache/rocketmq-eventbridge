@@ -52,6 +52,7 @@ import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
  * RocketMQ implement event subscriber
  */
 @Component
+@DependsOn("flyway")
 public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
@@ -122,7 +124,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         ArrayList<MessageExt> messages = new ArrayList<>();
         messageBuffer.drainTo(messages, pullBatchSize);
         if (CollectionUtils.isEmpty(messages)) {
-            logger.info("consumer poll message empty.");
+            logger.trace("consumer poll message empty.");
             return null;
         }
         List<ConnectRecord> connectRecords = Lists.newArrayList();
@@ -251,7 +253,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     }
 
     private String getTopicName(SubscribeRunnerKeys subscribeRunnerKeys) {
-        return eventDataRepository.getTopicName(subscribeRunnerKeys.getAccountId(), subscribeRunnerKeys.getEventBusName());
+        return eventDataRepository.getTopicNameWithOutCache(subscribeRunnerKeys.getAccountId(), subscribeRunnerKeys.getEventBusName());
     }
 
     private String createGroupName(String prefix) {

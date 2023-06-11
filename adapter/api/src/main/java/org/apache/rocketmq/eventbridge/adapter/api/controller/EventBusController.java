@@ -95,7 +95,7 @@ public class EventBusController {
                 paginationResult.getData()
                     .forEach(eventBus -> {
                         EventBusDTO eventBusDTO = new EventBusDTO();
-                        eventBusDTO.setEventBusName(eventBusDTO.getEventBusName());
+                        eventBusDTO.setEventBusName(eventBus.getName());
                         eventBusDTO.setDescription(eventBus.getDescription());
                         eventBuses.add(eventBusDTO);
                     });
