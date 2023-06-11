@@ -48,7 +48,8 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
     @Autowired
     EventTargetRepository eventTargetRepository;
 
-    public TargetRunnerConfigOnDBObserver(EventTargetRunnerRepository eventTargetRunnerRepository, EventTargetRepository eventTargetRepository) {
+    public TargetRunnerConfigOnDBObserver(EventTargetRunnerRepository eventTargetRunnerRepository,
+        EventTargetRepository eventTargetRepository) {
         this.eventTargetRunnerRepository = eventTargetRunnerRepository;
         this.eventTargetRepository = eventTargetRepository;
     }
@@ -56,7 +57,17 @@ public class TargetRunnerConfigOnDBObserver extends AbstractTargetRunnerConfigOb
     @Override
     @Transactional
     public Set<TargetRunnerConfig> getLatestTargetRunnerConfig() {
-        List<EventTargetRunner> eventTargetRunners = eventTargetRunnerRepository.listEventTargetRunners(null, null, null);
+        List<EventTargetRunner> eventTargetRunners = null;
+        try {
+            eventTargetRunners = eventTargetRunnerRepository.listEventTargetRunners(null, null, null);
+        } catch (Throwable e) {
+            if (e.getMessage().contains("not found")) {
+                return Sets.newHashSet();
+            }
+        }
+        if (eventTargetRunners == null || eventTargetRunners.isEmpty()) {
+            return Sets.newHashSet();
+        }
         Set<TargetRunnerConfig> targetRunnerConfigs = Sets.newHashSet();
         for (EventTargetRunner eventTargetRunner : eventTargetRunners) {
             targetRunnerConfigs.add(new Gson().fromJson(eventTargetRunner.getRunContext(), TargetRunnerConfig.class));
