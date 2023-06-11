@@ -25,10 +25,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.collections.MapUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
@@ -68,27 +67,29 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public void run() {
+        List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
         while (!stopped) {
-            Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
-            if(MapUtils.isEmpty(eventRecordMap)){
-                logger.info("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
-                this.waitForRunning(1000);
-                continue;
-            }
-            Map<String, TransformEngine<ConnectRecord>> latestTransformMap = circulatorContext.getTaskTransformMap();
-            if (MapUtils.isEmpty(latestTransformMap)) {
-                logger.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
-                this.waitForRunning(3000);
-                continue;
-            }
+            try {
+                Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
+                if (MapUtils.isEmpty(eventRecordMap)) {
+                    logger.trace("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
+                    this.waitForRunning(1000);
+                    continue;
+                }
+                Map<String, TransformEngine<ConnectRecord>> latestTransformMap = circulatorContext.getTaskTransformMap();
+                if (MapUtils.isEmpty(latestTransformMap)) {
+                    logger.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
+                    this.waitForRunning(3000);
+                    continue;
+                }
 
-            List<ConnectRecord> afterTransformConnect = Lists.newArrayList();
-            List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
-            for(String runnerName: eventRecordMap.keySet()){
-                TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
-                List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
-                curEventRecords.forEach(pullRecord -> {
-                    CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
+                afterTransformConnect.clear();
+                List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
+                for (String runnerName : eventRecordMap.keySet()) {
+                    TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
+                    List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
+                    curEventRecords.forEach(pullRecord -> {
+                        CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
                             .exceptionally((exception) -> {
                                 logger.error("transfer do transform event record failed，stackTrace-", exception);
                                 errorHandler.handle(pullRecord, exception);
@@ -101,11 +102,9 @@ public class EventRuleTransfer extends ServiceThread {
                                     offsetManager.commit(pullRecord);
                                 }
                             });
-                    completableFutures.add(transformFuture);
-                });
-            }
-
-            try {
+                        completableFutures.add(transformFuture);
+                    });
+                }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));

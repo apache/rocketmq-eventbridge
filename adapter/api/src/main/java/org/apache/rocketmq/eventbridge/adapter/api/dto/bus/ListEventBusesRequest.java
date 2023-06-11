@@ -25,7 +25,7 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseRequest;
 public class ListEventBusesRequest extends BaseRequest {
 
     @SerializedName("NextToken")
-    private String nextToken;
+    private String nextToken = "0";
 
     @SerializedName("MaxResults")
     private int maxResults;

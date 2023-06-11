@@ -74,9 +74,6 @@ public class MybatisEventTargetRunnerRepository implements EventTargetRunnerRepo
 
     @Override
     public List<EventTargetRunner> listEventTargetRunners(String accountId, String eventBusName, String eventRuleName) {
-        if (StringUtils.isBlank(accountId) || StringUtils.isBlank(eventBusName) || StringUtils.isBlank(eventRuleName)) {
-            return Lists.newArrayListWithCapacity(0);
-        }
         List<EventTargetRunnerDO> eventTargetRunnerDOS = eventTargetRunnerMapper.listEventTargetRunners(accountId, eventBusName, eventRuleName);
         if (eventTargetRunnerDOS == null || eventTargetRunnerDOS.isEmpty()) {
             return Lists.newArrayListWithCapacity(0);
