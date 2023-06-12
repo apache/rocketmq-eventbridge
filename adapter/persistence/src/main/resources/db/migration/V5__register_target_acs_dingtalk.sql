@@ -17,4 +17,24 @@
 
 INSERT INTO `event_target_class` (`name`,`api_params`,`target_transform`,`required_params`,`visual_config`,`description`,`gmt_create`,`gmt_modify`)
 VALUES
-('acs.dingtalk','{\n    \"WebHook\":{\n        \"type\":\"String\",\n        \"desc\":\"the endpoint of webhook.\",\n        \"required\":true\n    },\n    \"SecretKey\":{\n        \"type\":\"String\",\n        \"desc\":\"the secret key.\",\n        \"required\":true\n    },\n    \"Body\":{\n        \"type\":\"boolean\",\n        \"desc\":\"the content of request\"\n    }\n}','{     \"data\":\"${Body}\" }','{\n    \"webHook\":\"${WebHook}\",\n    \"secretKey\":\"${SecretKey}\",\n    \"class\":\"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector\"\n}',NULL,'aliyun dingtalk connector config',now(),now());
+('acs.dingtalk','{
+                     "WebHook":{
+                         "type":"String",
+                         "desc":"the endpoint of webhook.",
+                         "required":true
+                     },
+                     "SecretKey":{
+                         "type":"String",
+                         "desc":"the secret key.",
+                         "required":true
+                     },
+                     "Body":{
+                         "type":"boolean",
+                         "desc":"the content of request"
+                     }
+                 }','{"data":"${Body}" }'
+                 ,'{
+                       "webHook":"${WebHook}",
+                       "secretKey":"${SecretKey}",
+                       "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkConnector"
+                   }',NULL,'aliyun dingtalk connector config',now(),now());
