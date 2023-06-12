@@ -104,6 +104,7 @@
         <module>domain</module>
         <module>common</module>
         <module>infrastructure</module>
+        <module>test</module>
     </modules>
 
     <dependencyManagement>
