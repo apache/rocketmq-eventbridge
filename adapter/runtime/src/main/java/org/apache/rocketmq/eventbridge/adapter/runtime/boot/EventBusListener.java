@@ -73,4 +73,9 @@ public class EventBusListener extends ServiceThread {
     public String getServiceName() {
         return EventBusListener.class.getSimpleName();
     }
+
+    @Override
+    public void shutdown() {
+        eventSubscriber.close();
+    }
 }

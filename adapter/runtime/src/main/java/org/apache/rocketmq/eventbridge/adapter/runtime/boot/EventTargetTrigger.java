@@ -31,6 +31,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,14 +63,13 @@ public class EventTargetTrigger extends ServiceThread {
         while (!stopped) {
             Map<String, List<ConnectRecord>> targetRecordMap = circulatorContext.takeTargetRecords(batchSize);
             if (MapUtils.isEmpty(targetRecordMap)) {
-                logger.info("current target pusher is empty");
+                logger.trace("current target pusher is empty");
                 this.waitForRunning(1000);
                 continue;
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecordMap));
             }
-
 
             for(String runnerName: targetRecordMap.keySet()){
                 ExecutorService executorService = circulatorContext.getExecutorService(runnerName);
@@ -94,4 +94,18 @@ public class EventTargetTrigger extends ServiceThread {
         return EventTargetTrigger.class.getSimpleName();
     }
 
+    @Override
+    public void start() {
+        thread.start();
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            circulatorContext.releaseExecutorService();
+            circulatorContext.releaseTriggerTask();
+        } catch (Exception e) {
+            logger.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
+        }
+    }
 }

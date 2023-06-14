@@ -18,9 +18,10 @@ package org.apache.rocketmq.eventbridge;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 
-@SpringBootApplication(scanBasePackages = "org.apache.rocketmq.eventbridge.*")
+@SpringBootApplication(scanBasePackages = "org.apache.rocketmq.eventbridge.*",exclude = {FlywayAutoConfiguration.class})
 @EnableCaching
 public class Main {
     public static void main(String[] args) {

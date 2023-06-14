@@ -56,6 +56,11 @@ public abstract class EventSubscriber implements TargetRunnerListener {
     public abstract void commit(List<ConnectRecord> connectRecordList);
 
     /**
+     * close resource such as consumer
+     */
+    public abstract void close();
+
+    /**
      * Put the connect record to the eventbus.
      * @param eventBusName
      * @param connectRecord

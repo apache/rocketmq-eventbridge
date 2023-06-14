@@ -42,14 +42,14 @@ according to the manual: [RocketMQ Quick Start](https://rocketmq.apache.org/docs
 
 Apache RocketMQ Connect can connect the external upstream and downstream services,and You can deploy it according to the
 manual: [RocketMQ Connect Quick Start](https://github.com/apache/rocketmq-connect)
-. Before deploy the Apache RocketMQ Connect, you should download the plugins below and put it to the "pluginPaths" which
+. Before deploy the Apache RocketMQ Connect, you should download the plugins below and put it to the "pluginpath" which
 defined on rocketmq-connect.
 
-* [rocketmq-connect-eventbridge-0.0.1-SNAPSHOT-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-eventbridge-0.0.1-SNAPSHOT-jar-with-dependencies.jar)
-* [rocketmq-connect-dingtalk-1.0-SNAPSHOT-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-dingtalk-1.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-cloudevent-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-cloudevent-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-filter-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-filter-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-eventbridge-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-eventbridge-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
+* [rocketmq-connect-eventbridge.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-eventbridge-0.0.1-SNAPSHOT-jar-with-dependencies.jar)
+* [eventbridge-connect-file.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/eventbridge-connect-file-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
+* [connect-cloudevent-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-cloudevent-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
+* [connect-filter-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-filter-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
+* [connect-eventbridge-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-eventbridge-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
 
 #### Apache RocketMQ EventBridge
 
@@ -66,202 +66,35 @@ rocketmq.namesrvAddr=xxxxx:9876
 
 # The cluster name of rocketmq.
 rocketmq.cluster.name=DefaultCluster
-
-# The endpoint of rocketmq-connect.
-rocketmq.connect.endpoint=xxxxxx:8082
+runtime.pluginpath=xxxx
 
 ```
+Config the runtime.pluginpath to set the directory of plugin.
 
 ## Demo
 
 ####
 
-* Create EventBus
-
-```text
-POST /bus/createEventBus HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-"eventBusName":"demo-bus",
-"description":"a demo bus."
-}
-```
-
-* Create EventSource
-
-```text
-POST /source/createEventSource HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-"eventBusName":"demo-bus",
-"eventSourceName":"demo-source",
-"description":"A demo source."
-}
-```
-
-* Create EventRule
-
-```text
-POST /rule/createEventRule HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-  "eventBusName":"demo-bus",
-  "eventRuleName":"demo-rule",
-  "description":"A demo rule.",
-  "filterPattern":"{}"
-}
-```
-
-* Create Target
-
-This is a sample with EventBridge target:
-
-```text
-POST /target/createEventTargets HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-    "eventBusName":"demo-bus",
-    "eventRuleName":"demo-rule",
-    "eventTargets":[
-            {
-            "eventTargetName":"eventbridge-target",
-            "className":"acs.eventbridge",
-                "config":{
-                "RegionId":"cn-hangzhou",
-                "AliyunEventBus":"rocketmq-eventbridge"
-                }
-            }
-        ]
-}
-```
-
-This is a sample with DingTalk target:
-
-```text
-POST /target/createEventTargets HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-    "eventBusName":"demo-bus",
-    "eventRuleName":"demo-rule",
-    "eventTargets":[
-        {
-            "eventTargetName":"dingtalk-target",
-            "className":"acs.dingtalk",
-            "config":{
-            "WebHook":"https://oapi.dingtalk.com/robot/send?access_token=b43a54b702314415c2acdae97eda1e092528b7a9dddb31510a5b4430be2ef867",
-            "SecretKey":"SEC53483bf496b8f9e0b4ab0ab669d422208e6ccfaedfd5120ea6b8426b9ecd47aa",
-            "Body":"{\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\",\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\"}"
-            }
-        }
-    ]
-}
-```
-
 * Put Events to EventBus
-
+  The system creates a demo bus by default, and you can send events directly to the bus.
 ```text
-POST /putEvents HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type:"application/cloudevents+json; charset=UTF-8"
-{
-  "specversion" : "1.0",
-  "type" : "com.github.pull_request.opened",
-  "source" : "https://github.com/cloudevents/spec/pull",
-  "subject" : "123",
-  "id" : "A234-1234-1234",
-  "time" : "2018-04-05T17:31:00Z",
-  "datacontenttype" : "application/json",
-  "data" : {
-    "body":"demo"
-  },
-  "aliyuneventbusname":"demo-bus"
-}
+curl  -X POST http://127.0.0.1:7001/putEvents  \
+-H "Content-Type: application/json; charset=UTF-8"  \
+-H "ce-specversion:1.0"  \
+-H "ce-type:com.github.pull_request.opened"  \
+-H "ce-source:https://github.com/cloudevents/spec/pull"  \
+-H "ce-subject:demo"  \
+-H "ce-id:1234-1234-1234"  \
+-H "ce-datacontenttype:application/json"  \
+-H "ce-time:2018-04-05T17:31:00Z"  \
+-H "ce-aliyuneventbusname:demo-bus"  \
+-d 'A test recrod.'
 ```
 
-* Use HttpSource to put events
+* Check if the local file received a write event
 
-EventBridge HttpSource allows you to put events to eventbus in the form of webhook.
+In addition, by default, the system will create a demo rule for you to subscribe and push to the file. You can check whether there are events received in the directory:～/demo
+![img.png](docs/cn/images/demo.png)
 
-Here is an example explaining how to put events using EventBridge HttpSource.
-
-1. Create an EventBridge HttpSource
-
-    - eventSourceName: Name of EventSource
-    - eventBusName: Name of EventBus
-    - description: Description
-    - className: HttpEvent. This parameter is a fixed value and cannot be modified.
-    - config: HttpSource Config
-    - Type: Request type. Available values are 'HTTP', 'HTTPS' and 'HTTP&HTTPS'.
-    - Method: Allowed HTTP request methods. The request will be filtered if the http request method type for accessing
-      the webhook does not meet the configuration.
-    - SecurityConfig: Security configuration type. Available values are 'none', 'ip' and 'referer'.
-    - Ip: IP security configuration. Http requests whose source ip is not in the configured network segment will be
-      filtered if the security configuration is selected as 'ip'.
-    - Referer: Referer security configuration. HTTP requests whose referer is not in this configuration will be filtered
-      if the security configuration is selected as 'referer'.
-
-A webhook will be generated after the creation of HttpSource.
-
-```text
-POST /source/createEventSource HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-  "eventSourceName": "httpEventSourceDemo",
-  "eventBusName": "demo",
-  "description": "http source demo",
-  "className": "HttpEvent",
-  "config": {
-    "Type": "HTTP&HTTPS",
-    "Method": ["GET", "POST"],
-    "SecurityConfig": "ip",
-    "Ip": ["10.0.0.0/8"],
-    "Referer":[]
-  }
-}
-```
-
-2. Put event to EventBus
-
-Http request to access this webhook will be converted into a CloudEvent and delivered to eventbus.
-
-```
-curl -d '{"username": "testUser", "testData": "testData"}' -H 'Content-Type: application/json' -H 'Accept-Language: en-US' http://127.0.0.1:7001/webhook/putEvents?token=43146d108b224eb2adc581aedd28f272007320d14b9d
-```
-
-generated CloudEvent demo
-
-```json
-{
-  "datacontenttype": "application/json",
-  "data": {
-    "body": {
-      "username": "testUser",
-      "testData": "testData"
-    },
-    "headers": {
-      "Accept": "*/*",
-      "User-Agent": "curl/7.64.1",
-      "Host": "127.0.0.1:7001",
-      "Accept-Language": "en-US",
-      "Content-Length": "48",
-      "Content-Type": "application/json"
-    },
-    "httpMethod": "POST",
-    "path": "/webhook/putEvents",
-    "queryString": {}
-  },
-  "subject": "DemoBus/httpEventSourceDemo",
-  "source": "httpEventSourceDemo",
-  "type": "eventbridge:Events:HTTPEvent",
-  "specversion": "1.0",
-  "id": "75bc099b-130a-45a8-82e1-3f9a7f0d10f3",
-  "time": "2022-05-12T17:20:30.264+08:00"
-}
-```
-
+Why does the file output the data attribute of CloudEvent instead of other attributes?This is because the configuration in the demo rule is to output "$.data" in CloudEvent to the file line.
+You can refer to this [document](docs/CreateFileTarget.md)  to configure and modify event targets.

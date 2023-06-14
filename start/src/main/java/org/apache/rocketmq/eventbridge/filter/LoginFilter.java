@@ -18,8 +18,6 @@ package org.apache.rocketmq.eventbridge.filter;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -28,14 +26,13 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import static org.apache.rocketmq.eventbridge.enums.props.Constants.HEADER_KEY_LOGIN_ACCOUNT_ID;
+import static org.apache.rocketmq.eventbridge.enums.props.Constants.HEADER_KEY_PARENT_ACCOUNT_ID;
+
 @Component
 @Order(value = 2)
 @Slf4j
 public class LoginFilter implements WebFilter {
-
-    public static final String HEADER_KEY_LOGIN_ACCOUNT_ID = "loginAccountId";
-    public static final String HEADER_KEY_PARENT_ACCOUNT_ID = "parentAccountId";
-    public static final String HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID = "resourceOwnerAccountId";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -43,20 +40,13 @@ public class LoginFilter implements WebFilter {
         return chain.filter(exchange)
             .subscriberContext(ctx -> {
                 List<String> parentAccountIds = request.getHeaders()
-                    .get(HEADER_KEY_PARENT_ACCOUNT_ID);
+                    .get(HEADER_KEY_PARENT_ACCOUNT_ID.getName());
                 List<String> loginAccountIds = request.getHeaders()
-                    .get(HEADER_KEY_LOGIN_ACCOUNT_ID);
-                List<String> resourceOwnerIds = request.getHeaders()
-                    .get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID);
-                if (resourceOwnerIds == null || resourceOwnerIds.isEmpty()) {
-                    throw new EventBridgeException(DefaultErrorCode.LoginFailed);
-                }
-                return ctx.put(HEADER_KEY_PARENT_ACCOUNT_ID,
+                    .get(HEADER_KEY_LOGIN_ACCOUNT_ID.getName());
+                return ctx.put(HEADER_KEY_PARENT_ACCOUNT_ID.getName(),
                     parentAccountIds != null && !parentAccountIds.isEmpty() ? parentAccountIds.get(0) : "")
-                    .put(HEADER_KEY_LOGIN_ACCOUNT_ID,
-                        loginAccountIds != null && !loginAccountIds.isEmpty() ? loginAccountIds.get(0) : "")
-                    .put(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID,
-                        resourceOwnerIds != null && !resourceOwnerIds.isEmpty() ? resourceOwnerIds.get(0) : "");
+                    .put(HEADER_KEY_LOGIN_ACCOUNT_ID.getName(),
+                        loginAccountIds != null && !loginAccountIds.isEmpty() ? loginAccountIds.get(0) : "");
             });
     }
 }

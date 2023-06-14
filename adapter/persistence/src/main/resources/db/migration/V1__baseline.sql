@@ -1,17 +1,19 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 CREATE TABLE IF NOT EXISTS `event_bus` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -21,11 +23,10 @@ CREATE TABLE IF NOT EXISTS `event_bus` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8  COMMENT='event bus meta'
-;
+  UNIQUE KEY `name_uniq_key_event_bus` (`account_id`,`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `event_topic` (
+CREATE TABLE IF NOT EXISTS `event_topic` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` varchar(255) DEFAULT 'SYSTEM' COMMENT 'source account id',
   `bus` varchar(255) NOT NULL COMMENT 'bus name',
@@ -36,9 +37,8 @@ CREATE TABLE `event_topic` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-;
+  UNIQUE KEY `name_uniq_key_event_topicdd` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `event_source` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS `event_source` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event source meta'
+  UNIQUE KEY `name_uniq_key_event_source` (`account_id`,`name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE IF NOT EXISTS `event_type` (
@@ -67,12 +67,12 @@ CREATE TABLE IF NOT EXISTS `event_type` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`source`,`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='event type meta'
+  UNIQUE KEY `name_uniq_key_event_type` (`source`,`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE IF NOT EXISTS  `event_rule` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` varchar(255) NOT NULL COMMENT 'bus account id',
   `bus` varchar(255) NOT NULL COMMENT 'bus name',
   `name` varchar(255) NOT NULL COMMENT 'rule name',
@@ -82,8 +82,8 @@ CREATE TABLE IF NOT EXISTS  `event_rule` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   UNIQUE KEY `id` (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`name`,`bus`)
-) ENGINE=InnoDB AUTO_INCREMENT=51815 DEFAULT CHARSET=utf8 COMMENT='event rule meta'
+  UNIQUE KEY `name_uniq_key_event_rule` (`account_id`,`name`,`bus`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE IF NOT EXISTS `event_source_runner` (
@@ -96,8 +96,8 @@ CREATE TABLE IF NOT EXISTS `event_source_runner` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`bus`,`source`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event source runner meta'
+  UNIQUE KEY `name_uniq_key_event_source_runner` (`account_id`,`bus`,`source`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
 
 CREATE TABLE IF NOT EXISTS `event_target` (
@@ -112,8 +112,8 @@ CREATE TABLE IF NOT EXISTS `event_target` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`bus`,`rule`,`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event target meta'
+  UNIQUE KEY `name_uniq_key_event_target` (`account_id`,`bus`,`rule`,`name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
 
 
@@ -128,8 +128,8 @@ CREATE TABLE IF NOT EXISTS `event_target_runner` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`account_id`,`bus`,`rule`,`target`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event target runner meta'
+  UNIQUE KEY `name_uniq_key_event_target_runner` (`account_id`,`bus`,`rule`,`target`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
 
 
@@ -144,8 +144,8 @@ CREATE TABLE IF NOT EXISTS `event_source_class` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event source class meta'
+  UNIQUE KEY `name_uniq_key_event_source_class` (`name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
 
 
@@ -160,6 +160,6 @@ CREATE TABLE IF NOT EXISTS `event_target_class` (
   `gmt_create` datetime DEFAULT NULL COMMENT 'create time',
   `gmt_modify` datetime DEFAULT NULL COMMENT 'modify time',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name_uniq_key` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='event target class meta'
+  UNIQUE KEY `name_uniq_key_event_target_class` (`name`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8
 ;
