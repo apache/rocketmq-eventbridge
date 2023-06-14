@@ -72,9 +72,9 @@ public class Runtime {
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
         BridgeMetricsManager metricsManager = eventSubscriber.getMetricsManager();
-        EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber, errorHandler);
-        EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext, offsetManager, errorHandler);
-        EventTargetTrigger eventTargetPusher = new EventTargetTrigger(circulatorContext, offsetManager, errorHandler);
+        EventBusListener eventBusListener = new EventBusListener(circulatorContext, eventSubscriber, errorHandler, metricsManager);
+        EventRuleTransfer eventRuleTransfer = new EventRuleTransfer(circulatorContext, offsetManager, errorHandler, metricsManager);
+        EventTargetTrigger eventTargetPusher = new EventTargetTrigger(circulatorContext, offsetManager, errorHandler, metricsManager);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventBusListener);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventRuleTransfer);
         RUNTIME_START_AND_SHUTDOWN.appendStartAndShutdown(eventTargetPusher);
