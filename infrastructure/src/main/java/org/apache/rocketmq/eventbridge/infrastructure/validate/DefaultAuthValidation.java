@@ -17,10 +17,12 @@
 
 package org.apache.rocketmq.eventbridge.infrastructure.validate;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import reactor.util.context.Context;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.rocketmq.eventbridge.enums.props.Constants.HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID;
 
@@ -32,7 +34,7 @@ public class DefaultAuthValidation implements AuthValidation {
     @Override
     public Context validate(ServerHttpRequest request, Context ctx) {
         String resourceOwnerId = "default";
-        List<String> resourceOwnerIds = request.getHeaders().get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID);
+        List<String> resourceOwnerIds = request.getHeaders().get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID.getName());
         if (resourceOwnerIds != null && !resourceOwnerIds.isEmpty()) {
             //throw new EventBridgeException(DefaultErrorCode.LoginFailed);
             resourceOwnerId = resourceOwnerIds.get(0);
