@@ -34,6 +34,7 @@ public class AppConfigAPIImpl {
         Set<String> extensionKeys = Sets.newHashSet();
         extensionKeys.add("aliyuneventbusname");
         globalConfig.setEventExtensionKeys(extensionKeys);
+        globalConfig.setDefaultDataPersistentClusterName("aliyuneventbuscluster");
 
         LocalConfig localConfig = new LocalConfig();
         localConfig.setRegion("cn-hangzhou");
