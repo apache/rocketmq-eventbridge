@@ -207,7 +207,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
             BridgeConfig bridgeConfig = new BridgeConfig();
             bridgeConfig.setEventBridgeAddress(metricsAddress);
-            bridgeConfig.setMetricsExporterType(metricsCollectorMode);
+            bridgeConfig.setMetricsExporterType(Integer.parseInt(metricsCollectorMode));
             this.clientConfig = clientConfig;
             this.bridgeConfig = bridgeConfig;
 
