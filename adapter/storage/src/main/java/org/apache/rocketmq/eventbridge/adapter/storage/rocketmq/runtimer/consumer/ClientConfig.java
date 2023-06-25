@@ -36,7 +36,6 @@ public class ClientConfig {
     // All the offsets will be committed in the commit thread if enable this flag.
     // To avoid too many rpc calls, disable it and rely on the inner offset automatic commit mechanism
     private boolean commitSync = false;
-    private String routeHookEndpoint;
     private AccessChannel accessChannel;
 
     public int getRmqPullMessageCacheCapacity() {
@@ -112,19 +111,26 @@ public class ClientConfig {
         this.commitSync = commitSync;
     }
 
-    public String getRouteHookEndpoint() {
-        return routeHookEndpoint;
-    }
-
-    public void setRouteHookEndpoint(final String routeHookEndpoint) {
-        this.routeHookEndpoint = routeHookEndpoint;
-    }
-
     public AccessChannel getAccessChannel() {
         return accessChannel;
     }
 
     public void setAccessChannel(AccessChannel accessChannel) {
         this.accessChannel = accessChannel;
+    }
+
+
+    public static ClientConfig cloneConfig(ClientConfig clientConfig) {
+        ClientConfig newConfig = new ClientConfig();
+        newConfig.setRmqPullMessageBatchNums(clientConfig.getRmqPullMessageBatchNums());
+        newConfig.setConsumeFromWhere(clientConfig.getConsumeFromWhere());
+        newConfig.setConsumeTimestamp(clientConfig.getConsumeTimestamp());
+        newConfig.setNameSrvAddr(clientConfig.getNameSrvAddr());
+        newConfig.setNamespace(clientConfig.getNamespace());
+        newConfig.setConsumerGroup(clientConfig.getConsumerGroup());
+        newConfig.setPullInterval(clientConfig.getPullInterval());
+        newConfig.setCommitSync(clientConfig.isCommitSync());
+        newConfig.setAccessChannel(clientConfig.getAccessChannel());
+        return newConfig;
     }
 }
