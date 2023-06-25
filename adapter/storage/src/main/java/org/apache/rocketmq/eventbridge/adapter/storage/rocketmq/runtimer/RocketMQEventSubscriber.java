@@ -33,9 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.AccessChannel;
-import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.utils.NetworkUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.SubscribeRunnerKeys;
@@ -93,7 +91,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final String SEMICOLON = ";";
 
-    private static final String SYS_DEFAULT_GROUP = "event-bridge-default-group";
+    private static final String DEFAULT_GROUP_PREFIX = "event-bridge-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
     public static final String MSG_ID = "msgId";
@@ -176,7 +174,6 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             ClientConfig clientConfig = new ClientConfig();
             Properties properties = PropertiesLoaderUtils.loadAllProperties("runtime.properties");
             String namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
-            String consumerGroup = properties.getProperty("rocketmq.consumerGroup");
             pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
             pullBatchSize = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullBatchSize"));
             String accessChannel = properties.getProperty("rocketmq.accessChannel");
@@ -188,8 +185,6 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
 
             clientConfig.setNameSrvAddr(namesrvAddr);
-            clientConfig.setConsumerGroup(StringUtils.isBlank(consumerGroup) ?
-                    createGroupName(SYS_DEFAULT_GROUP) : consumerGroup);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
                     AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
@@ -238,7 +233,10 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     public LitePullConsumer initLitePullConsumer(SubscribeRunnerKeys subscribeRunnerKeys) {
         String topic = getTopicName(subscribeRunnerKeys);
         RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
-        LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
+        ClientConfig consumerConfig = ClientConfig.cloneConfig(this.clientConfig);
+        String groupName = createGroupName(subscribeRunnerKeys);
+        consumerConfig.setConsumerGroup(groupName);
+        LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(consumerConfig, rpcHook);
         if (StringUtils.isNotBlank(this.socksProxy)) {
             pullConsumer.setSockProxyJson(this.socksProxy);
         }
@@ -256,12 +254,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return eventDataRepository.getTopicNameWithOutCache(subscribeRunnerKeys.getAccountId(), subscribeRunnerKeys.getEventBusName());
     }
 
-    private String createGroupName(String prefix) {
+    private String createGroupName(SubscribeRunnerKeys subscribeRunnerKeys) {
         StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append("-");
-        sb.append(NetworkUtil.getLocalAddress()).append("-");
-        sb.append(UtilAll.getPid()).append("-");
-        sb.append(System.nanoTime());
+        sb.append(DEFAULT_GROUP_PREFIX).append("-");
+        sb.append(subscribeRunnerKeys.getAccountId()).append("-");
+        sb.append(subscribeRunnerKeys.getRunnerName());
         return sb.toString().replace(".", "-");
     }
 
@@ -354,7 +351,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                         messageBuffer.put(message);
                     }
                 } catch (Exception exception) {
-                    logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
+                    logger.error(getServiceName() + " - RocketMQEventSubscriber pull record exception, stackTrace - ", exception);
                 }
             }
         }
