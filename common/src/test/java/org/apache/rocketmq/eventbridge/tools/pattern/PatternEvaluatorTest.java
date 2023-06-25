@@ -48,7 +48,7 @@ public class PatternEvaluatorTest {
         Map<String, String> specMap = new HashMap<>();
         specMap.put("source", "acs.aliyuncvc");
         assertThat(evaluator.evaluateSpecAttr(JsonUtil.convertToJsonElement(specMap))).isTrue();
-        specMap.put("aliyuneventbusname", "demo-bus");
+        specMap.put("eventbusname", "demo-bus");
         assertThat(evaluator.evaluateExtensionAttr(JsonUtil.convertToJsonElement(specMap))).isTrue();
         assertThat(evaluator.evaluateData("{\"anyKey\":\"anyValue\"}")).isTrue();
     }

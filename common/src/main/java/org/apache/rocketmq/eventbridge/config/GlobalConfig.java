@@ -26,8 +26,6 @@ public class GlobalConfig {
 
     private String getEventBusExtensionKey;
 
-    private String defaultDataPersistentClusterName;
-
     private int eventSizeUpLimit = (1 << 10) * 64;
 
 }

@@ -29,10 +29,10 @@ public class AppConfigAPIImpl {
 
     public AppConfigAPIImpl() {
         GlobalConfig globalConfig = new GlobalConfig();
-        globalConfig.setGetEventBusExtensionKey("aliyuneventbusname");
+        globalConfig.setGetEventBusExtensionKey("eventbusname");
 
         Set<String> extensionKeys = Sets.newHashSet();
-        extensionKeys.add("aliyuneventbusname");
+        extensionKeys.add("eventbusname");
         globalConfig.setEventExtensionKeys(extensionKeys);
 
         LocalConfig localConfig = new LocalConfig();

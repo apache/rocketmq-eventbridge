@@ -182,6 +182,6 @@ Content-Type:"application/cloudevents+json; charset=UTF-8"
   "data" : {
     "body":"demo"
   },
-  "aliyuneventbusname":"demo-bus"
+  "eventbusname":"demo-bus"
 }
 ```
