@@ -90,7 +90,7 @@ public class LocalMessageCache {
                             break;
                     }
                 }
-                if (offset > 0) {
+                if (offset >= 0) {
                     // Got an offset from offset store
                     return offset;
                 }
