@@ -61,6 +61,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -125,7 +126,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             logger.trace("consumer poll message empty.");
             return null;
         }
-        List<ConnectRecord> connectRecords = Lists.newArrayList();
+        List<ConnectRecord> connectRecords = new CopyOnWriteArrayList<>();
         List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
         messages.forEach(item->{
             CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(()-> convertToSinkRecord(item))
