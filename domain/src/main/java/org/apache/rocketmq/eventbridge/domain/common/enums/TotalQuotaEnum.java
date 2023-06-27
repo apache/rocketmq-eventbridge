@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter;
+package org.apache.rocketmq.eventbridge.domain.common.enums;
 
-import com.google.gson.annotations.SerializedName;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
-@Getter
-@Setter
-@ToString
-public class HttpApiParameters {
-
-    @SerializedName("Endpoint")
-    private String endpoint;
-
-    @SerializedName("Method")
-    private String method;
-
-    @SerializedName("ApiParameters")
-    private List<ApiParameter> apiParameters;
+public enum TotalQuotaEnum {
+    /**
+     * API DESTINATION COUNT
+     */
+    API_DESTINATION_COUNT,
+    /**
+     * CONNECTION COUNT
+     */
+    CONNECTION_COUNT;
 }

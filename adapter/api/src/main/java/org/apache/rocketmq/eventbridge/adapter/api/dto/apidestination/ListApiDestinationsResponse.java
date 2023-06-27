@@ -26,6 +26,8 @@ import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 
+import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.RequestParameterInvalid;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -42,7 +44,7 @@ public class ListApiDestinationsResponse extends BaseResponse {
     private Integer total;
 
     @SerializedName("MaxResults")
-    private int maxResults;
+    private Integer maxResults;
 
     public ListApiDestinationsResponse success() {
         setCode(EventBridgeErrorCode.Success.getCode());
@@ -51,7 +53,7 @@ public class ListApiDestinationsResponse extends BaseResponse {
     }
 
     public ListApiDestinationsResponse parameterCheckFailRes(String errorMsg) {
-        setCode(Integer.toString(409));
+        setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
         return this;
     }

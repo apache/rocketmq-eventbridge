@@ -73,7 +73,7 @@ public class LocalMessageCache {
                     outerException.set(new RuntimeException("fetchConsumeOffsetFromBroker exception, please check rocketmq client for more details"));
                     return null;
                 }
-                if (offset == -1) {
+                if (offset == -1 || offset == 0) {
                     // Follow the CONSUME_FROM_WHERE to compute next pull offset
                     // But note that if broker thrown any unexpected runtime exception may cause offset rollback.
                     // We don't handle this risk because of MetaQ doesn't have any rpc hook

@@ -19,10 +19,10 @@ package org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination;
 
 import com.google.gson.annotations.SerializedName;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 
 @Getter
@@ -33,12 +33,23 @@ public class ListApiDestinationsRequest extends BaseResponse {
     @SerializedName("ApiDestinationNamePrefix")
     private String apiDestinationNamePrefix;
 
+    @SerializedName("ConnectionName")
+    private String connectionName;
+
+
     @Min(value = 0, message = "The limit size of page is invalid, which must greater than 0 and less than [{0}].")
     @SerializedName("MaxResults")
-    private int maxResults;
+    private Integer maxResults;
 
-    @NotBlank(message = "The next token of page is invalid. which should be {[0]}.")
     @SerializedName("NextToken")
     private String nextToken;
 
+    public void checkMaxResultsAndNextToken() {
+        if (StringUtils.isBlank(this.getNextToken())) {
+            this.setNextToken("0");
+        }
+        if (this.getMaxResults() == null) {
+            this.setMaxResults(10);
+        }
+    }
 }

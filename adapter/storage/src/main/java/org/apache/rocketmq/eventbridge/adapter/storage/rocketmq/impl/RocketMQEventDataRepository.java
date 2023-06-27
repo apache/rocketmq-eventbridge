@@ -25,7 +25,6 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.dataobject.EventTopicDO;
 import org.apache.rocketmq.eventbridge.adapter.persistence.data.mybatis.mapper.EventTopicMapper;
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.api.EventDataOnRocketMQConnectAPI;
-import org.apache.rocketmq.eventbridge.config.AppConfig;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
@@ -95,15 +94,15 @@ public class RocketMQEventDataRepository implements EventDataRepository {
         return getTopicNameWithOutCache(accountId, eventBusName);
     }
 
-    @Override public String getTopicNameWithOutCache(String accountId, String eventBusName) {
+    @Override
+    public String getTopicNameWithOutCache(String accountId, String eventBusName) {
         String topicName = null;
         EventTopicDO eventTopicDO = eventTopicMapper.getTopic(accountId, eventBusName);
         if (eventTopicDO != null) {
             topicName = eventTopicDO.getName();
         } else {
             topicName = eventDataOnRocketMQConnectAPI.buildTopicName(accountId, eventBusName);
-            eventTopicMapper.createTopic(accountId, eventBusName, topicName, AppConfig.getGlobalConfig()
-                .getDefaultDataPersistentClusterName());
+            eventTopicMapper.createTopic(accountId, eventBusName, topicName, clusterName);
         }
         return topicName;
     }

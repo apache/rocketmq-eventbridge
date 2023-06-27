@@ -172,7 +172,7 @@ public class ApiDestinationDTOControllerTest {
         result.setData(apiDestinationDTOList);
         result.setTotal(9);
         result.setNextToken("0");
-        Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(), anyInt()))
+        Mockito.when(apiDestinationService.listApiDestinations(any(), any(), any(),  any(), anyInt()))
             .thenReturn(result);
         ListApiDestinationsRequest listApiDestinationsRequest = new ListApiDestinationsRequest();
         listApiDestinationsRequest.setApiDestinationNamePrefix(UUID.randomUUID()

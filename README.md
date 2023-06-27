@@ -87,7 +87,7 @@ curl  -X POST http://127.0.0.1:7001/putEvents  \
 -H "ce-id:1234-1234-1234"  \
 -H "ce-datacontenttype:application/json"  \
 -H "ce-time:2018-04-05T17:31:00Z"  \
--H "ce-aliyuneventbusname:demo-bus"  \
+-H "ce-eventbusname:demo-bus"  \
 -d 'A test recrod.'
 ```
 

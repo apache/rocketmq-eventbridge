@@ -32,7 +32,7 @@ public class DefaultAuthValidation implements AuthValidation {
     @Override
     public Context validate(ServerHttpRequest request, Context ctx) {
         String resourceOwnerId = "default";
-        List<String> resourceOwnerIds = request.getHeaders().get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID);
+        List<String> resourceOwnerIds = request.getHeaders().get(HEADER_KEY_RESOURCE_OWNER_ACCOUNT_ID.getName());
         if (resourceOwnerIds != null && !resourceOwnerIds.isEmpty()) {
             //throw new EventBridgeException(DefaultErrorCode.LoginFailed);
             resourceOwnerId = resourceOwnerIds.get(0);

@@ -23,7 +23,7 @@ public class BaseTransformTest {
         + "    \"id\":\"51efe8e2-841f-4900-8ff5-3c6dfae1060e\",\n" + "    \"source\":\"acs.oss\",\n"
         + "    \"type\":\"oss:ObjectCreated:PostObject\",\n" + "    \"dataschema\":\"http://taobao.com/test.json\",\n"
         + "    \"subject\":\"acs:oss:cn-hangzhou:1234567:xls-papk/game_apk/123.jpg\",\n"
-        + "    \"aliyuneventbusname\":\"demo-bus\",\n" + "    \"data\":{\n" + "        \"null\":null,\n"
+        + "    \"eventbusname\":\"demo-bus\",\n" + "    \"data\":{\n" + "        \"null\":null,\n"
         + "        \"text\":\"100\",\n" + "        \"number\":100,\n" + "        \"boolean\":false,\n"
         + "\"cn\":\"中国\",\n" + "        \"array\":[\n" + "            {\n"
         + "                \"level2-1\":\"level2-1\"\n" + "            },\n" + "            {\n"

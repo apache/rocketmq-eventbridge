@@ -15,25 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter;
+package org.apache.rocketmq.eventbridge.domain.model.quota;
 
-import com.google.gson.annotations.SerializedName;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import org.apache.rocketmq.eventbridge.domain.common.enums.TotalQuotaEnum;
 
-@Getter
-@Setter
-@ToString
-public class HttpApiParameters {
+public interface QuotaService {
 
-    @SerializedName("Endpoint")
-    private String endpoint;
-
-    @SerializedName("Method")
-    private String method;
-
-    @SerializedName("ApiParameters")
-    private List<ApiParameter> apiParameters;
+    /**
+     * Return the totalQuotaEnum match total quota.
+     * @param accountId
+     * @return
+     */
+    Integer getTotalQuota(String accountId, TotalQuotaEnum totalQuotaEnum);
 }

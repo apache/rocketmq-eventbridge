@@ -65,7 +65,7 @@ public class MybatisConnectRepository implements ConnectionRepository {
 
     @Override
     public List<ConnectionDTO> listConnections(String accountId, String connectionName, String nextToken,
-        int maxResults) {
+                                               int maxResults) {
         List<ConnectionDO> connectionDOS = eventConnectionMapper.listConnections(accountId, connectionName, Integer.parseInt(nextToken), maxResults);
         return ConnectConverter.doListConvertDtoList(connectionDOS);
     }
@@ -76,13 +76,18 @@ public class MybatisConnectRepository implements ConnectionRepository {
     }
 
     @Override
+    public int getConnectionCount(String accountId, String connectionName) {
+        return eventConnectionMapper.getConnectionByAccountIdAndNameCount(accountId, connectionName);
+    }
+
+    @Override
     public ConnectionDTO getConnectionById(Integer id) {
         ConnectionDO connectionDO = eventConnectionMapper.selectByPrimaryKey(id);
         return ConnectConverter.doConvertDto(connectionDO);
     }
 
     @Override
-    public ConnectionDTO getConnectionByName(String name) {
-        return ConnectConverter.doConvertDto(eventConnectionMapper.selectByName(name));
+    public ConnectionDTO getConnectionByNameAccountId(String name, String accountId) {
+        return ConnectConverter.doConvertDto(eventConnectionMapper.selectByNameAccountId(name, accountId));
     }
 }

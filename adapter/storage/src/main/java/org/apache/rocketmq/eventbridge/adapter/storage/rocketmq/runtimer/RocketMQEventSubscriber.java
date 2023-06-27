@@ -33,9 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.AccessChannel;
-import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.utils.NetworkUtil;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.SubscribeRunnerKeys;
@@ -47,8 +45,6 @@ import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consume
 import org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consumer.LitePullConsumerImpl;
 import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.apache.rocketmq.eventbridge.metrics.BridgeConfig;
-import org.apache.rocketmq.eventbridge.metrics.BridgeMetricsManager;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.proxy.SocksProxyConfig;
 import org.slf4j.Logger;
@@ -65,6 +61,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -96,7 +93,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private static final String SEMICOLON = ";";
 
-    private static final String SYS_DEFAULT_GROUP = "event-bridge-default-group";
+    private static final String DEFAULT_GROUP_PREFIX = "event-bridge-group";
 
     public static final String QUEUE_OFFSET = "queueOffset";
     public static final String MSG_ID = "msgId";
@@ -136,7 +133,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             logger.trace("consumer poll message empty.");
             return null;
         }
-        List<ConnectRecord> connectRecords = Lists.newArrayList();
+        List<ConnectRecord> connectRecords = new CopyOnWriteArrayList<>();
         List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
         messages.forEach(item->{
             CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(()-> convertToSinkRecord(item))
@@ -195,21 +192,12 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             String socks5UserName = properties.getProperty("rocketmq.consumer.socks5UserName");
             String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
             String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
-            String metricsAddress = properties.getProperty("metrics.endpoint.address");
-            String metricsCollectorMode = properties.getProperty("metrics.collector.mode");
 
             clientConfig.setNameSrvAddr(namesrvAddr);
-            clientConfig.setConsumerGroup(StringUtils.isBlank(consumerGroup) ?
-                    createGroupName(SYS_DEFAULT_GROUP) : consumerGroup);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
                     AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
-
-            BridgeConfig bridgeConfig = new BridgeConfig();
-            bridgeConfig.setEventBridgeAddress(metricsAddress);
-            bridgeConfig.setMetricsExporterType(Integer.parseInt(metricsCollectorMode));
             this.clientConfig = clientConfig;
-            this.bridgeConfig = bridgeConfig;
 
             if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
                 this.sessionCredentials = new SessionCredentials(accessKey, secretKey);
@@ -254,7 +242,10 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     public LitePullConsumer initLitePullConsumer(SubscribeRunnerKeys subscribeRunnerKeys) {
         String topic = getTopicName(subscribeRunnerKeys);
         RPCHook rpcHook = this.sessionCredentials != null ? new AclClientRPCHook(this.sessionCredentials) : null;
-        LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(this.clientConfig, rpcHook);
+        ClientConfig consumerConfig = ClientConfig.cloneConfig(this.clientConfig);
+        String groupName = createGroupName(subscribeRunnerKeys);
+        consumerConfig.setConsumerGroup(groupName);
+        LitePullConsumerImpl pullConsumer = new LitePullConsumerImpl(consumerConfig, rpcHook);
         if (StringUtils.isNotBlank(this.socksProxy)) {
             pullConsumer.setSockProxyJson(this.socksProxy);
         }
@@ -272,12 +263,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         return eventDataRepository.getTopicNameWithOutCache(subscribeRunnerKeys.getAccountId(), subscribeRunnerKeys.getEventBusName());
     }
 
-    private String createGroupName(String prefix) {
+    private String createGroupName(SubscribeRunnerKeys subscribeRunnerKeys) {
         StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append("-");
-        sb.append(NetworkUtil.getLocalAddress()).append("-");
-        sb.append(UtilAll.getPid()).append("-");
-        sb.append(System.nanoTime());
+        sb.append(DEFAULT_GROUP_PREFIX).append("-");
+        sb.append(subscribeRunnerKeys.getAccountId()).append("-");
+        sb.append(subscribeRunnerKeys.getRunnerName());
         return sb.toString().replace(".", "-");
     }
 
@@ -370,7 +360,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                         messageBuffer.put(message);
                     }
                 } catch (Exception exception) {
-                    logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
+                    logger.error(getServiceName() + " - RocketMQEventSubscriber pull record exception, stackTrace - ", exception);
                 }
             }
         }
