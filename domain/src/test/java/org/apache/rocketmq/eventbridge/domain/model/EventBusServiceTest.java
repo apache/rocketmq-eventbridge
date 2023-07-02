@@ -89,7 +89,7 @@ public class EventBusServiceTest {
         when(eventBusRepository.listEventBuses(any(), any(), anyInt())).thenReturn(eventBuses);
         PaginationResult<List<EventBus>> paginationResult = eventBusService.listEventBuses("123456", "0", 10);
         Assert.assertEquals(1, paginationResult.getTotal());
-        Assert.assertEquals("10", paginationResult.getNextToken());
+        Assert.assertEquals(null, paginationResult.getNextToken());
         Assert.assertEquals(1, paginationResult.getData()
             .size());
         Assert.assertEquals("demo", paginationResult.getData()
