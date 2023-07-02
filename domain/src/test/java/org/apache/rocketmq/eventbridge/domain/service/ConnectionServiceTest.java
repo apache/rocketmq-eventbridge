@@ -49,7 +49,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
 public class ConnectionServiceTest {
 
     @InjectMocks
