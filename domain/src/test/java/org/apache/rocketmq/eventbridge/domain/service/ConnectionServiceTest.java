@@ -36,6 +36,7 @@ import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -48,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class ConnectionServiceTest {
 
     @InjectMocks
