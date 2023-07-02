@@ -23,8 +23,12 @@ import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.common.utils.ThreadUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtime.boot.trigger.TriggerTaskContext;
+import org.apache.rocketmq.eventbridge.adapter.benchmark.AbstractEventCommon;
+import org.apache.rocketmq.eventbridge.adapter.benchmark.EventBusListenerCommon;
+import org.apache.rocketmq.eventbridge.adapter.benchmark.EventRuleTransferCommon;
+import org.apache.rocketmq.eventbridge.adapter.benchmark.EventTargetTriggerCommon;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
+import org.apache.rocketmq.eventbridge.adapter.runtime.boot.trigger.TriggerTaskContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.LoggerName;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetKeyValue;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
@@ -36,8 +40,10 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ShutdownUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +77,54 @@ public class CirculatorContext implements TargetRunnerListener {
     private Map<String/*RunnerName*/, SinkTask> pusherTaskMap = new ConcurrentHashMap<>(20);
 
     private Map<String/*RunnerName*/, ExecutorService> pusherExecutorMap = new ConcurrentHashMap<>(10);
+
+    private  AbstractEventCommon listenerCommon = null;
+    private  AbstractEventCommon transferCommon = null;
+    private  AbstractEventCommon triggerCommon = null;
+
+    @Value("${rumtimer.benchmark.enable}")
+    private boolean enableBenchmark;
+
+    @PostConstruct
+    private void enableBenchmark(){
+        if (enableBenchmark){
+            listenerCommon = new EventBusListenerCommon();
+            transferCommon = new EventRuleTransferCommon();
+            triggerCommon = new EventTargetTriggerCommon();
+        }
+    }
+
+    public void successCount(int type,int batchSize) {
+        if (enableBenchmark) {
+            switch (type) {
+                case 1:
+                     listenerCommon.successCount(batchSize);
+                     break;
+                case 2:
+                     transferCommon.successCount(batchSize);
+                     break;
+                case 3:
+                     triggerCommon.successCount(batchSize);
+                     break;
+            }
+        }
+    }
+
+    public void failCount(int type) {
+        if (enableBenchmark) {
+            switch (type) {
+                case 1:
+                     listenerCommon.failCount();
+                     break;
+                case 2:
+                     transferCommon.failCount();
+                     break;
+                case 3:
+                     triggerCommon.failCount();
+                     break;
+            }
+        }
+    }
 
     /**
      * initial targetRunnerMap, taskTransformMap, pusherTaskMap

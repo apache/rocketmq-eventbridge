@@ -33,6 +33,11 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-eventbridge-adapter-benchmark</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-domain</artifactId>
         </dependency>
         <dependency>
