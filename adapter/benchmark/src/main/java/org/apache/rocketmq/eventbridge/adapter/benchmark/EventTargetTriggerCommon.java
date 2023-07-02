@@ -56,17 +56,6 @@ public class EventTargetTriggerCommon extends AbstractEventCommon {
     }
 
     private void start() {
-
-        executorService.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                snapshotList.addLast(statsBenchmarkCommon.createSnapshot());
-                if (snapshotList.size() > 10) {
-                    snapshotList.removeFirst();
-                }
-            }
-        }, 1000, 1000, TimeUnit.MILLISECONDS);
-
         executorService.scheduleAtFixedRate(new TimerTask() {
 
             @Override
@@ -77,6 +66,6 @@ public class EventTargetTriggerCommon extends AbstractEventCommon {
                     e.printStackTrace();
                 }
             }
-        }, 10000, 10000, TimeUnit.MILLISECONDS);
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 }

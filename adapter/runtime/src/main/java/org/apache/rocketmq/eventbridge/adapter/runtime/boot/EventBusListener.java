@@ -60,7 +60,7 @@ public class EventBusListener extends ServiceThread {
                     continue;
                 }
                 circulatorContext.offerEventRecords(pullRecordList);
-                circulatorContext.successCount(1,pullRecordList.size());
+                circulatorContext.successCount(1,pullRecordList.size(),System.currentTimeMillis());
             } catch (Exception exception) {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 pullRecordList.forEach(pullRecord -> errorHandler.handle(pullRecord, exception));

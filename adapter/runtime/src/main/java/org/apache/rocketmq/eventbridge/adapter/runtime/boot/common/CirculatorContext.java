@@ -94,17 +94,17 @@ public class CirculatorContext implements TargetRunnerListener {
         }
     }
 
-    public void successCount(int type,int batchSize) {
+    public void successCount(int type,int batchSize,long timesStamp) {
         if (enableBenchmark) {
             switch (type) {
                 case 1:
-                     listenerCommon.successCount(batchSize);
+                     listenerCommon.successCount(batchSize,timesStamp);
                      break;
                 case 2:
-                     transferCommon.successCount(batchSize);
+                     transferCommon.successCount(batchSize,timesStamp);
                      break;
                 case 3:
-                     triggerCommon.successCount(batchSize);
+                     triggerCommon.successCount(batchSize,timesStamp);
                      break;
             }
         }

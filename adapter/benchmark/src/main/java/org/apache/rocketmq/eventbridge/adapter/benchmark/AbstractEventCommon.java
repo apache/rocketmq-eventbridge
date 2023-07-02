@@ -49,9 +49,10 @@ public abstract class AbstractEventCommon {
         snapshotList = new LinkedList<>();
     }
 
-    public void successCount(int batchSize) {
+    public void successCount(int batchSize,long timesStamp) {
         statsBenchmarkCommon.getSuccessCount().increment();
         statsBenchmarkCommon.getRecordCount().add(batchSize);
+        snapshotList.addLast(statsBenchmarkCommon.createSnapshot(timesStamp));
     }
 
     public void failCount() {
@@ -104,7 +105,10 @@ public abstract class AbstractEventCommon {
             Long[] begin = snapshotList.getFirst();
             Long[] end = snapshotList.getLast();
 
-            final long tps = (long) (((end[1] - begin[1]) / (double) (end[0] - begin[0])) * 1000L);
+            // final long tps = (long) (((end[1] - begin[1]) / (double) (end[0] - begin[0])) * 1000L);
+            // tps: 每秒钟能处理的消息数； 消息条数/时间差
+            final long tps = (long) (((end[3] - begin[3]) / (double) (end[0] - begin[0])) * 1000L);
+
             final long failCount = end[2] - begin[2];
 
             // 处理的消息条数

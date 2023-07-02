@@ -108,7 +108,7 @@ public class EventRuleTransfer extends ServiceThread {
                 }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
-                circulatorContext.successCount(2,afterTransformConnect.size());
+                circulatorContext.successCount(2,afterTransformConnect.size(),System.currentTimeMillis());
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 logger.error("transfer event record failed, stackTrace-", exception);

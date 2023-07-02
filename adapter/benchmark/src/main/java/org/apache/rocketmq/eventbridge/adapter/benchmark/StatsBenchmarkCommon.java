@@ -23,9 +23,9 @@ public class StatsBenchmarkCommon {
     private final LongAdder failCount = new LongAdder();
     private final LongAdder successCount = new LongAdder();
 
-    public Long[] createSnapshot() {
+    public Long[] createSnapshot(long timesStamp) {
         Long[] snap = new Long[]{
-                System.currentTimeMillis(),
+                timesStamp,
                 this.successCount.longValue(),
                 this.failCount.longValue(),
                 this.recordCount.longValue()
