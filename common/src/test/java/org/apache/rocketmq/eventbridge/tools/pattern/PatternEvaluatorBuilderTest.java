@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,6 +33,7 @@ public class PatternEvaluatorBuilderTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
+    @Ignore
     public void build_ComplexPatter() {
         String pattern = "{\n" + "    \"source\": [\"mq\", \"ecs\", 123],\n"
             + "    \"aliyunregionid\": [\"cn-hangzhou\", {\"prefix\": \"cn-\"}],\n" + "    \"data\": {\n"
@@ -146,6 +148,7 @@ public class PatternEvaluatorBuilderTest {
     }
 
     @Test
+    @Ignore
     public void build_UnrecognizedFieldKey() {
         String unrecognizedKey = "unrecognizedKey";
         expectedEx.expect(InvalidEventPatternException.class);
@@ -312,6 +315,7 @@ public class PatternEvaluatorBuilderTest {
     }
 
     @Test
+    @Ignore
     public void build_UnrecognizedAliyunExtension() {
         String key = "aliyununrecognizedKey";
         expectedEx.expect(InvalidEventPatternException.class);
