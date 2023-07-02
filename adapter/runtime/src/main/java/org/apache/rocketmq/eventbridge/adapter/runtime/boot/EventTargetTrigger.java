@@ -76,9 +76,11 @@ public class EventTargetTrigger extends ServiceThread {
                     try {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);
+                        circulatorContext.successCount(3,triggerRecords.size());
                     } catch (Exception exception) {
                         logger.error(getServiceName() + " push target exception, stackTrace-", exception);
                         triggerRecords.forEach(triggerRecord -> errorHandler.handle(triggerRecord, exception));
+                        circulatorContext.failCount(3);
                     }
                 });
             }
