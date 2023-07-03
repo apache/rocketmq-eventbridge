@@ -112,17 +112,18 @@ public abstract class AbstractEventCommon {
             final long failCount = end[2] - begin[2];
 
             // 处理的消息条数
-            long c = end[3] - begin[3];
+            double c = (double) (end[3] - begin[3]);
             c = c <= 0 ? 1 : c;
             // 时间
-            long t = end[0] - begin[0];
+            double t = (double) (end[0] - begin[0]);
             // 条/ms
-            final long delayTime = t / c;
+            final double delayTime =  t /  c;
+            String delayTimeStr = twoDecimal(delayTime);
 
             String sysState = getSystemState();
 
-            String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %d     |  Consume Fail: %d     |  %s",
-                    UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTime, failCount, sysState);
+            String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms     |  Consume Fail: %d     |  %s",
+                    UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr, failCount, sysState);
 
             printStream.println(info);
         }
