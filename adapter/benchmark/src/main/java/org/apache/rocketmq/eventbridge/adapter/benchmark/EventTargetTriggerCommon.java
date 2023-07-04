@@ -57,7 +57,6 @@ public class EventTargetTriggerCommon extends AbstractEventCommon {
 
     private void start() {
         executorService.scheduleAtFixedRate(new TimerTask() {
-
             @Override
             public void run() {
                 try {

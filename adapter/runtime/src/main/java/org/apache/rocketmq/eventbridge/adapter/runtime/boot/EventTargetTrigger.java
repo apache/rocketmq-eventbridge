@@ -59,7 +59,7 @@ public class EventTargetTrigger extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            long startTime = System.currentTimeMillis();
+            //long startTime = System.currentTimeMillis();
             Map<String, List<ConnectRecord>> targetRecordMap = circulatorContext.takeTargetRecords(batchSize);
             if (MapUtils.isEmpty(targetRecordMap)) {
                 logger.trace("current target pusher is empty");

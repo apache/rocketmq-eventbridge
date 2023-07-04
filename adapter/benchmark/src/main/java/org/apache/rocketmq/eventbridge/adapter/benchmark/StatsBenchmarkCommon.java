@@ -26,7 +26,7 @@ public class StatsBenchmarkCommon {
 
     public Long[] createSnapshot() {
         Long[] snap = new Long[]{
-                costTime.longValue(),
+                this.costTime.longValue(),
                 this.successCount.longValue(),
                 this.failCount.longValue(),
                 this.recordCount.longValue()

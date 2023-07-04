@@ -70,7 +70,7 @@ public class EventRuleTransfer extends ServiceThread {
     public void run() {
         List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
         while (!stopped) {
-            long startTime = System.currentTimeMillis();
+            //long startTime = System.currentTimeMillis();
             try {
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
                 if (MapUtils.isEmpty(eventRecordMap)) {

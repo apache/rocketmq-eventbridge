@@ -52,7 +52,7 @@ public class EventBusListener extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            long startTime = System.currentTimeMillis();
+            //long startTime = System.currentTimeMillis();
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
                 pullRecordList = eventSubscriber.pull();
