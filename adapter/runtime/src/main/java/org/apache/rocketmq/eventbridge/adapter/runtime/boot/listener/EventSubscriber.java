@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener;
 
 import io.openmessaging.connector.api.data.ConnectRecord;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.TargetRunnerListener;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.SubscribeRunnerKeys;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
@@ -33,6 +34,13 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      * @param refreshTypeEnum
      */
     public abstract void refresh(SubscribeRunnerKeys subscribeRunnerKeys, RefreshTypeEnum refreshTypeEnum);
+
+
+    /**
+     * fetch metrics configuration
+     * @return
+     */
+    public abstract BridgeMetricsManager getMetricsManager();
 
     /**
      * Pull connect records from store, Blocking method when is empty.

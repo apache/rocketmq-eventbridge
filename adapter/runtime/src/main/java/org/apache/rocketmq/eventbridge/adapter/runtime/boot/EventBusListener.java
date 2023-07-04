@@ -19,8 +19,13 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.boot;
 
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
@@ -40,12 +45,14 @@ public class EventBusListener extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final EventSubscriber eventSubscriber;
     private final ErrorHandler errorHandler;
+    private BridgeMetricsManager metricsManager;
 
     public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber,
-        ErrorHandler errorHandler) {
+        ErrorHandler errorHandler, BridgeMetricsManager metricsManager) {
         this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
         this.errorHandler = errorHandler;
+        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -53,7 +60,8 @@ public class EventBusListener extends ServiceThread {
         while (!stopped) {
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
-                pullRecordList = eventSubscriber.pull();
+                pullRecordList = Optional.ofNullable(eventSubscriber.pull()).orElse(new ArrayList<>());
+                BridgeMetricsManager.messagesInTotal.add(pullRecordList.size());
                 if (CollectionUtils.isEmpty(pullRecordList)) {
                     this.waitForRunning(1000);
                     continue;

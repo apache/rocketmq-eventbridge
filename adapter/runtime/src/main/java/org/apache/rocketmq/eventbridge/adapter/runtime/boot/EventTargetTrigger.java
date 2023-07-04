@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
@@ -47,12 +48,14 @@ public class EventTargetTrigger extends ServiceThread {
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
     private volatile Integer batchSize = 100;
+    private BridgeMetricsManager metricsManager;
 
     public EventTargetTrigger(CirculatorContext circulatorContext, OffsetManager offsetManager,
-                              ErrorHandler errorHandler) {
+                              ErrorHandler errorHandler, BridgeMetricsManager metricsManager) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.metricsManager = metricsManager;
     }
 
     @Override

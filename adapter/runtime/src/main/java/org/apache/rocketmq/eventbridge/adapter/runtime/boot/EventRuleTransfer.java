@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
@@ -47,12 +48,14 @@ public class EventRuleTransfer extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
+    private BridgeMetricsManager metricsManager;
 
     public EventRuleTransfer(CirculatorContext circulatorContext, OffsetManager offsetManager,
-        ErrorHandler errorHandler) {
+                             ErrorHandler errorHandler, BridgeMetricsManager metricsManager) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.metricsManager = metricsManager;
     }
 
     @Override
