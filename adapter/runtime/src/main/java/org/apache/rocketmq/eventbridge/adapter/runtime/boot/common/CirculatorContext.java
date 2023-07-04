@@ -23,10 +23,7 @@ import io.openmessaging.connector.api.component.task.sink.SinkTask;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.common.utils.ThreadUtils;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.AbstractEventCommon;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.EventBusListenerCommon;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.EventRuleTransferCommon;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.EventTargetTriggerCommon;
+import org.apache.rocketmq.eventbridge.adapter.benchmark.*;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.trigger.TriggerTaskContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.LoggerName;
@@ -78,9 +75,10 @@ public class CirculatorContext implements TargetRunnerListener {
 
     private Map<String/*RunnerName*/, ExecutorService> pusherExecutorMap = new ConcurrentHashMap<>(10);
 
-    private  AbstractEventCommon listenerCommon = null;
-    private  AbstractEventCommon transferCommon = null;
-    private  AbstractEventCommon triggerCommon = null;
+    private AbstractEventCommon listenerCommon = null;
+    private AbstractEventCommon transferCommon = null;
+    private AbstractEventCommon triggerCommon = null;
+    private AbstractEventCommon eventCommon = null;
 
     @Value("${rumtimer.benchmark.enable}")
     private boolean enableBenchmark;
@@ -88,24 +86,28 @@ public class CirculatorContext implements TargetRunnerListener {
     @PostConstruct
     private void enableBenchmark(){
         if (enableBenchmark){
-            listenerCommon = new EventBusListenerCommon();
-            transferCommon = new EventRuleTransferCommon();
-            triggerCommon = new EventTargetTriggerCommon();
+            //listenerCommon = new EventBusListenerCommon();
+            //transferCommon = new EventRuleTransferCommon();
+            //triggerCommon = new EventTargetTriggerCommon();
+            eventCommon = new EventAllCommon();
         }
     }
 
-    public void successCount(int type,int batchSize,long timesStamp) {
+    public void successCount(int type,int batchSize,long costTime) {
         if (enableBenchmark) {
             switch (type) {
                 case 1:
-                     listenerCommon.successCount(batchSize,timesStamp);
+                        listenerCommon.successCount(batchSize,costTime);
                      break;
                 case 2:
-                     transferCommon.successCount(batchSize,timesStamp);
+                        transferCommon.successCount(batchSize,costTime);
                      break;
                 case 3:
-                     triggerCommon.successCount(batchSize,timesStamp);
+                        triggerCommon.successCount(batchSize,costTime);
                      break;
+                case 4:
+                        eventCommon.successCount(batchSize,costTime);
+                    break;
             }
         }
     }
@@ -114,14 +116,17 @@ public class CirculatorContext implements TargetRunnerListener {
         if (enableBenchmark) {
             switch (type) {
                 case 1:
-                     listenerCommon.failCount();
+                        listenerCommon.failCount();
                      break;
                 case 2:
-                     transferCommon.failCount();
+                        transferCommon.failCount();
                      break;
                 case 3:
-                     triggerCommon.failCount();
+                        triggerCommon.failCount();
                      break;
+                case 4:
+                        eventCommon.failCount();
+                    break;
             }
         }
     }
@@ -169,6 +174,9 @@ public class CirculatorContext implements TargetRunnerListener {
      * @param connectRecords
      */
     public boolean offerEventRecords(List<ConnectRecord> connectRecords) {
+        for (ConnectRecord record:connectRecords){
+            record.addExtension(RuntimeConfigDefine.RECEIVE_TIME,String.valueOf(System.currentTimeMillis()));
+        }
         Map<String, List<ConnectRecord>> recordMap = buildWithRunnerNameKeyMap(connectRecords);
         updateRecordQueueMap(recordMap, eventQueueMap);
         return eventQueue.addAll(connectRecords);

@@ -52,6 +52,7 @@ public class EventBusListener extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
+            long startTime = System.currentTimeMillis();
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
                 pullRecordList = eventSubscriber.pull();
@@ -60,11 +61,11 @@ public class EventBusListener extends ServiceThread {
                     continue;
                 }
                 circulatorContext.offerEventRecords(pullRecordList);
-                circulatorContext.successCount(1,pullRecordList.size(),System.currentTimeMillis());
+                //circulatorContext.successCount(1,pullRecordList.size(),System.currentTimeMillis()-startTime);
             } catch (Exception exception) {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 pullRecordList.forEach(pullRecord -> errorHandler.handle(pullRecord, exception));
-                circulatorContext.failCount(1);
+                //circulatorContext.failCount(1);
             }
         }
     }

@@ -22,10 +22,11 @@ public class StatsBenchmarkCommon {
     private final LongAdder recordCount = new LongAdder();
     private final LongAdder failCount = new LongAdder();
     private final LongAdder successCount = new LongAdder();
+    private final LongAdder costTime = new LongAdder();
 
-    public Long[] createSnapshot(long timesStamp) {
+    public Long[] createSnapshot() {
         Long[] snap = new Long[]{
-                timesStamp,
+                costTime.longValue(),
                 this.successCount.longValue(),
                 this.failCount.longValue(),
                 this.recordCount.longValue()
@@ -43,5 +44,9 @@ public class StatsBenchmarkCommon {
 
     public LongAdder getSuccessCount() {
         return successCount;
+    }
+
+    public LongAdder getCostTime() {
+        return costTime;
     }
 }

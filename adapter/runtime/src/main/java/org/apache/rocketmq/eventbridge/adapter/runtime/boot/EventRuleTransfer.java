@@ -70,6 +70,7 @@ public class EventRuleTransfer extends ServiceThread {
     public void run() {
         List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
         while (!stopped) {
+            long startTime = System.currentTimeMillis();
             try {
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
                 if (MapUtils.isEmpty(eventRecordMap)) {
@@ -108,12 +109,12 @@ public class EventRuleTransfer extends ServiceThread {
                 }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
-                circulatorContext.successCount(2,afterTransformConnect.size(),System.currentTimeMillis());
+                //circulatorContext.successCount(2,afterTransformConnect.size(),System.currentTimeMillis() - startTime);
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 logger.error("transfer event record failed, stackTrace-", exception);
                 afterTransformConnect.forEach(transferRecord -> errorHandler.handle(transferRecord, exception));
-                circulatorContext.failCount(2);
+                //circulatorContext.failCount(2);
             }
 
         }

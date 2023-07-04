@@ -29,6 +29,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ public class EventTargetTrigger extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
+            long startTime = System.currentTimeMillis();
             Map<String, List<ConnectRecord>> targetRecordMap = circulatorContext.takeTargetRecords(batchSize);
             if (MapUtils.isEmpty(targetRecordMap)) {
                 logger.trace("current target pusher is empty");
@@ -76,11 +78,13 @@ public class EventTargetTrigger extends ServiceThread {
                     try {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);
-                        circulatorContext.successCount(3,triggerRecords.size(),System.currentTimeMillis());
+                        //circulatorContext.successCount(3,triggerRecords.size(),System.currentTimeMillis() - startTime);
+                        circulatorContext.successCount(4,triggerRecords.size(),System.currentTimeMillis() - Long.parseLong(triggerRecords.get(0).getExtension(RuntimeConfigDefine.RECEIVE_TIME)));
                     } catch (Exception exception) {
                         logger.error(getServiceName() + " push target exception, stackTrace-", exception);
                         triggerRecords.forEach(triggerRecord -> errorHandler.handle(triggerRecord, exception));
-                        circulatorContext.failCount(3);
+                        //circulatorContext.failCount(3);
+                        circulatorContext.failCount(4);
                     }
                 });
             }

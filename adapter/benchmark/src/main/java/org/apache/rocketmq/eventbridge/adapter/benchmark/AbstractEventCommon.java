@@ -49,16 +49,6 @@ public abstract class AbstractEventCommon {
         snapshotList = new LinkedList<>();
     }
 
-    public void successCount(int batchSize,long timesStamp) {
-        statsBenchmarkCommon.getSuccessCount().increment();
-        statsBenchmarkCommon.getRecordCount().add(batchSize);
-        snapshotList.addLast(statsBenchmarkCommon.createSnapshot(timesStamp));
-    }
-
-    public void failCount() {
-        statsBenchmarkCommon.getFailCount().increment();
-    }
-
     protected final long MB = 1024 * 1024;
     protected final long GB = 1024 * 1024 * 1024;
 
@@ -101,31 +91,42 @@ public abstract class AbstractEventCommon {
     }
 
     protected void printStats() {
-        if (snapshotList.size() >= 10) {
-            Long[] begin = snapshotList.getFirst();
-            Long[] end = snapshotList.getLast();
-
-            // final long tps = (long) (((end[1] - begin[1]) / (double) (end[0] - begin[0])) * 1000L);
-            // tps: 每秒钟能处理的消息数； 消息条数/时间差
-            final long tps = (long) (((end[3] - begin[3]) / (double) (end[0] - begin[0])) * 1000L);
-
-            final long failCount = end[2] - begin[2];
-
-            // 处理的消息条数
-            double c = (double) (end[3] - begin[3]);
-            c = c <= 0 ? 1 : c;
-            // 时间
-            double t = (double) (end[0] - begin[0]);
-            // 条/ms
-            final double delayTime =  t /  c;
-            String delayTimeStr = twoDecimal(delayTime);
-
-            String sysState = getSystemState();
-
-            String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms     |  Consume Fail: %d     |  %s",
-                    UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr, failCount, sysState);
-
-            printStream.println(info);
+        if (snapshotList.size() < 1) return;
+        if (snapshotList.size() > 3) {
+            snapshotList.removeFirst();
         }
+        Long[] end = snapshotList.getLast();
+
+        // tps: 每秒钟能处理的消息数； 消息总数/消耗时长
+        final long tps = (long) (end[3] / (double) end[0] * 1000L);
+
+        final long failCount = end[2];
+
+        // 消息总数
+        double c = (double) end[3];
+        c = c <= 0 ? 1 : c;
+        // 消耗时长
+        double t = (double) (end[0]);
+        // 条/ms
+        final double delayTime = t / c;
+        String delayTimeStr = twoDecimal(delayTime);
+
+        String sysState = getSystemState();
+
+        String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms     |  Consume Fail: %d     |  %s",
+                UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr, failCount, sysState);
+
+        printStream.println(info);
+    }
+
+    public void successCount(int batchSize, long costTime) {
+        statsBenchmarkCommon.getSuccessCount().increment();
+        statsBenchmarkCommon.getRecordCount().add(batchSize);
+        statsBenchmarkCommon.getCostTime().add(costTime);
+        snapshotList.addLast(statsBenchmarkCommon.createSnapshot());
+    }
+
+    public void failCount() {
+        statsBenchmarkCommon.getFailCount().increment();
     }
 }
