@@ -196,14 +196,16 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
             String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
 
-            String metricsAddress = properties.getProperty("metrics.endpoint.address");
+            String metricsPromExporterHost = properties.getProperty("metrics.endpoint.host");
+            String metricsPromExporterPort =  properties.getProperty("metrics.endpoint.port");
             String metricsCollectorMode = properties.getProperty("metrics.collector.mode");
             clientConfig.setNameSrvAddr(namesrvAddr);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
                     AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
             BridgeConfig bridgeConfig = new BridgeConfig();
-            bridgeConfig.setEventBridgeAddress(metricsAddress);
+            bridgeConfig.setMetricsPromExporterHost(metricsPromExporterHost);
+            bridgeConfig.setMetricsPromExporterPort(Integer.parseInt(metricsPromExporterPort));
             bridgeConfig.setMetricsExporterType(Integer.parseInt(metricsCollectorMode));
             this.clientConfig = clientConfig;
             this.bridgeConfig = bridgeConfig;

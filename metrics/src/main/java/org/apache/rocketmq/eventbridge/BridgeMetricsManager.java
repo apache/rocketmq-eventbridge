@@ -110,22 +110,6 @@ public class BridgeMetricsManager {
             return;
         }
 
-        String labels = bridgeConfig.getMetricsLabel();
-        if (StringUtils.isNotBlank(labels)) {
-            List<String> kvPairs = Splitter.on(',').omitEmptyStrings().splitToList(labels);
-            for (String item : kvPairs) {
-                String[] split = item.split(":");
-                if (split.length != 2) {
-                    LOGGER.warn("metricsLabel is not valid: {}", labels);
-                    continue;
-                }
-                LABEL_MAP.put(split[0], split[1]);
-            }
-        }
-        if (bridgeConfig.isMetricsInDelta()) {
-            LABEL_MAP.put(LABEL_AGGREGATION, AGGREGATION_DELTA);
-        }
-
         SdkMeterProviderBuilder providerBuilder = SdkMeterProvider.builder()
             .setResource(Resource.empty());
 
@@ -196,7 +180,7 @@ public class BridgeMetricsManager {
 
         bridgeMeter = OpenTelemetrySdk.builder()
             .setMeterProvider(providerBuilder.build())
-            .build()
+            .buildAndRegisterGlobal()
             .getMeter(OPEN_TELEMETRY_METER_NAME);
 
         initRequestMetrics();
