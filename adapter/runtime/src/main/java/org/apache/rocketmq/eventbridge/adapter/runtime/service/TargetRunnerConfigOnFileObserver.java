@@ -82,7 +82,7 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
 
     public void addListen(String pathName, TargetRunnerConfigOnFileObserver pusherConfigOnFileService) {
         log.info("Watching task file changing:{}", pathName);
-        int index = pathName.lastIndexOf("\\");
+        int index = pathName.lastIndexOf("/");
         String filePath = pathName.substring(0, index);
         String fileName = pathName.substring(index + 1);
         service.scheduleAtFixedRate(() -> {
@@ -109,7 +109,7 @@ public class TargetRunnerConfigOnFileObserver extends AbstractTargetRunnerConfig
 
 
     private String getConfigFilePath() {
-        return "F:\\gitrepo\\rocketmq-eventbridge\\adapter\\runtime\\src\\main\\resources\\target-runner.json";
+        return this.getClass().getClassLoader().getResource(DEFAULT_TARGET_RUNNER_CONFIG_FILE_NAME).getPath();
     }
 
 }
