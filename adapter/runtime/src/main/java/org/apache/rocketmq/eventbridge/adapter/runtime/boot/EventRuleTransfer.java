@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.EventBusListenerCommon;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
@@ -70,7 +69,6 @@ public class EventRuleTransfer extends ServiceThread {
     public void run() {
         List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
         while (!stopped) {
-            //long startTime = System.currentTimeMillis();
             try {
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
                 if (MapUtils.isEmpty(eventRecordMap)) {
@@ -109,12 +107,10 @@ public class EventRuleTransfer extends ServiceThread {
                 }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
-                //circulatorContext.successCount(2,afterTransformConnect.size(),System.currentTimeMillis() - startTime);
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 logger.error("transfer event record failed, stackTrace-", exception);
                 afterTransformConnect.forEach(transferRecord -> errorHandler.handle(transferRecord, exception));
-                //circulatorContext.failCount(2);
             }
 
         }

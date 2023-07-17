@@ -20,46 +20,52 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
 import java.util.TimerTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 整条链路
  */
-public class EventAllCommon extends AbstractEventCommon {
+public class EventTPSCommon extends AbstractEventCommon {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventAllCommon.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventTPSCommon.class);
 
-    private String listenerFileName = System.getProperty("user.home") + "/listenerAll.log";
-
-    public EventAllCommon() {
-        init();
-        start();
-    }
-
-    private void init() {
-        executorService = new ScheduledThreadPoolExecutor(1,
-                new BasicThreadFactory.Builder().namingPattern("BenchmarkTimerThread-all-%d").build());
-
+    public static void main(String[] args) {
+        String filePath = System.getProperty("user.home") + "/fileSink.log";
+        if (args.length > 0) {
+            filePath = args[0];
+        }
+        EventTPSCommon tpsCommon = null;
         try {
-            printStream = new PrintStream(
-                    Files.newOutputStream(Paths.get(listenerFileName), StandardOpenOption.CREATE, StandardOpenOption.APPEND),
-                    false,
-                    StandardCharsets.UTF_8.name());
+            tpsCommon = new EventTPSCommon(filePath);
+            //System.out.println(tpsCommon.getLineNumber());
+            tpsCommon.start();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
-            throw new RuntimeException("Create outputStream: " + listenerFileName + " for FileSinkTask failed", e);
+            e.printStackTrace();
         }
     }
 
-    private void start() {
+    public EventTPSCommon(String filePath) throws FileNotFoundException {
+        init(filePath);
+    }
 
+    private void init(String filePath) throws FileNotFoundException {
+        file = new File(filePath);
+        lineNumberReader = new LineNumberReader(new FileReader(file));
+        previousRowCount = new AtomicReference<>();
+        previousRowCount.set(0);
+        executorService = new ScheduledThreadPoolExecutor(1,
+                new BasicThreadFactory.Builder().namingPattern("BenchmarkTimerThread-all-%d").build());
+
+    }
+
+    @Override
+    public void start() {
         executorService.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {

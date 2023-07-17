@@ -21,7 +21,6 @@ import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.rocketmq.eventbridge.adapter.benchmark.EventBusListenerCommon;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
@@ -52,7 +51,6 @@ public class EventBusListener extends ServiceThread {
     @Override
     public void run() {
         while (!stopped) {
-            //long startTime = System.currentTimeMillis();
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
                 pullRecordList = eventSubscriber.pull();
@@ -61,11 +59,9 @@ public class EventBusListener extends ServiceThread {
                     continue;
                 }
                 circulatorContext.offerEventRecords(pullRecordList);
-                //circulatorContext.successCount(1,pullRecordList.size(),System.currentTimeMillis()-startTime);
             } catch (Exception exception) {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 pullRecordList.forEach(pullRecord -> errorHandler.handle(pullRecord, exception));
-                //circulatorContext.failCount(1);
             }
         }
     }

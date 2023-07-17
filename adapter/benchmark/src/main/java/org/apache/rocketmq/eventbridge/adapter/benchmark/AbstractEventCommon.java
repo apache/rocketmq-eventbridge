@@ -16,117 +16,60 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.benchmark;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.rocketmq.common.UtilAll;
 
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
+import java.io.File;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.LinkedList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
 
 public abstract class AbstractEventCommon {
-    protected OperatingSystemMXBean osMxBean;
-
-    protected ThreadMXBean threadBean;
-
-    protected StatsBenchmarkCommon statsBenchmarkCommon;
-
-    protected LinkedList<Long[]> snapshotList;
-
-    protected PrintStream printStream;
-
+    protected File file;
+    protected LineNumberReader lineNumberReader;
+    protected AtomicReference<Integer> previousRowCount;
     protected ScheduledExecutorService executorService;
-
-    public AbstractEventCommon() {
-        osMxBean = ManagementFactory.getOperatingSystemMXBean();
-        threadBean = ManagementFactory.getThreadMXBean();
-        statsBenchmarkCommon = new StatsBenchmarkCommon();
-        snapshotList = new LinkedList<>();
-    }
-
-    protected final long MB = 1024 * 1024;
-    protected final long GB = 1024 * 1024 * 1024;
-
-    protected String getSystemState() {
-        String osJson = JSON.toJSONString(osMxBean);
-        JSONObject jsonObject = JSON.parseObject(osJson);
-
-        Long totalPhysicalMemorySize = jsonObject.getLong("totalPhysicalMemorySize") / MB;
-        Long freePhysicalMemorySize = jsonObject.getLong("freePhysicalMemorySize") / MB;
-        double freePhysicalMemory = (totalPhysicalMemorySize - freePhysicalMemorySize * 1.0) / totalPhysicalMemorySize;
-        double freePhysicalMemoryRate = freePhysicalMemory * 100;
-
-        Runtime runtime = Runtime.getRuntime();
-        // java虚拟机中的内存总量，可用内存空间 单位为byte，默认为系统的1/64
-        long totalMemory = runtime.totalMemory();
-        // java虚拟机试图使用的最大内存量 最大可用内存空间 单位byte，默认为系统的1/4
-        long maxMemory = runtime.maxMemory();
-        // java 虚拟机中的空闲内存量 空闲空间 单位byte， 默认为系统的1/4
-        long freeMemory = runtime.freeMemory();
-        double usedMemoryJava = (totalMemory - freeMemory * 1.0) / totalMemory;
-        double usedMemoryJavaRate = usedMemoryJava * 100;
-
-        StringBuilder result = new StringBuilder();
-        result
-                .append("系统总内存:")
-                .append(twoDecimal(totalPhysicalMemorySize / 1024))
-                .append("GB  |  系统内存使用量: ")
-                .append(twoDecimal(freePhysicalMemoryRate))
-                .append("%  |  虚拟机内存总量:")
-                .append(twoDecimal(totalMemory / MB))
-                .append("MB  |  虚拟机内存使用量:")
-                .append(twoDecimal(usedMemoryJavaRate)).append("%");
-
-        return result.toString();
-    }
+    protected LongAdder writeCount = new LongAdder();
+    protected LongAdder costTime = new LongAdder();
 
     protected String twoDecimal(double doubleValue) {
         BigDecimal bigDecimal = new BigDecimal(doubleValue).setScale(2, RoundingMode.HALF_UP);
         return bigDecimal.toString();
     }
 
-    protected void printStats() {
-        if (snapshotList.size() < 1) return;
-        if (snapshotList.size() > 3) {
-            snapshotList.removeFirst();
+    protected void printStats() throws IOException {
+
+        int currentRowCount = getLineNumber();
+        if (previousRowCount.get() == null || previousRowCount.get() == 0) {
+            previousRowCount.set(currentRowCount);
+            return;
         }
-        Long[] end = snapshotList.getLast();
 
         // tps: 每秒钟能处理的消息数； 消息总数/消耗时长
-        final long tps = (long) (end[3] / (double) end[0] * 1000L);
-
-        final long failCount = end[2];
-
-        // 消息总数
-        double c = (double) end[3];
-        c = c <= 0 ? 1 : c;
-        // 消耗时长
-        double t = (double) (end[0]);
+        final long tps = currentRowCount - previousRowCount.get();
+        previousRowCount.set(currentRowCount);
+        writeCount.add(currentRowCount);
+        costTime.add(1000);
         // 条/ms
-        final double delayTime = t / c;
+        final double delayTime = writeCount.longValue() / costTime.longValue();
         String delayTimeStr = twoDecimal(delayTime);
 
-        String sysState = getSystemState();
+        String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms",
+                UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr);
 
-        String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms     |  Consume Fail: %d     |  %s",
-                UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr, failCount, sysState);
-
-        printStream.println(info);
+        System.out.println(info);
     }
 
-    public void successCount(int batchSize, long costTime) {
-        statsBenchmarkCommon.getSuccessCount().increment();
-        statsBenchmarkCommon.getRecordCount().add(batchSize);
-        statsBenchmarkCommon.getCostTime().add(costTime);
-        snapshotList.addLast(statsBenchmarkCommon.createSnapshot());
-    }
 
-    public void failCount() {
-        statsBenchmarkCommon.getFailCount().increment();
+    public abstract void start();
+
+    protected int getLineNumber() throws IOException {
+        lineNumberReader.skip(Long.MAX_VALUE);
+        int lineNumber = lineNumberReader.getLineNumber();
+        //实际上是读取换行符数量 , 所以需要+1
+        return lineNumber;
     }
 }
