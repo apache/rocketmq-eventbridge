@@ -25,8 +25,8 @@ public class EventMonitor extends ServiceThread {
 
     private BridgeMetricsManager bridgeMetricsManager;
 
-    public EventMonitor(EventSubscriber eventSubscriber) {
-        this.bridgeMetricsManager = eventSubscriber.getMetricsManager();
+    public EventMonitor(BridgeMetricsManager metricsManager) {
+        this.bridgeMetricsManager = metricsManager;
     }
     @Override
     public String getServiceName() {

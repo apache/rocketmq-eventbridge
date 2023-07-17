@@ -123,13 +123,6 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     }
 
     @Override
-    public BridgeMetricsManager getMetricsManager() {
-        BridgeMetricsManager metricsManager = new BridgeMetricsManager(bridgeConfig);
-        return metricsManager;
-    }
-
-
-    @Override
     public List<ConnectRecord> pull() {
         ArrayList<MessageExt> messages = new ArrayList<>();
         messageBuffer.drainTo(messages, pullBatchSize);
@@ -196,19 +189,11 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
             String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
 
-            String metricsPromExporterHost = properties.getProperty("metrics.endpoint.host");
-            String metricsPromExporterPort =  properties.getProperty("metrics.endpoint.port");
-            String metricsCollectorMode = properties.getProperty("metrics.collector.mode");
             clientConfig.setNameSrvAddr(namesrvAddr);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
                     AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
-            BridgeConfig bridgeConfig = new BridgeConfig();
-            bridgeConfig.setMetricsPromExporterHost(metricsPromExporterHost);
-            bridgeConfig.setMetricsPromExporterPort(Integer.parseInt(metricsPromExporterPort));
-            bridgeConfig.setMetricsExporterType(Integer.parseInt(metricsCollectorMode));
             this.clientConfig = clientConfig;
-            this.bridgeConfig = bridgeConfig;
 
             if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
                 this.sessionCredentials = new SessionCredentials(accessKey, secretKey);

@@ -35,13 +35,6 @@ public abstract class EventSubscriber implements TargetRunnerListener {
      */
     public abstract void refresh(SubscribeRunnerKeys subscribeRunnerKeys, RefreshTypeEnum refreshTypeEnum);
 
-
-    /**
-     * fetch metrics configuration
-     * @return
-     */
-    public abstract BridgeMetricsManager getMetricsManager();
-
     /**
      * Pull connect records from store, Blocking method when is empty.
      *

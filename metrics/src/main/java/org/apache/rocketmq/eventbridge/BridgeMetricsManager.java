@@ -40,11 +40,13 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,6 +56,7 @@ import org.apache.rocketmq.eventbridge.metrics.NopObservableLongGauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import static org.apache.rocketmq.eventbridge.BridgeMetricsConstant.*;
 
@@ -62,7 +65,7 @@ public class BridgeMetricsManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeMetricsManager.class);
 
-    private final BridgeConfig bridgeConfig;
+    private BridgeConfig bridgeConfig;
     private final static Map<String, String> LABEL_MAP = new HashMap<>();
     private OtlpGrpcMetricExporter metricExporter;
     private PeriodicMetricReader periodicMetricReader;
@@ -85,8 +88,25 @@ public class BridgeMetricsManager {
     public static LongCounter throughputOutTotal = new NopLongCounter();
     public static LongHistogram messageSize = new NopLongHistogram();
 
-    public BridgeMetricsManager(BridgeConfig bridgeConfig) {
-        this.bridgeConfig = bridgeConfig;
+    public BridgeMetricsManager() {
+        initMetricsProperties();
+    }
+
+    private void initMetricsProperties() {
+        try {
+            Properties properties = PropertiesLoaderUtils.loadAllProperties("metrics.properties");
+            String metricsPromExporterHost = properties.getProperty("metrics.endpoint.host");
+            String metricsPromExporterPort =  properties.getProperty("metrics.endpoint.port");
+            String metricsCollectorMode = properties.getProperty("metrics.collector.mode");
+
+            BridgeConfig bridgeConfig = new BridgeConfig();
+            bridgeConfig.setMetricsPromExporterHost(metricsPromExporterHost);
+            bridgeConfig.setMetricsPromExporterPort(Integer.parseInt(metricsPromExporterPort));
+            bridgeConfig.setMetricsExporterType(Integer.parseInt(metricsCollectorMode));
+            this.bridgeConfig = bridgeConfig;
+        } catch (IOException e) {
+           LOGGER.error("init metrics properties exception, stack trace- ", e);
+        }
     }
 
 
