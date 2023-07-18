@@ -263,13 +263,15 @@ public class BridgeMetricsManager {
             });
     }
 
-    public void eventbusInEventsTotal(long count) {
-        AttributesBuilder attributesBuilder = addGroup(ACCOUNT_LABELS);
+    public void eventbusInEventsTotal(String runnerName, String accountId, String status, long count) {
+        Map<String, String> labelMaps = buildLabelMap(runnerName, accountId, status);
+        AttributesBuilder attributesBuilder = addGroup(labelMaps);
         countMetrics(EVENTBUS_IN_EVENTS_TOTAL, count, attributesBuilder);
     }
 
-    public void eventRuleLatencySeconds(long latency) {
-        AttributesBuilder attributesBuilder = addGroup(RUNNER_NAME_LABELS);
+    public void eventRuleLatencySeconds(String runnerName, String accountId ,String status, long latency) {
+        Map<String, String> labelMaps = buildLabelMap(runnerName, accountId, status);
+        AttributesBuilder attributesBuilder = addGroup(labelMaps);
         gaugeMetrics(EVENTRULE_LATENCY_SECONDS, latency, attributesBuilder);
     }
 
@@ -327,5 +329,21 @@ public class BridgeMetricsManager {
             periodicMetricReader.shutdown();
             loggingMetricExporter.shutdown();
         }
+    }
+
+    private Map<String, String> buildLabelMap(String runnerName, String accountId, String status) {
+        Map<String, String> labelMap = new HashMap<>();
+        if (StringUtils.isNotBlank(runnerName)) {
+            labelMap.put("runner_name", runnerName);
+        }
+
+        if (StringUtils.isNotBlank(accountId)) {
+
+            labelMap.put("account_id", accountId);
+        }
+        if (StringUtils.isNotBlank(status)) {
+            labelMap.put("status", status);
+        }
+        return labelMap;
     }
 }

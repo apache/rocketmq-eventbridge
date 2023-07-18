@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
+
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
@@ -31,6 +33,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEngine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
 import org.slf4j.Logger;
@@ -73,7 +76,6 @@ public class EventRuleTransfer extends ServiceThread {
         List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
         while (!stopped) {
             try {
-                long startTime = System.currentTimeMillis();
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
                 if (MapUtils.isEmpty(eventRecordMap)) {
                     logger.trace("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
@@ -90,18 +92,24 @@ public class EventRuleTransfer extends ServiceThread {
                 afterTransformConnect.clear();
                 List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
                 for (String runnerName : eventRecordMap.keySet()) {
+                    TargetRunnerConfig runnerConfig = circulatorContext.getRunnerConfig(runnerName);
                     TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
                     List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
                     curEventRecords.forEach(pullRecord -> {
+                        long startTime = System.currentTimeMillis();
                         CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
                             .exceptionally((exception) -> {
                                 logger.error("transfer do transform event record failed，stackTrace-", exception);
+                                //failed
+                                metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), "failed", System.currentTimeMillis() - startTime);
                                 errorHandler.handle(pullRecord, exception);
                                 return null;
                             })
                             .thenAccept(pushRecord -> {
                                 if (Objects.nonNull(pushRecord)) {
                                     afterTransformConnect.add(pushRecord);
+                                    // success
+                                    metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), "success",System.currentTimeMillis() - startTime);
                                 } else {
                                     offsetManager.commit(pullRecord);
                                 }
@@ -109,12 +117,9 @@ public class EventRuleTransfer extends ServiceThread {
                         completableFutures.add(transformFuture);
                     });
                 }
-                long endTime = System.currentTimeMillis();
-                long latency = endTime - startTime;
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
                 //success
-                metricsManager.eventRuleLatencySeconds(latency);
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 //failed
