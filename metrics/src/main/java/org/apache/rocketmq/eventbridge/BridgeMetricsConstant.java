@@ -17,19 +17,28 @@
 
 package org.apache.rocketmq.eventbridge;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BridgeMetricsConstant {
     public static final String OPEN_TELEMETRY_METER_NAME = "bridge-meter";
-
-    public static final String GAUGE_PROCESSOR_GAUGE = "target_queue_gauge";
-    public static final String RULE_QUEUE_GAUGE = "rule_queue_gauge";
-
-    public static final String COUNTER_MESSAGES_IN_TOTAL = "eventbridge_messages_in_total";
-    public static final String COUNTER_MESSAGES_OUT_TOTAL = "eventbridge_messages_out_total";
-    public static final String COUNTER_THROUGHPUT_IN_TOTAL = "eventbridge_throughput_in_total";
-    public static final String COUNTER_THROUGHPUT_OUT_TOTAL = "eventbridge_throughput_out_total";
     public static final String HISTOGRAM_MESSAGE_SIZE = "eventbridge_message_size";
+    public static final String EVENTBUS_IN_EVENTS_TOTAL = "eventbridge_eventbus_in_events_total";
+    public static final String EVENTRULE_LATENCY_SECONDS = "eventbridge_eventrule_latency_seconds";
 
 
     /** eventbridge process message latency**/
     public static final String HISTOGRAM_RPC_LATENCY = "process_latency";
+
+    public static final Map<String, String> ACCOUNT_LABELS = new HashMap<String, String>() {
+        { put("account_id", "account id"); }
+        { put("runnerName", "runnerName"); }
+        { put("status", "status"); }
+    };
+
+    public static final Map<String, String> RUNNER_NAME_LABELS = new HashMap<String, String>() {
+        { put("account_id", "account id"); }
+        { put("runnerName", "runner name"); }
+    };
+
 }

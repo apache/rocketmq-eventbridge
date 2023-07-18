@@ -61,7 +61,7 @@ public class EventBusListener extends ServiceThread {
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
                 pullRecordList = Optional.ofNullable(eventSubscriber.pull()).orElse(new ArrayList<>());
-                BridgeMetricsManager.messagesInTotal.add(pullRecordList.size());
+                metricsManager.eventbusInEventsTotal(pullRecordList.size());
                 if (CollectionUtils.isEmpty(pullRecordList)) {
                     this.waitForRunning(1000);
                     continue;

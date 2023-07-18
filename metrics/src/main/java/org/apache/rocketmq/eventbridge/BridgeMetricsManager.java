@@ -24,6 +24,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
@@ -66,7 +67,6 @@ public class BridgeMetricsManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeMetricsManager.class);
 
     private BridgeConfig bridgeConfig;
-    private final static Map<String, String> LABEL_MAP = new HashMap<>();
     private OtlpGrpcMetricExporter metricExporter;
     private PeriodicMetricReader periodicMetricReader;
     private PrometheusHttpServer prometheusHttpServer;
@@ -75,17 +75,10 @@ public class BridgeMetricsManager {
 
     // queue stats metrics
     public static ObservableLongGauge targetGauge = new NopObservableLongGauge();
-    public static ObservableLongGauge ruleGauge = new NopObservableLongGauge();
-
-
     //invoke timeout
     public static LongHistogram invokeLatency = new NopLongHistogram();
-
     // request metrics
-    public static LongCounter messagesInTotal = new NopLongCounter();
-    public static LongCounter messagesOutTotal = new NopLongCounter();
-    public static LongCounter throughputInTotal = new NopLongCounter();
-    public static LongCounter throughputOutTotal = new NopLongCounter();
+    public static ObservableLongCounter messagesOutTotal = new NopLongCounter();
     public static LongHistogram messageSize = new NopLongHistogram();
 
     public BridgeMetricsManager() {
@@ -109,10 +102,9 @@ public class BridgeMetricsManager {
         }
     }
 
-
-    public static AttributesBuilder newAttributesBuilder() {
+    public static AttributesBuilder newAttributesBuilder(Map<String, String> labels) {
         AttributesBuilder attributesBuilder = Attributes.builder();
-        LABEL_MAP.forEach(attributesBuilder::put);
+        labels.forEach(attributesBuilder::put);
         return attributesBuilder;
     }
 
@@ -249,50 +241,46 @@ public class BridgeMetricsManager {
     }
 
 
-    public <T> void initTriggerMetrics(List<T> eventTargetQueue, String label) {
-
-        targetGauge = bridgeMeter.gaugeBuilder(GAUGE_PROCESSOR_GAUGE)
-            .setDescription("Request processor gauge")
-            .ofLongs()
-            .buildWithCallback(measurement -> {
-                measurement.record(eventTargetQueue.size(), newAttributesBuilder().put(label, "target").build());
-            });
+    public AttributesBuilder addGroup(Map<String, String> labels ) {
+        return newAttributesBuilder(labels);
     }
 
-    public <T> void initRuleMetrics(List<T> eventRuleQueue, String label) {
-        ruleGauge = bridgeMeter.gaugeBuilder(RULE_QUEUE_GAUGE)
-            .setDescription("Request processor gauge")
-            .ofLongs()
-            .buildWithCallback(measurement -> {
-                measurement.record(eventRuleQueue.size(), newAttributesBuilder().put(label, "rule").build());
-            });
-
-    }
-
-    private void initRequestMetrics() {
-        messagesInTotal = bridgeMeter.counterBuilder(COUNTER_MESSAGES_IN_TOTAL)
-            .setDescription("Total number of incoming messages")
-            .build();
-
-        messagesOutTotal = bridgeMeter.counterBuilder(COUNTER_MESSAGES_OUT_TOTAL)
+    private void countMetrics(String metricsName, long count, AttributesBuilder attributesBuilder) {
+        messagesOutTotal = bridgeMeter.counterBuilder(metricsName)
             .setDescription("Total number of outgoing messages")
-            .build();
+            .buildWithCallback(measurement -> {
+                measurement.record(count, attributesBuilder.build());
+            });
 
-        throughputInTotal = bridgeMeter.counterBuilder(COUNTER_THROUGHPUT_IN_TOTAL)
-            .setDescription("Total traffic of incoming messages")
-            .build();
+    }
 
-        throughputOutTotal = bridgeMeter.counterBuilder(COUNTER_THROUGHPUT_OUT_TOTAL)
-            .setDescription("Total traffic of outgoing messages")
-            .build();
+    private void gaugeMetrics(String metricsName, long count, AttributesBuilder attributesBuilder) {
+        targetGauge = bridgeMeter.gaugeBuilder(metricsName)
+            .setDescription("Gauge of total messages ")
+            .ofLongs()
+            .buildWithCallback( measurement -> {
+                measurement.record(count, attributesBuilder.build());
+            });
+    }
 
+    public void eventbusInEventsTotal(long count) {
+        AttributesBuilder attributesBuilder = addGroup(ACCOUNT_LABELS);
+        countMetrics(EVENTBUS_IN_EVENTS_TOTAL, count, attributesBuilder);
+    }
+
+    public void eventRuleLatencySeconds(long latency) {
+        AttributesBuilder attributesBuilder = addGroup(RUNNER_NAME_LABELS);
+        gaugeMetrics(EVENTRULE_LATENCY_SECONDS, latency, attributesBuilder);
+    }
+
+    public void initRequestMetrics() {
         messageSize = bridgeMeter.histogramBuilder(HISTOGRAM_MESSAGE_SIZE)
             .setDescription("Incoming messages size")
             .ofLongs()
             .build();
     }
 
-    public static void initRuleMetrics(Meter meter) {
+    public void initRuleMetrics(Meter meter) {
         invokeLatency = meter.histogramBuilder(HISTOGRAM_RPC_LATENCY)
             .setDescription("invoke latency")
             .setUnit("milliseconds")
