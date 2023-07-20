@@ -21,7 +21,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
@@ -75,11 +74,10 @@ public class BridgeMetricsManager {
 
     // queue stats metrics
     public static ObservableLongGauge targetGauge = new NopObservableLongGauge();
-    //invoke timeout
+    // invoke timeout
     public static LongHistogram invokeLatency = new NopLongHistogram();
     // request metrics
     public static ObservableLongCounter messagesOutTotal = new NopLongCounter();
-    public static LongHistogram messageSize = new NopLongHistogram();
 
     public BridgeMetricsManager() {
         initMetricsProperties();
@@ -212,8 +210,6 @@ public class BridgeMetricsManager {
             .buildAndRegisterGlobal()
             .getMeter(OPEN_TELEMETRY_METER_NAME);
 
-        initRequestMetrics();
-        initRuleMetrics(bridgeMeter);
     }
 
     private void registerMetricsView(SdkMeterProviderBuilder providerBuilder) {
@@ -230,6 +226,7 @@ public class BridgeMetricsManager {
             .setType(InstrumentType.HISTOGRAM)
             .setName(HISTOGRAM_MESSAGE_SIZE)
             .build();
+
         View messageSizeView = View.builder()
             .setAggregation(Aggregation.explicitBucketHistogram(messageSizeBuckets))
             .build();
@@ -239,6 +236,29 @@ public class BridgeMetricsManager {
             providerBuilder.registerView(selectorViewPair.getObject1(), selectorViewPair.getObject2());
         }
     }
+
+    public static List<Pair<InstrumentSelector, View>> getMetricsView() {
+        List<Double> rpcCostTimeBuckets = Arrays.asList(
+            (double) Duration.ofMillis(1).toMillis(),
+            (double) Duration.ofMillis(3).toMillis(),
+            (double) Duration.ofMillis(5).toMillis(),
+            (double) Duration.ofMillis(7).toMillis(),
+            (double) Duration.ofMillis(10).toMillis(),
+            (double) Duration.ofMillis(100).toMillis(),
+            (double) Duration.ofSeconds(1).toMillis(),
+            (double) Duration.ofSeconds(2).toMillis(),
+            (double) Duration.ofSeconds(3).toMillis()
+        );
+        InstrumentSelector selector = InstrumentSelector.builder()
+            .setType(InstrumentType.HISTOGRAM)
+            .setName(HISTOGRAM_RPC_LATENCY)
+            .build();
+        View view = View.builder()
+            .setAggregation(Aggregation.explicitBucketHistogram(rpcCostTimeBuckets))
+            .build();
+        return Lists.newArrayList(new Pair<>(selector, view));
+    }
+
 
 
     public AttributesBuilder addGroup(Map<String, String> labels ) {
@@ -275,42 +295,14 @@ public class BridgeMetricsManager {
         gaugeMetrics(EVENTRULE_LATENCY_SECONDS, latency, attributesBuilder);
     }
 
-    public void initRequestMetrics() {
-        messageSize = bridgeMeter.histogramBuilder(HISTOGRAM_MESSAGE_SIZE)
-            .setDescription("Incoming messages size")
-            .ofLongs()
-            .build();
-    }
 
-    public void initRuleMetrics(Meter meter) {
-        invokeLatency = meter.histogramBuilder(HISTOGRAM_RPC_LATENCY)
+    public void countLatencyStat(long latency, String metricsName, String runnerName, String accountId, String status) {
+        invokeLatency = bridgeMeter.histogramBuilder(metricsName)
             .setDescription("invoke latency")
             .setUnit("milliseconds")
             .ofLongs()
             .build();
-
-    }
-
-    public static List<Pair<InstrumentSelector, View>> getMetricsView() {
-        List<Double> rpcCostTimeBuckets = Arrays.asList(
-            (double) Duration.ofMillis(1).toMillis(),
-            (double) Duration.ofMillis(3).toMillis(),
-            (double) Duration.ofMillis(5).toMillis(),
-            (double) Duration.ofMillis(7).toMillis(),
-            (double) Duration.ofMillis(10).toMillis(),
-            (double) Duration.ofMillis(100).toMillis(),
-            (double) Duration.ofSeconds(1).toMillis(),
-            (double) Duration.ofSeconds(2).toMillis(),
-            (double) Duration.ofSeconds(3).toMillis()
-        );
-        InstrumentSelector selector = InstrumentSelector.builder()
-            .setType(InstrumentType.HISTOGRAM)
-            .setName(HISTOGRAM_RPC_LATENCY)
-            .build();
-        View view = View.builder()
-            .setAggregation(Aggregation.explicitBucketHistogram(rpcCostTimeBuckets))
-            .build();
-        return Lists.newArrayList(new Pair<>(selector, view));
+        invokeLatency.record(latency, newAttributesBuilder(buildLabelMap(runnerName, accountId, status)).build());
     }
 
 
