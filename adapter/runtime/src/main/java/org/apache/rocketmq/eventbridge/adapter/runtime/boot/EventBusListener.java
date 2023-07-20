@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsConstant;
 import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
@@ -32,6 +33,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.RunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +68,8 @@ public class EventBusListener extends ServiceThread {
 
                 for (ConnectRecord connectRecord : pullRecordList) {
                     String runnerName = connectRecord.getExtension(RuntimeConfigDefine.RUNNER_NAME);
-                    String accountId = getAccountId(connectRecord);
-                    metricsManager.eventbusInEventsTotal(runnerName, accountId, "success", 1);
+                    String accountId = RunnerUtil.getAccountId(circulatorContext,runnerName);
+                    metricsManager.eventbusInEventsTotal(runnerName, accountId, BridgeMetricsConstant.Status.SUCCESS.name(), 1);
                 }
                 if (CollectionUtils.isEmpty(pullRecordList)) {
                     this.waitForRunning(1000);
@@ -78,19 +80,14 @@ public class EventBusListener extends ServiceThread {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 pullRecordList.forEach(pullRecord -> {
                     String runnerName = pullRecord.getExtension(RuntimeConfigDefine.RUNNER_NAME);
-                    String accountId = getAccountId(pullRecord);
-                    metricsManager.eventbusInEventsTotal(runnerName, accountId, "failed", 1);
+                    String accountId = RunnerUtil.getAccountId(circulatorContext, pullRecord);
+                    metricsManager.eventbusInEventsTotal(runnerName, accountId, BridgeMetricsConstant.Status.FAILED.name(), 1);
                     errorHandler.handle(pullRecord, exception);
                 });
             }
         }
     }
 
-    public String getAccountId(ConnectRecord connectRecord) {
-        String runnerName = connectRecord.getExtension(RuntimeConfigDefine.RUNNER_NAME);
-        TargetRunnerConfig runnerConfig = circulatorContext.getRunnerConfig(runnerName);
-        return runnerConfig.getAccountId();
-    }
 
     @Override
     public String getServiceName() {

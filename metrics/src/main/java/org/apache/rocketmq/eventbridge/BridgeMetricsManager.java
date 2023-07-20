@@ -251,7 +251,7 @@ public class BridgeMetricsManager {
         );
         InstrumentSelector selector = InstrumentSelector.builder()
             .setType(InstrumentType.HISTOGRAM)
-            .setName(HISTOGRAM_RPC_LATENCY)
+            .setName(EVENTRULE_TRIGGER_LATENCY)
             .build();
         View view = View.builder()
             .setAggregation(Aggregation.explicitBucketHistogram(rpcCostTimeBuckets))
@@ -287,6 +287,13 @@ public class BridgeMetricsManager {
         Map<String, String> labelMaps = buildLabelMap(runnerName, accountId, status);
         AttributesBuilder attributesBuilder = addGroup(labelMaps);
         countMetrics(EVENTBUS_IN_EVENTS_TOTAL, count, attributesBuilder);
+    }
+
+
+    public void eventruleFilterEventsTotal(String runnerName, String accountId, String status, long count) {
+        Map<String, String> labelMaps = buildLabelMap(runnerName, accountId, status);
+        AttributesBuilder attributesBuilder = addGroup(labelMaps);
+        countMetrics(EVENTRULE_FILTER_EVENTS_TOTAL, count, attributesBuilder);
     }
 
     public void eventRuleLatencySeconds(String runnerName, String accountId ,String status, long latency) {

@@ -24,21 +24,23 @@ public class BridgeMetricsConstant {
     public static final String OPEN_TELEMETRY_METER_NAME = "bridge-meter";
     public static final String HISTOGRAM_MESSAGE_SIZE = "eventbridge_message_size";
     public static final String EVENTBUS_IN_EVENTS_TOTAL = "eventbridge_eventbus_in_events_total";
+    public static final String EVENTRULE_FILTER_EVENTS_TOTAL = "eventbridge_eventrule_filter_events_total";
     public static final String EVENTRULE_LATENCY_SECONDS = "eventbridge_eventrule_latency_seconds";
 
+    public static final String EVENTRULE_TRIGGER_LATENCY = "eventbridge_eventrule_trigger_latency";
 
-    /** eventbridge process message latency**/
-    public static final String HISTOGRAM_RPC_LATENCY = "process_latency";
 
-    public static final Map<String, String> ACCOUNT_LABELS = new HashMap<String, String>() {
-        { put("account_id", "account id"); }
-        { put("runnerName", "runnerName"); }
-        { put("status", "status"); }
-    };
+    public enum  Status {
+        SUCCESS("success"),
+        FAILED("failed");
 
-    public static final Map<String, String> RUNNER_NAME_LABELS = new HashMap<String, String>() {
-        { put("account_id", "account id"); }
-        { put("runnerName", "runner name"); }
-    };
+        private String status;
+        Status(String status){
+            this.status = status;
+        }
+        public String getStatus() {
+            return status;
+        }
+    }
 
 }

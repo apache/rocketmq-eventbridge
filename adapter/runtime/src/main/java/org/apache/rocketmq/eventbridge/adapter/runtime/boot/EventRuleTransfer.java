@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsConstant;
 import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
@@ -36,6 +37,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.RunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,17 +103,22 @@ public class EventRuleTransfer extends ServiceThread {
                             .exceptionally((exception) -> {
                                 logger.error("transfer do transform event record failed，stackTrace-", exception);
                                 //failed
-                                metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), "failed", System.currentTimeMillis() - startTime);
+                                metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), BridgeMetricsConstant.Status.FAILED.name(), System.currentTimeMillis() - startTime);
+                                metricsManager.eventruleFilterEventsTotal(runnerName, runnerConfig.getAccountId(),BridgeMetricsConstant.Status.FAILED.name(), 1);
                                 errorHandler.handle(pullRecord, exception);
                                 return null;
                             })
                             .thenAccept(pushRecord -> {
                                 if (Objects.nonNull(pushRecord)) {
                                     afterTransformConnect.add(pushRecord);
-                                    // success
-                                    metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), "success",System.currentTimeMillis() - startTime);
+                                    metricsManager.eventRuleLatencySeconds(RunnerUtil.getRunnerName(pushRecord), RunnerUtil.getAccountId(circulatorContext, pushRecord),
+                                        BridgeMetricsConstant.Status.FAILED.name(), System.currentTimeMillis() - startTime);
+
                                 } else {
                                     offsetManager.commit(pullRecord);
+                                    // success
+                                    metricsManager.eventruleFilterEventsTotal(runnerName, runnerConfig.getAccountId(),BridgeMetricsConstant.Status.SUCCESS.name(), 1);
+                                    metricsManager.eventRuleLatencySeconds(runnerName, runnerConfig.getAccountId(), BridgeMetricsConstant.Status.SUCCESS.name(),System.currentTimeMillis() - startTime);
                                 }
                             });
                         completableFutures.add(transformFuture);
@@ -119,12 +126,13 @@ public class EventRuleTransfer extends ServiceThread {
                 }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
-                //success
                 logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
                 //failed
                 logger.error("transfer event record failed, stackTrace-", exception);
-                afterTransformConnect.forEach(transferRecord -> errorHandler.handle(transferRecord, exception));
+                afterTransformConnect.forEach(transferRecord -> {
+                    errorHandler.handle(transferRecord, exception);
+                });
             }
 
         }
