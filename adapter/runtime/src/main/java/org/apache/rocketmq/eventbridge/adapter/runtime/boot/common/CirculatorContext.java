@@ -117,9 +117,6 @@ public class CirculatorContext implements TargetRunnerListener {
      * @param connectRecords
      */
     public boolean offerEventRecords(List<ConnectRecord> connectRecords) {
-        for (ConnectRecord record : connectRecords) {
-            record.addExtension(RuntimeConfigDefine.RECEIVE_TIME, String.valueOf(System.currentTimeMillis()));
-        }
         Map<String, List<ConnectRecord>> recordMap = buildWithRunnerNameKeyMap(connectRecords);
         updateRecordQueueMap(recordMap, eventQueueMap);
         return eventQueue.addAll(connectRecords);

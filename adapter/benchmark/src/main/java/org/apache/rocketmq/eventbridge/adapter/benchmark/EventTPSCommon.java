@@ -34,14 +34,13 @@ public class EventTPSCommon extends AbstractEventCommon {
     private static final Logger logger = LoggerFactory.getLogger(EventTPSCommon.class);
 
     public static void main(String[] args) {
-        String filePath = System.getProperty("user.home") + "/fileSink.log";
+        String filePath = System.getProperty("user.home") + "/demo";
         if (args.length > 0) {
             filePath = args[0];
         }
         EventTPSCommon tpsCommon = null;
         try {
             tpsCommon = new EventTPSCommon(filePath);
-            //System.out.println(tpsCommon.getLineNumber());
             tpsCommon.start();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -52,5 +52,4 @@ public class EventDataHandler {
                 return putEventsResponse;
             });
     }
-
 }

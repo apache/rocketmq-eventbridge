@@ -48,12 +48,12 @@ public abstract class AbstractEventCommon {
             return;
         }
 
-        // tps: 每秒钟能处理的消息数； 消息总数/消耗时长
+        // tps: 每秒文件打印的行数
         final long tps = currentRowCount - previousRowCount.get();
         previousRowCount.set(currentRowCount);
         writeCount.add(currentRowCount);
         costTime.add(1000);
-        // 条/ms
+        // delayTime（条/ms）=接收的数量/花费的时间
         final double delayTime = writeCount.longValue() / costTime.longValue();
         String delayTimeStr = twoDecimal(delayTime);
 
@@ -69,7 +69,6 @@ public abstract class AbstractEventCommon {
     protected int getLineNumber() throws IOException {
         lineNumberReader.skip(Long.MAX_VALUE);
         int lineNumber = lineNumberReader.getLineNumber();
-        //实际上是读取换行符数量 , 所以需要+1
         return lineNumber;
     }
 }

@@ -40,7 +40,4 @@ public class RuntimeConfigDefine {
     public static final String TARGET_RUNNER_KEY = "eventBusName";
 
     public static final String ACCOUNT_ID = "accountId";
-
-    public static final String RECEIVE_TIME = "receive-time";
-
 }
