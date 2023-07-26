@@ -98,9 +98,9 @@ public class TargetRunnerConfig implements Serializable {
             for (Map.Entry<String, String> entry : sourceComponent.entrySet()) {
                 String element = targetComponent.get(entry.getKey());
                 if (element == null && entry.getValue() == null) {
-                    return true;
+                    continue;
                 } else if (element.equals(entry.getValue())) {
-                    return true;
+                    continue;
                 } else {
                     return false;
                 }
