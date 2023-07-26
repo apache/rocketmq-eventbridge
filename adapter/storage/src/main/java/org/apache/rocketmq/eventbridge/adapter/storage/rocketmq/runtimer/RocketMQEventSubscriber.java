@@ -346,7 +346,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         public void run() {
             while (!stopped) {
                 try {
-                    List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofSeconds(pullTimeOut));
+                    List<MessageExt> messages = pullConsumer.poll(pullBatchSize, Duration.ofMillis(pullTimeOut));
                     for (MessageExt message : messages) {
                         message.putUserProperty(RuntimeConfigDefine.RUNNER_NAME, runnerName);
                         messageBuffer.put(message);
