@@ -113,7 +113,8 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
             if (latest == null) {
                 this.onDeleteTargetRunner(entry.getValue());
             } else if (!latest.equals(entry.getValue())) {
-                this.onUpdateTargetRunner(entry.getValue());
+                this.targetRunnerConfigs.remove(entry.getValue());
+                this.onUpdateTargetRunner(latest);
             }
         });
 
