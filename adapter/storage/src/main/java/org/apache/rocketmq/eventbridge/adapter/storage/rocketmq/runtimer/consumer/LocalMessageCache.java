@@ -124,11 +124,13 @@ public class LocalMessageCache {
         pullOffsetTable.entrySet().removeIf(next -> !mqDivided.contains(next.getKey()));
     }
 
-    void submitConsumeRequest(ConsumeRequest consumeRequest) {
+    boolean submitConsumeRequest(ConsumeRequest consumeRequest, Long timeout) {
         try {
-            consumeRequestCache.put(consumeRequest);
-        } catch (InterruptedException ignore) {
+            return consumeRequestCache.offer(consumeRequest, timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.warn("put consumeRequestCache failed", e);
         }
+        return false;
     }
 
     public List<MessageExt> poll(final int pullBatchSize, final Duration timeout) {
