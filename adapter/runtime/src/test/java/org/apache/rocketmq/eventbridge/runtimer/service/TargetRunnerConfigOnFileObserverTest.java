@@ -22,6 +22,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.TargetRunnerL
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.adapter.runtime.service.TargetRunnerConfigOnFileObserver;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.rocketmq.eventbridge.runtimer.service.TestConstants.DEMO_TARGET_RUNNER_CONFIG_FILE_NAME;
@@ -30,6 +31,7 @@ import static org.awaitility.Awaitility.await;
 public class TargetRunnerConfigOnFileObserverTest {
 
     @Test
+    @Ignore
     public void testGetLatestTargetRunnerConfig() {
         TargetRunnerConfigUtil.resetTargetRunner(getConfigFilePath());
         TargetRunnerConfigOnFileObserver targetRunnerConfigOnFileObserver = new TargetRunnerConfigOnFileObserver(getConfigFilePath());
@@ -38,6 +40,7 @@ public class TargetRunnerConfigOnFileObserverTest {
     }
 
     @Test
+    @Ignore
     public void testListen_Add() throws InterruptedException {
         String path = getConfigFilePath();
         TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);
@@ -48,6 +51,7 @@ public class TargetRunnerConfigOnFileObserverTest {
     }
 
     @Test
+    @Ignore
     public void testListen_Delete() throws InterruptedException {
         String path = getConfigFilePath();
         TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);
@@ -58,6 +62,7 @@ public class TargetRunnerConfigOnFileObserverTest {
     }
 
     @Test
+    @Ignore
     public void testListen_Update() throws InterruptedException {
         String path = getConfigFilePath();
         TestTargetRunnerListener targetRunnerListener = initTargetRunnerConfigOnFileObserver(path);

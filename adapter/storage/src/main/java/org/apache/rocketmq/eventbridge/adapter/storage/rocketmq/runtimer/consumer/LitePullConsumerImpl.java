@@ -63,6 +63,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
     private static final Long PULL_TIME_DELAY_MILLS_WHEN_BROKER_FLOW_CONTROL = 30L;
     private static final Long PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION = TimeUnit.SECONDS.toMillis(3);
     private static final String DEFAULT_INSTANCE_NAME = "EventBridge_Consumer_INSTANCE";
+    private static final Integer PULL_BATCH_NUM = 32;
 
     public LitePullConsumerImpl(final ClientConfig clientConfig, final RPCHook rpcHook) {
         this.clientConfig = clientConfig;
@@ -224,16 +225,8 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                     return;
                 }
                 long offset = localMessageCache.nextPullOffset(messageQueue);
-                int batchNums = localMessageCache.nextPullBatchNums();
-                // If batchNums is zero, an exception will be thrown and then trigger a delay
-                if (batchNums <= 0) {
-                    log.warn("Local cache is full, delay the pull task {} ms for message queue {}",
-                            PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION, messageQueue);
-                    pullLater(PullTask.this, PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION, TimeUnit.MILLISECONDS);
-                    return;
-                }
 
-                rocketmqPullConsumer.pullBlockIfNotFound(this.messageQueue, this.tag, offset, batchNums, new PullCallback() {
+                rocketmqPullConsumer.pullBlockIfNotFound(this.messageQueue, this.tag, offset, PULL_BATCH_NUM, new PullCallback() {
                     @Override
                     public void onSuccess(PullResult pullResult) {
                         try {
@@ -249,7 +242,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                                     if (pq != null && !pq.isDropped()) {
                                         pq.putMessage(pullResult.getMsgFoundList());
                                         for (final MessageExt messageExt : pullResult.getMsgFoundList()) {
-                                            localMessageCache.submitConsumeRequest(new ConsumeRequest(messageExt, messageQueue, pq));
+                                            localMessageCache.submitConsumeRequest(new ConsumeRequest(messageExt, messageQueue, pq), Long.MAX_VALUE);
                                         }
                                         localMessageCache.updatePullOffset(messageQueue, pullResult.getNextBeginOffset());
                                         pullImmediately(PullTask.this);
