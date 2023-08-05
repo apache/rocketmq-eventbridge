@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
@@ -67,7 +68,7 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public void run() {
-        List<ConnectRecord> afterTransformConnect= Lists.newArrayList();
+        List<ConnectRecord> afterTransformConnect = new CopyOnWriteArrayList<>();;
         while (!stopped) {
             try {
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);

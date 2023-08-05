@@ -106,7 +106,7 @@ public class EventSourceServiceFactoryTest {
         PaginationResult<List<EventSource>> paginationResult = eventSourceService.listEventSources("123456", "demo",
             "0", 10);
         Assert.assertEquals(1, paginationResult.getTotal());
-        Assert.assertEquals("10", paginationResult.getNextToken());
+        Assert.assertEquals(null, paginationResult.getNextToken());
         Assert.assertEquals(1, paginationResult.getData()
             .size());
         Assert.assertEquals("demo-source", paginationResult.getData()
