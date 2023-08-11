@@ -27,6 +27,7 @@
         <module>rpc</module>
         <module>runtime</module>
         <module>storage</module>
+        <module>benchmark</module>
     </modules>
 
 </project>
