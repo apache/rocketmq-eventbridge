@@ -30,11 +30,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * 整条链路
  */
 public class EventTPSCommon extends AbstractEventCommon {
-
-    private static final Logger logger = LoggerFactory.getLogger(EventTPSCommon.class);
-
     public static void main(String[] args) {
-        String filePath = System.getProperty("user.home") + "/demo";
+        String filePath = System.getProperty("user.home") + "/demo.eventbridge";
         if (args.length > 0) {
             filePath = args[0];
         }
@@ -60,7 +57,6 @@ public class EventTPSCommon extends AbstractEventCommon {
         previousRowCount.set(0);
         executorService = new ScheduledThreadPoolExecutor(1,
                 new BasicThreadFactory.Builder().namingPattern("BenchmarkTimerThread-all-%d").build());
-
     }
 
     @Override

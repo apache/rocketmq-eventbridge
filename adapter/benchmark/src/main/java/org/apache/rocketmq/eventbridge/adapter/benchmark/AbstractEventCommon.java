@@ -55,10 +55,10 @@ public abstract class AbstractEventCommon {
         costTime.add(1000);
         // delayTime（条/ms）=接收的数量/花费的时间
         final double delayTime = writeCount.longValue() / costTime.longValue();
-        String delayTimeStr = twoDecimal(delayTime);
+        // String delayTimeStr = twoDecimal(delayTime);
 
-        String info = String.format("Current Time: %s  |  TPS: %d     |  delayTime: %sms",
-                UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps, delayTimeStr);
+        String info = String.format("Current Time: %s  |  TPS: %d  ",
+                UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps);
 
         System.out.println(info);
     }
