@@ -49,11 +49,13 @@ public class EventBridgeException extends RuntimeException {
     public EventBridgeException(BaseErrorCode errorCode, Throwable throwable, Object... args) {
         super(MessageFormat.format(errorCode.getMsg(), args), throwable);
         this.code = errorCode.getCode();
+        this.httpCode = errorCode.getHttpCode();
     }
 
     public EventBridgeException(BaseErrorCode errorCode, Object... args) {
         super(MessageFormat.format(errorCode.getMsg(), args));
         this.code = errorCode.getCode();
+        this.httpCode = errorCode.getHttpCode();
     }
 
     public String getCode() {
