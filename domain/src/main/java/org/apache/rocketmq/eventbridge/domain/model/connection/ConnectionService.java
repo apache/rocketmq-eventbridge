@@ -46,6 +46,7 @@ import org.apache.rocketmq.eventbridge.domain.rpc.NetworkServiceAPI;
 import org.apache.rocketmq.eventbridge.domain.rpc.SecretManagerAPI;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,15 +87,20 @@ public class ConnectionService extends AbstractResourceService {
             checkAuthParameters(connectionDTO.getAuthParameters());
             connectionDTO.setAuthParameters(setSecretData(connectionDTO.getAuthParameters(), connectionDTO.getAccountId(), connectionDTO.getConnectionName()));
         }
-        if (connectionRepository.createConnection(connectionDTO)) {
-            if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
-                List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());
-                if (!CollectionUtils.isEmpty(connection)) {
-                    NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
-                    networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(connection.get(0).getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
+        try {
+            if (connectionRepository.createConnection(connectionDTO)) {
+                if (NetworkTypeEnum.PRIVATE_NETWORK.getNetworkType().equals(connectionDTO.getNetworkParameters().getNetworkType())) {
+                    List<ConnectionDTO> connection = getConnection(connectionDTO.getAccountId(), connectionDTO.getConnectionName());
+                    if (!CollectionUtils.isEmpty(connection)) {
+                        NetworkParameters networkParameters = connectionDTO.getNetworkParameters();
+                        networkServiceAPI.createPrivateNetwork(connectionDTO.getAccountId(), Integer.toString(connection.get(0).getId()), networkParameters.getVpcId(), networkParameters.getVswitcheId(), networkParameters.getSecurityGroupId());
+                    }
                 }
+                return connectionDTO.getConnectionName();
             }
-            return connectionDTO.getConnectionName();
+        } catch (DuplicateKeyException duplicateKeyException) {
+            log.error("ConnectionService | createConnection | error => ", duplicateKeyException);
+            throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
         return null;
     }
