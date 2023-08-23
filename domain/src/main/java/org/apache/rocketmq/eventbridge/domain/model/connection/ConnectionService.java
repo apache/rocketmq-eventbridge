@@ -99,7 +99,6 @@ public class ConnectionService extends AbstractResourceService {
                 return connectionDTO.getConnectionName();
             }
         } catch (DuplicateKeyException duplicateKeyException) {
-            log.error("ConnectionService | createConnection | error => ", duplicateKeyException);
             throw new EventBridgeException(EventBridgeErrorCode.ConnectionAlreadyExist, connectionDTO.getConnectionName());
         }
         return null;

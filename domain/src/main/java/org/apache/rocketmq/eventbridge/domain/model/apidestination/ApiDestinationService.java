@@ -70,7 +70,6 @@ public class ApiDestinationService extends AbstractResourceService {
                 return eventApiDestinationDTO.getName();
             }
         } catch (DuplicateKeyException duplicateKeyException) {
-            log.error("ApiDestinationService | createApiDestination | error => ", duplicateKeyException);
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
         }
         return null;
