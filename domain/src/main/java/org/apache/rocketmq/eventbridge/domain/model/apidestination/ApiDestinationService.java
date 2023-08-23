@@ -30,6 +30,7 @@ import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.Htt
 import org.apache.rocketmq.eventbridge.domain.repository.ApiDestinationRepository;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.apache.rocketmq.eventbridge.tools.NextTokenUtil;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,9 +64,14 @@ public class ApiDestinationService extends AbstractResourceService {
                 ApiDestinationCountExceedLimit);
         checkHttpApiParameters(eventApiDestinationDTO.getApiParams());
         checkConnection(eventApiDestinationDTO);
-        final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
-        if (apiDestination) {
-            return eventApiDestinationDTO.getName();
+        try {
+            final Boolean apiDestination = apiDestinationRepository.createApiDestination(eventApiDestinationDTO);
+            if (apiDestination) {
+                return eventApiDestinationDTO.getName();
+            }
+        } catch (DuplicateKeyException duplicateKeyException) {
+            log.error("ApiDestinationService | createApiDestination | error => ", duplicateKeyException);
+            throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationAlreadyExist, eventApiDestinationDTO.getName());
         }
         return null;
     }
