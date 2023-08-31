@@ -121,6 +121,7 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     SecretManagerAPICreateSecretNameFailed(409, "SecretManagerAPICreateSecretNameFailed", "Create secret manager api secret name [{0}] failed"),
     SecretManagerAPIDeleteSecretFailed(409, "SecretManagerAPIDeleteSecretFailed", "Delete secret manager api secret [{0}] failed"),
     SecretManagerAPIGetSecretValueFailed(409, "SecretManagerAPIGetSecretValueFailed", "Get secret manager api secret value [{0}] failed"),
+    SecretManagerAPIUpdateSecretNameFailed(409, "SecretManagerAPIUpdateSecretNameFailed", "Update secret manager api secret value failed"),
 
     HttpApiParametersIsNull(409, "HttpApiParametersIsNull", "HttpApiParameters is null!"),
     EndpointIsBlank(409, "EndpointIsBlank", "Endpoint is blank!"),
