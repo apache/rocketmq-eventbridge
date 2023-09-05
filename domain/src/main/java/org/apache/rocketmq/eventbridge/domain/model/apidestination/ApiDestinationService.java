@@ -101,7 +101,9 @@ public class ApiDestinationService extends AbstractResourceService {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
         }
         ApiDestinationDTO oldApiDestination = getApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName());
-        if (StringUtils.isBlank(apiDestinationDTO.getConnectionName())) {
+        if (StringUtils.isNotBlank(apiDestinationDTO.getConnectionName())) {
+            connectionService.getConnection(apiDestinationDTO.getAccountId(), apiDestinationDTO.getConnectionName());
+        } else {
             apiDestinationDTO.setConnectionName(oldApiDestination.getConnectionName());
         }
         if (apiDestinationDTO.getApiParams() == null) {
