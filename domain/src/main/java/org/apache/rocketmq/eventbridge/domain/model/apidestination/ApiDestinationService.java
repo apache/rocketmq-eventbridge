@@ -100,8 +100,23 @@ public class ApiDestinationService extends AbstractResourceService {
         if (checkApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName()) == null) {
             throw new EventBridgeException(EventBridgeErrorCode.ApiDestinationNotExist, apiDestinationDTO.getName());
         }
-        checkHttpApiParameters(apiDestinationDTO.getApiParams());
-        checkConnection(apiDestinationDTO);
+        ApiDestinationDTO oldApiDestination = getApiDestination(apiDestinationDTO.getAccountId(), apiDestinationDTO.getName());
+        if (StringUtils.isBlank(apiDestinationDTO.getConnectionName())) {
+            apiDestinationDTO.setConnectionName(oldApiDestination.getConnectionName());
+        }
+        if (apiDestinationDTO.getApiParams() == null) {
+            apiDestinationDTO.setApiParams(oldApiDestination.getApiParams());
+        } else {
+            HttpApiParameters apiParams = apiDestinationDTO.getApiParams();
+            HttpApiParameters oldApiParams = oldApiDestination.getApiParams();
+            if (StringUtils.isBlank(apiParams.getEndpoint())) {
+                apiParams.setEndpoint(oldApiParams.getEndpoint());
+            }
+            if (StringUtils.isBlank(apiParams.getMethod())) {
+                apiParams.setMethod(oldApiParams.getMethod());
+            }
+            apiDestinationDTO.setApiParams(apiParams);
+        }
         return apiDestinationRepository.updateApiDestination(apiDestinationDTO);
     }
 

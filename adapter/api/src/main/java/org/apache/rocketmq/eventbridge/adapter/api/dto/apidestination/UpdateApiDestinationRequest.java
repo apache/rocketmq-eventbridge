@@ -40,9 +40,6 @@ public class UpdateApiDestinationRequest extends BaseResponse {
     private String apiDestinationName;
 
     @SerializedName("ConnectionName")
-    @Pattern(regexp = "^[A-Za-z|0-9][A-Za-z|0-9|_|-]+$", message = "The Connection name is invalid! Only letters a~z or A~Z, numbers 0~9, underscore (_) and dash (-) are supported.")
-    @Length(min = 2, max = 127, message = "The connection name length cannot exceed 127.")
-    @NotBlank(message = "ConnectionName is blank.")
     private String connectionName;
 
     @SerializedName("Description")
