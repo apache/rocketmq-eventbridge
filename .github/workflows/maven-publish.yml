@@ -21,4 +21,4 @@ jobs:
 
       - name: Wait for RocketMQ container to be ready
         run: |
-          docker exec rocketmq sh -c 'while ! nc -z localhost 9876; do sleep 1; done'
+          docker exec rmqnamesrv sh -c 'while ! nc -z localhost 9876; do sleep 1; done'
