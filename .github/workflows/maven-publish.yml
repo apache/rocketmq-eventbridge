@@ -16,8 +16,8 @@ jobs:
       # Downloads a copy of the code in your repository before running CI tests
       - name: Create RocketMQ container
         run: |
-          docker pull rocketmqinc/rocketmq:4.9.1
-          docker run -d --name rocketmq -p 9876:9876 -v /path/to/config:/opt/rocketmq-4.9.4/conf apache/rocketmq:4.9.4
+          docker pull apache/rocketmq:4.9.4
+          docker run -d --name rmqnamesrv -p 9876:9876 apache/rocketmq:4.9.4 sh mqnamesrv autoCreateTopicEnable=true
 
       - name: Wait for RocketMQ container to be ready
         run: |
