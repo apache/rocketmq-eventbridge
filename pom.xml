@@ -113,6 +113,11 @@
             <!-- Project Modules-->
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-eventbridge-start</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -154,6 +159,12 @@
             <dependency>
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-test-demo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-eventbridge-e2etest</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

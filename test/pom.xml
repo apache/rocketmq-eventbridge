@@ -23,6 +23,7 @@
 
     <modules>
         <module>demo</module>
+        <module>rocketmq-eventbridge-e2etest</module>
     </modules>
 
 </project>
