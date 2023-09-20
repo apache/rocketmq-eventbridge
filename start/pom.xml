@@ -91,7 +91,7 @@
         </dependency>
     </dependencies>
 
-    <build>
+   <!-- <build>
         <finalName>rocketmq-eventbridge</finalName>
         <resources>
             <resource>
@@ -125,11 +125,11 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.apache.rocketmq.eventbridge.Main</mainClass>
+                            <mainClass>org.apache.rocketmq.eventbridge.StartMain</mainClass>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
-    </build>
+    </build>-->
 </project>
