@@ -26,7 +26,7 @@ jobs:
                 flushDiskType = ASYNC_FLUSH
                 brokerIP1 =127.0.0.1'>>/opt/broker.conf
           docker run -d --name rmqnamesrv -p 9876:9876 apache/rocketmq:4.9.4 sh mqnamesrv autoCreateTopicEnable=true
-          docker run -d --name rmqbroker -p 10911:10911 -p 10909:10909 --link rmqnamesrv:namesrv -v ./broker.conf:/opt/rocketmq-4.9.4/conf/broker.conf -e "NAMESRV_ADDR=rmqnamesrv:9876" apache/rocketmq:4.9.4 sh mqbroker autoCreateTopicEnable=true -c /opt/rocketmq-4.9.4/conf/broker.conf
+          docker run -d --name rmqbroker -p 10911:10911 -p 10909:10909 --link rmqnamesrv:namesrv -v /opt/broker.conf:/opt/rocketmq-4.9.4/conf/broker.conf -e "NAMESRV_ADDR=rmqnamesrv:9876" apache/rocketmq:4.9.4 sh mqbroker autoCreateTopicEnable=true -c /opt/rocketmq-4.9.4/conf/broker.conf
 
       - name: Wait for RocketMQ namesrv container to be ready
         run: |
