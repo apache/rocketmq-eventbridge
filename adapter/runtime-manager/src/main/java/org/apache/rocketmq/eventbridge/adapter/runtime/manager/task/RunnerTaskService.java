@@ -18,8 +18,6 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.task;
 
 import java.util.List;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
 
 public class RunnerTaskService {
 
@@ -27,11 +25,4 @@ public class RunnerTaskService {
         return null;
     }
 
-    public boolean updateRunnerTaskWorker(RunnerTask task, Worker worker) {
-        return true;
-    }
-
-    public boolean updateRunnerTaskCluster(RunnerTask task, Cluster cluster) {
-        return true;
-    }
 }

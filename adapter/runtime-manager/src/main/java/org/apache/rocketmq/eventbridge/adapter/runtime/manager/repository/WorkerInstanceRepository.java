@@ -17,57 +17,10 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository;
 
-import java.util.Map;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerResource;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerStatusEnum;
-
 public interface WorkerInstanceRepository {
 
-    /**
-     * Apply(Create/Update) the worker instance.
-     *
-     * @param name
-     * @param image
-     * @param resources
-     * @param environments
-     * @return
-     */
-    boolean applyWorkerInstance(String name, String image, WorkerResource resources, Map<String, Object> environments);
+    boolean applyWorkerInstance(String name, String image, String resources, String config);
 
-    /**
-     * Delete the worker
-     *
-     * @param name
-     * @param environments
-     * @return
-     */
-    boolean deleteWorkerInstance(String name, Map<String, Object> environments);
+    boolean deleteWorkerInstance(String name);
 
-    /**
-     * Get the status of worker
-     *
-     * @param name
-     * @param environments
-     * @return
-     */
-    WorkerStatusEnum getWorkerInstanceStatus(String name, Map<String, Object> environments);
-
-    /**
-     * Apply(Create/Update) the config to the worker instance. It may contains more than one config in worker instance.
-     *
-     * @param name
-     * @param filePath
-     * @param config
-     * @return
-     */
-    boolean applyWorkerInstanceConfigFile(String name, String filePath, String config, Map<String, Object> environments);
-
-    /**
-     * Get the config to the worker instance.
-     *
-     * @param name
-     * @param filePath
-     * @return
-     */
-    String getWorkerInstanceConfigFile(String name, String filePath, Map<String, Object> environments);
 }

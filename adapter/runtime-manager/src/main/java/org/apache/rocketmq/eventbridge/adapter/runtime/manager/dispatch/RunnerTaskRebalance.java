@@ -15,22 +15,15 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster;
+package org.apache.rocketmq.eventbridge.adapter.runtime.manager.dispatch;
 
-import java.util.Date;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@EqualsAndHashCode(of = {"name"})
-@Data
-public class Cluster {
-    private int id;
-    private String name;
-    private String resources;
-    private int replica;
-    private String currentImageId;
-    private String expectImageId;
-    private String md5;
-    private Date ctime;
-    private Date mtime;
+public class RunnerTaskRebalance {
+
+    @Autowired
+    private RunnerTaskDispatcher runnerTaskDispatcher;
+
+    // 任务增删改，导致任务在不同worker上的负载不均衡
+    // 尽可能少的调整，做最大的平衡
 }

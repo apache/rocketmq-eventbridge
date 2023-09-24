@@ -17,39 +17,16 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.dispatch;
 
-import javax.annotation.Resource;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.ClusterSelectorService;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.task.RunnerTask;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.task.RunnerTaskService;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerSelectorService;
 
 public class RunnerTaskDispatcher {
 
-    @Resource
-    ClusterSelectorService clusterSelectorService;
-
-    @Resource
-    WorkerSelectorService workerSelectorService;
-
-    @Resource
-    RunnerTaskService runnerTaskService;
-
-    public boolean dispatchRunnerTask(RunnerTask runnerTask) {
-        boolean dispatchToCluster = dispatchToCluster(runnerTask);
-        boolean dispatchToWorker = dispatchToWorker(runnerTask);
-        return dispatchToCluster && dispatchToWorker;
+    public boolean dispatchToCluster(Worker worker) {
+        return false;
     }
 
-    public boolean dispatchToCluster(RunnerTask runnerTask) {
-        Cluster cluster = clusterSelectorService.selectCluster(runnerTask);
-        return runnerTaskService.updateRunnerTaskCluster(runnerTask, cluster);
-    }
-
-    public boolean dispatchToWorker(RunnerTask runnerTask) {
-        Worker worker = workerSelectorService.selectWorker(runnerTask);
-        return runnerTaskService.updateRunnerTaskWorker(runnerTask, worker);
+    public boolean dispatchToWorker(Worker worker) {
+        return false;
     }
 
 }

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtime.manager.watch;
+package org.apache.rocketmq.eventbridge.adapter.runtime.manager.scale;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -24,17 +24,18 @@ import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.common.ThreadFactoryImpl;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.ClusterService;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
-public class WatchCluster {
-
+public class ClusterWorkerScale {
     @Autowired
     ClusterService clusterService;
 
+    private int DEFAULT_SCALE_UP_TRIGGER_LOAD = 80;
+
+    private int DEFAULT_SCALE_DOWN_TRIGGER_LOAD = 20;
+
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryImpl(WatchCluster.class.getSimpleName()));
+        new ThreadFactoryImpl(ClusterWorkerScale.class.getSimpleName()));
 
     public void start() {
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -42,31 +43,15 @@ public class WatchCluster {
             public void run() {
                 List<Cluster> clusters = clusterService.listCluster();
                 clusters.forEach(cluster -> {
-                    if (!clusterService.isFinalState(cluster)) {
-                        watchTheClusterReplica(cluster);
-                        watchTheClusterImageId(cluster);
-                        watchTheClusterResources(cluster);
-                        clusterService.refreshMD5(cluster);
+                    int load = clusterService.calLoad(cluster);
+                    if (load > DEFAULT_SCALE_UP_TRIGGER_LOAD) {
+                        clusterService.scaleCluster(cluster.getName(), cluster.getReplica() + 1);
+                    } else if (load < DEFAULT_SCALE_DOWN_TRIGGER_LOAD) {
+                        clusterService.scaleCluster(cluster.getName(), cluster.getReplica() > 1 ? cluster.getReplica() - 1 : cluster.getReplica());
                     }
-
                 });
             }
         }, 3, 60, TimeUnit.SECONDS);
-    }
-
-    @Transactional
-    private void watchTheClusterReplica(Cluster cluster) {
-
-    }
-
-    @Transactional
-    private void watchTheClusterImageId(Cluster cluster) {
-
-    }
-
-    @Transactional
-    private void watchTheClusterResources(Cluster cluster) {
-
     }
 
 }

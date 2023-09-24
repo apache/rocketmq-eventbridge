@@ -18,22 +18,20 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker;
 
 import java.util.Date;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(of = {"name"})
 @Data
-@Builder
 public class Worker {
-    private String id;
-    private int clusterId;
+    private int id;
+    private String clusterId;
     private String name;
-    private String image;
+    private String imageTag;
     private String resources;
     private String config;
     private String status;
+    private Date ctime;
+    private Date mtime;
     private String md5;
-    private Date gmtCreate;
-    private Date gmtModify;
 }

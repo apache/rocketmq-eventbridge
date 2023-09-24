@@ -20,15 +20,8 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster;
 import com.google.common.base.Strings;
 import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.ClusterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ClusterService {
-
-    @Autowired
-    private ClusterRepository clusterRepository;
 
     public boolean createCluster() {
         return true;
@@ -38,17 +31,16 @@ public class ClusterService {
         return true;
     }
 
-    public Cluster getCluster(long clusterId) {
+    public Cluster getCluster(String clusterName) {
         return null;
     }
 
-
     public List<Cluster> listCluster() {
-        return clusterRepository.listCluster();
+        return null;
     }
 
     public String calMD5(Cluster cluster) {
-        String str = cluster.getName() + cluster.getResources() + cluster.getReplica() + cluster.getImage();
+        String str = cluster.getName() + cluster.getResources() + cluster.getReplica() + cluster.getExpectImageId();
         return DigestUtils.md5Hex(str);
     }
 
@@ -61,8 +53,8 @@ public class ClusterService {
         }
     }
 
-    public boolean refreshMD5(int clusterId, String md5) {
-        return clusterRepository.updateCluster(clusterId, md5);
+    public boolean refreshMD5(Cluster cluster) {
+        return true;
     }
 
     public int calLoad(Cluster cluster) {
