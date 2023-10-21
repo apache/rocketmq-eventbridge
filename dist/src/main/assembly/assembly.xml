@@ -1,0 +1,35 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>assembly</id>
+    <formats>
+        <format>dir</format>
+    </formats>
+
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <baseDirectory>rocketmq-eventbridge</baseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>org.apache.rocketmq:rocketmq-eventbridge-dist:jar</include>
+            </includes>
+            <outputFileNameMapping>rocketmq-eventbridge.jar</outputFileNameMapping>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/bin</directory>
+            <outputDirectory>bin/</outputDirectory>
+            <fileMode>0755</fileMode>
+            <lineEnding>unix</lineEnding>
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>config/</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+    </fileSets>
+</assembly>
