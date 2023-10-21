@@ -1,11 +1,7 @@
 # This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 name: Redis runner example
-on:
-  pull_request:
-    types: [ opened, reopened, synchronize ]
-    release:
-      types: [ created ]
+on: push
 
 jobs:
   # Label of the runner job
