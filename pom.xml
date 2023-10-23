@@ -105,6 +105,9 @@
         <module>domain</module>
         <module>common</module>
         <module>infrastructure</module>
+        <module>supports/connect-eventbridge-transform</module>
+        <module>supports/connect-filter-transform</module>
+        <module>supports/eventbridge-connect-file</module>
         <module>test</module>
         <module>dist</module>
     </modules>
