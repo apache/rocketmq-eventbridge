@@ -40,7 +40,7 @@ public class ApplicationTagControllerTest extends BaseTest {
 
         ResponseEntity<Void> response = Utils.request(template, url, HttpMethod.POST, "A test recrod.", Void.class, headers);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-        File file = new File(System.getProperty("user.home") + "/demo");
+        File file = new File("/home/runner/demo");
         String data = null;
         int retries = 0;
         while( retries < 10 ) {
