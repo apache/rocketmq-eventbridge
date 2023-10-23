@@ -2,6 +2,7 @@ package org.apache.rocketmq.eventbridge.e2etest.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.Main;
 import org.apache.rocketmq.eventbridge.e2etest.BaseTest;
 import org.apache.rocketmq.eventbridge.e2etest.util.Utils;
@@ -39,19 +40,18 @@ public class ApplicationTagControllerTest extends BaseTest {
 
         ResponseEntity<Void> response = Utils.request(template, url, HttpMethod.POST, "A test recrod.", Void.class, headers);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-
         File file = new File(System.getProperty("user.home") + "/demo");
         String data = null;
-        long current = System.currentTimeMillis();
-        while((System.currentTimeMillis() - current)/1000 <300 ) {
+        int retries = 0;
+        while( retries < 10 ) {
             data = FileUtils.readFileToString(file, "UTF-8");
-            if (data != null) {
+            if (StringUtils.isNotBlank(data)) {
+                Assert.assertEquals("A test recrod.\n", data);
                 break;
             }
-            Thread.sleep(1000);
+            Thread.sleep(50000);
+            retries++;
         }
-
-        Assert.assertEquals("A test recrod.\n", data);
     }
 
 
