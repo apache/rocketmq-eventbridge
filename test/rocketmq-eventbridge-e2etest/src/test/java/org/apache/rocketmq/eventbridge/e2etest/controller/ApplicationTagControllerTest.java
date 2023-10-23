@@ -46,12 +46,12 @@ public class ApplicationTagControllerTest extends BaseTest {
         while( retries < 10 ) {
             data = FileUtils.readFileToString(file, "UTF-8");
             if (StringUtils.isNotBlank(data)) {
-                Assert.assertEquals("A test recrod.\n", data);
                 break;
             }
             Thread.sleep(50000);
             retries++;
         }
+        Assert.assertEquals("A test recrod.\n", data);
     }
 
 
