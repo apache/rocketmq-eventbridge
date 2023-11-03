@@ -40,7 +40,7 @@ public class ApplicationTagControllerTest extends BaseTest {
 
         ResponseEntity<Void> response = Utils.request(template, url, HttpMethod.POST, "A test recrod.", Void.class, headers);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-        File file = new File("/home/runner/demo");
+        File file = new File(System.getProperty("user.home") +"/demo");
         String data = null;
         int retries = 0;
         while( retries < 10 ) {
@@ -48,7 +48,7 @@ public class ApplicationTagControllerTest extends BaseTest {
             if (StringUtils.isNotBlank(data)) {
                 break;
             }
-            Thread.sleep(50000);
+            Thread.sleep(5000);
             retries++;
         }
         Assert.assertEquals("A test recrod.\n", data);
