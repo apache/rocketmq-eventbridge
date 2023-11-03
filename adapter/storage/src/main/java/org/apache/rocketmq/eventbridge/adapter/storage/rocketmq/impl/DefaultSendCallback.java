@@ -17,12 +17,14 @@
 
 package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventsResponseEntry;
 import org.apache.rocketmq.eventbridge.exception.code.DefaultErrorCode;
 
+@Slf4j
 public class DefaultSendCallback implements SendCallback {
 
     PutEventCallback putEventCallback;
@@ -35,6 +37,7 @@ public class DefaultSendCallback implements SendCallback {
 
     @Override
     public void onSuccess(SendResult sendResult) {
+        log.info("send msg to topic :{} success result.", sendResult);
         entry.setEventId(sendResult.getMsgId());
         entry.setErrorCode(DefaultErrorCode.Success.getCode());
         putEventCallback.endProcess(entry);
@@ -42,6 +45,7 @@ public class DefaultSendCallback implements SendCallback {
 
     @Override
     public void onException(Throwable throwable) {
+        log.error("send msg to topic : fail result.", throwable);
         entry.setErrorCode(DefaultErrorCode.InternalError.getCode());
         entry.setErrorMessage(throwable.getMessage());
         putEventCallback.endProcess(entry);
