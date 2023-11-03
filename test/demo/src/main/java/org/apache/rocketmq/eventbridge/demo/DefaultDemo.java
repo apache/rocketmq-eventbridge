@@ -94,7 +94,7 @@ public class DefaultDemo {
         if (eventTargets == null || eventTargets.isEmpty()) {
             List<EventTarget> eventTargetList = Lists.newArrayList();
             Map<String, Object> config = Maps.newHashMap();
-            config.put("fileName", "/home/runner/demo");
+            config.put("fileName", System.getProperty("user.home")+"/demo");
             config.put("line", "{\"form\":\"JSONPATH\",\"value\":\"$.data\"}");
             EventTarget eventTarget = EventTarget.builder().name(DEFAULT_EVENT_TARGET_NAME).className(DEFAULT_EVENT_TARGET_CLASS).config(config).build();
             eventTargetList.add(eventTarget);

@@ -48,7 +48,7 @@ public class ApplicationTagControllerTest extends BaseTest {
             if (StringUtils.isNotBlank(data)) {
                 break;
             }
-            Thread.sleep(5000);
+            Thread.sleep(50000);
             retries++;
         }
         Assert.assertEquals("A test recrod.\n", data);
