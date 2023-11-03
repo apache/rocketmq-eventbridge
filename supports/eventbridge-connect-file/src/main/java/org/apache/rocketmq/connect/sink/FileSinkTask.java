@@ -44,6 +44,7 @@ public class FileSinkTask extends SinkTask {
                 throw new ConnectException("Write record to file failed.", e);
             }
         }
+        outputStream.flush();
 
     }
 
