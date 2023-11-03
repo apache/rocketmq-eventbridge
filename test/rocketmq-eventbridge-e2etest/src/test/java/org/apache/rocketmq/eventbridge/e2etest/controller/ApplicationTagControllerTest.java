@@ -38,6 +38,8 @@ public class ApplicationTagControllerTest extends BaseTest {
         headers.put("ce-time","2018-04-05T17:31:00Z");
         headers.put("ce-eventbusname", "demo-bus");
 
+        Thread.sleep(10000);
+
         ResponseEntity<Void> response = Utils.request(template, url, HttpMethod.POST, "A test recrod.", Void.class, headers);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
         File file = new File(System.getProperty("user.home") +"/demo");
