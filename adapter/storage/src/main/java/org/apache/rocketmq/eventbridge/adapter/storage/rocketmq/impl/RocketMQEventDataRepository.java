@@ -75,11 +75,8 @@ public class RocketMQEventDataRepository implements EventDataRepository {
         String topicName = this.getTopicName(accountId, eventBusName);
         Message msg = eventDataOnRocketMQConnectAPI.converter(accountId, topicName, eventBridgeEvent);
         try {
-            log.info("send msg to topic :{} before.", topicName);
             producer.send(msg, new DefaultSendCallback(putEventCallback), 1000L);
-            log.info("send msg to topic :{} end.", topicName);
         } catch (Throwable e) {
-            log.info("send msg to topic :{} failed. and exception is {}", topicName, e.toString());
             throw new EventBridgeException(EventBridgeErrorCode.InternalError, e);
         }
         return true;
