@@ -30,7 +30,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 public class FileSinkTask extends SinkTask {
-    private String fileName = System.getProperty("user.home") + "/demo.eventbridge";
+    private String fileName = System.getProperty("user.home") + "/demo";
     private PrintStream outputStream;
 
     @Override public void put(List<ConnectRecord> sinkRecords) throws ConnectException {
