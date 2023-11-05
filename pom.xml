@@ -106,6 +106,7 @@
         <module>common</module>
         <module>infrastructure</module>
         <module>test</module>
+        <module>metrics</module>
     </modules>
 
     <dependencyManagement>

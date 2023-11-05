@@ -34,6 +34,9 @@ import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.utils.NetworkUtil;
+import org.apache.rocketmq.eventbridge.BridgeConfig;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.SubscribeRunnerKeys;
@@ -85,6 +88,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private Integer pullTimeOut;
     private Integer pullBatchSize;
 
+    private BridgeConfig bridgeConfig;
     private ClientConfig clientConfig;
     private SessionCredentials sessionCredentials;
     private String socksProxy;

@@ -26,11 +26,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.OffsetManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.RunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,12 +50,14 @@ public class EventTargetTrigger extends ServiceThread {
     private final OffsetManager offsetManager;
     private final ErrorHandler errorHandler;
     private volatile Integer batchSize = 100;
+    private BridgeMetricsManager metricsManager;
 
     public EventTargetTrigger(CirculatorContext circulatorContext, OffsetManager offsetManager,
-                              ErrorHandler errorHandler) {
+                              ErrorHandler errorHandler, BridgeMetricsManager metricsManager) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
+        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -69,6 +74,8 @@ public class EventTargetTrigger extends ServiceThread {
             }
 
             for(String runnerName: targetRecordMap.keySet()){
+                long startTime = System.currentTimeMillis();
+                String accountId = RunnerUtil.getAccountId(circulatorContext,runnerName);
                 ExecutorService executorService = circulatorContext.getExecutorService(runnerName);
                 executorService.execute(() -> {
                     SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);
@@ -76,14 +83,20 @@ public class EventTargetTrigger extends ServiceThread {
                     try {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);
+                        metricsManager.countLatencyStat(System.currentTimeMillis() - startTime, BridgeMetricsConstant.EVENTRULE_TRIGGER_LATENCY, runnerName, accountId, BridgeMetricsConstant.Status.SUCCESS.name() );
                     } catch (Exception exception) {
                         logger.error(getServiceName() + " push target exception, stackTrace-", exception);
-                        triggerRecords.forEach(triggerRecord -> errorHandler.handle(triggerRecord, exception));
+                        triggerRecords.forEach(triggerRecord -> {
+                            errorHandler.handle(triggerRecord, exception);
+                            metricsManager.countLatencyStat(System.currentTimeMillis() - startTime, BridgeMetricsConstant.EVENTRULE_TRIGGER_LATENCY, runnerName, accountId, BridgeMetricsConstant.Status.FAILED.name() );
+
+                        });
                     }
                 });
             }
         }
     }
+
 
     @Override
     public String getServiceName() {

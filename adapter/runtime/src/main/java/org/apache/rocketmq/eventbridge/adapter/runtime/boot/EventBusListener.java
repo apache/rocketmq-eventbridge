@@ -19,12 +19,21 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.boot;
 
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.rocketmq.eventbridge.BridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.BridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.listener.EventSubscriber;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
+import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
+import org.apache.rocketmq.eventbridge.adapter.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
+import org.apache.rocketmq.eventbridge.adapter.runtime.utils.RunnerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +49,14 @@ public class EventBusListener extends ServiceThread {
     private final CirculatorContext circulatorContext;
     private final EventSubscriber eventSubscriber;
     private final ErrorHandler errorHandler;
+    private BridgeMetricsManager metricsManager;
 
     public EventBusListener(CirculatorContext circulatorContext, EventSubscriber eventSubscriber,
-        ErrorHandler errorHandler) {
+        ErrorHandler errorHandler, BridgeMetricsManager metricsManager) {
         this.circulatorContext = circulatorContext;
         this.eventSubscriber = eventSubscriber;
         this.errorHandler = errorHandler;
+        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -53,7 +64,13 @@ public class EventBusListener extends ServiceThread {
         while (!stopped) {
             List<ConnectRecord> pullRecordList = Lists.newArrayList();
             try {
-                pullRecordList = eventSubscriber.pull();
+                pullRecordList = Optional.ofNullable(eventSubscriber.pull()).orElse(new ArrayList<>());
+
+                for (ConnectRecord connectRecord : pullRecordList) {
+                    String runnerName = connectRecord.getExtension(RuntimeConfigDefine.RUNNER_NAME);
+                    String accountId = RunnerUtil.getAccountId(circulatorContext,runnerName);
+                    metricsManager.eventbusInEventsTotal(runnerName, accountId, BridgeMetricsConstant.Status.SUCCESS.name(), 1);
+                }
                 if (CollectionUtils.isEmpty(pullRecordList)) {
                     this.waitForRunning(1000);
                     continue;
@@ -61,10 +78,16 @@ public class EventBusListener extends ServiceThread {
                 circulatorContext.offerEventRecords(pullRecordList);
             } catch (Exception exception) {
                 logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
-                pullRecordList.forEach(pullRecord -> errorHandler.handle(pullRecord, exception));
+                pullRecordList.forEach(pullRecord -> {
+                    String runnerName = pullRecord.getExtension(RuntimeConfigDefine.RUNNER_NAME);
+                    String accountId = RunnerUtil.getAccountId(circulatorContext, pullRecord);
+                    metricsManager.eventbusInEventsTotal(runnerName, accountId, BridgeMetricsConstant.Status.FAILED.name(), 1);
+                    errorHandler.handle(pullRecord, exception);
+                });
             }
         }
     }
+
 
     @Override
     public String getServiceName() {
