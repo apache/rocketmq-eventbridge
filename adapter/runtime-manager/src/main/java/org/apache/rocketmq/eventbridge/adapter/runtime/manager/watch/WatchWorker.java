@@ -17,20 +17,25 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.watch;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.common.ThreadFactoryImpl;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerInstanceRepository;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 public class WatchWorker {
 
     @Autowired
     WorkerService workerService;
+    @Autowired
+    WorkerInstanceRepository workerInstanceRepository;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryImpl(WatchWorker.class.getSimpleName()));
@@ -42,9 +47,9 @@ public class WatchWorker {
                 List<Worker> workers = workerService.listWorkers();
                 workers.forEach(worker -> {
                     if (!workerService.isFinalState(worker)) {
-                        watchTheWorkerImageTag(worker);
-                        watchTheWorkerResources(worker);
-                        watchTheWorkerConfig(worker);
+                        Map<String, Object> environments = new Gson().fromJson(worker.getConfig(), new TypeToken<Map<String, Object>>() {
+                        }.getType());
+                        workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImageTag(), worker.getResources(), environments);
                         workerService.refreshMD5(worker);
                     }
 
@@ -52,19 +57,4 @@ public class WatchWorker {
             }
         }, 3, 60, TimeUnit.SECONDS);
     }
-
-    private void watchTheWorkerConfig(Worker worker) {
-
-    }
-
-    @Transactional
-    private void watchTheWorkerImageTag(Worker worker) {
-
-    }
-
-    @Transactional
-    private void watchTheWorkerResources(Worker worker) {
-
-    }
-
 }
