@@ -19,13 +19,14 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.k8s.repository;
 
 import java.util.Map;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerInstanceRepository;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerResource;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerStatusEnum;
 
 public class WorkerInstanceRepositoryOnK8S implements WorkerInstanceRepository {
 
 
     @Override
-    public boolean applyWorkerInstance(String name, String image, String resources, Map<String, Object> environments) {
+    public boolean applyWorkerInstance(String name, String image, WorkerResource resources, Map<String, Object> environments) {
         return false;
     }
 

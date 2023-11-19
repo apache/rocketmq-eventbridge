@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository;
 
 import java.util.Map;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerResource;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerStatusEnum;
 
 public interface WorkerInstanceRepository {
@@ -31,7 +32,7 @@ public interface WorkerInstanceRepository {
      * @param environments
      * @return
      */
-    boolean applyWorkerInstance(String name, String image, String resources, Map<String, Object> environments);
+    boolean applyWorkerInstance(String name, String image, WorkerResource resources, Map<String, Object> environments);
 
     /**
      * Delete the worker

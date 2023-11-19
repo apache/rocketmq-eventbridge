@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.common.ThreadFactoryImpl;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerInstanceRepository;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerResource;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,7 +50,8 @@ public class WatchWorker {
                     if (!workerService.isFinalState(worker)) {
                         Map<String, Object> environments = new Gson().fromJson(worker.getConfig(), new TypeToken<Map<String, Object>>() {
                         }.getType());
-                        workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImageTag(), worker.getResources(), environments);
+                        WorkerResource workerResource = new Gson().fromJson(worker.getResources(), WorkerResource.class);
+                        workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImageTag(), workerResource, environments);
                         workerService.refreshMD5(worker);
                     }
 

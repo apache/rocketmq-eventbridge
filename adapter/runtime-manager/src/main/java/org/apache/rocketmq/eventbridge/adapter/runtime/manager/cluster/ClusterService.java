@@ -20,8 +20,11 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster;
 import com.google.common.base.Strings;
 import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.ClusterRepository;
 
 public class ClusterService {
+
+    private ClusterRepository clusterRepository;
 
     public boolean createCluster() {
         return true;
@@ -36,7 +39,7 @@ public class ClusterService {
     }
 
     public List<Cluster> listCluster() {
-        return null;
+        return clusterRepository.listCluster();
     }
 
     public String calMD5(Cluster cluster) {
