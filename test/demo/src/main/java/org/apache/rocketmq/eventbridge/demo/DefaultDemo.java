@@ -60,9 +60,9 @@ public class DefaultDemo {
     @PostConstruct
     public void initDemo() {
         log.info("init demo");
-        initEventBus();
-        initEventRule();
-        intEventTarget();
+//        initEventBus();
+//        initEventRule();
+//        intEventTarget();
 
     }
 

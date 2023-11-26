@@ -15,23 +15,14 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository;
+package org.apache.rocketmq.eventbridge.adapter.persistence.cluster.mybatis.mapper;
 
 import java.util.List;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
+import org.apache.ibatis.annotations.Param;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
 
-public interface WorkerRepository {
+public interface EventClusterMapper {
+    List<Cluster> listCluster();
 
-    List<Worker> listWorkersByCluster(int clusterId);
-
-    List<Worker> listWorkers();
-
-    boolean createWorker(Worker worker);
-
-    boolean updateWorker(Worker worker);
-
-    boolean deleteWorker(int workerId);
-
-    boolean deleteWorkers(int clusterId);
-
+    int updateCluster(@Param("id") int id, @Param("md5") String md5);
 }

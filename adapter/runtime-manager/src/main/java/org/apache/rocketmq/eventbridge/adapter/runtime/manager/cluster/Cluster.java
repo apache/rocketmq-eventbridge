@@ -28,9 +28,8 @@ public class Cluster {
     private String name;
     private String resources;
     private int replica;
-    private String currentImageId;
-    private String expectImageId;
+    private String image;
     private String md5;
-    private Date ctime;
-    private Date mtime;
+    private Date gmtCreate;
+    private Date gmtModify;
 }

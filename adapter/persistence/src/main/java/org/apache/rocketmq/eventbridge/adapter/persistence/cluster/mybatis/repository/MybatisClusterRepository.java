@@ -15,14 +15,29 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository;
+package org.apache.rocketmq.eventbridge.adapter.persistence.cluster.mybatis.repository;
 
 import java.util.List;
+import org.apache.rocketmq.eventbridge.adapter.persistence.cluster.mybatis.mapper.EventClusterMapper;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.ClusterRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
-public interface ClusterRepository {
+@Repository
+public class MybatisClusterRepository implements ClusterRepository {
 
-    List<Cluster> listCluster();
+    @Autowired
+    EventClusterMapper eventClusterMapper;
 
-    boolean updateCluster(int clusterId, String md5);
+    @Override public List<Cluster> listCluster() {
+        List<Cluster> clusterDOList = eventClusterMapper.listCluster();
+        return clusterDOList;
+    }
+
+    @Override
+    public boolean updateCluster(int clusterId, String md5) {
+        return eventClusterMapper.updateCluster(clusterId,md5)==1;
+    }
+
 }

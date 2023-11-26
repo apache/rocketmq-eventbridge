@@ -151,11 +151,11 @@
                 <artifactId>rocketmq-eventbridge-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.rocketmq</groupId>
-                <artifactId>rocketmq-test-demo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.apache.rocketmq</groupId>-->
+<!--                <artifactId>rocketmq-test-demo</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
 
             <!-- Framework -->
             <dependency>

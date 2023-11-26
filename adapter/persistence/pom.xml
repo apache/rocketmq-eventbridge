@@ -72,6 +72,11 @@
             <artifactId>rocketmq-tools</artifactId>
         </dependency>
         <dependency>
+            <artifactId>rocketmq-eventbridge-adapter-runtime-manager</artifactId>
+            <groupId>org.apache.rocketmq</groupId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
