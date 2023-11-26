@@ -18,19 +18,31 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker;
 
 import java.util.List;
+import java.util.UUID;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class WorkerService {
+@Service public class WorkerService {
 
-    private boolean createWorker() {
-        return true;
+    @Autowired private WorkerRepository workerRepository;
+
+    public boolean createWorker(int clusterId, String workerName, String image, String resources, String config,
+        String status) {
+        Worker worker = Worker.builder().id(UUID.randomUUID().toString()).clusterId(clusterId).name(workerName).image(image).resources(resources).config(config).status(status).build();
+        return workerRepository.createWorker(worker);
     }
 
     private boolean applyTasksToWorker() {
         return true;
     }
 
+    public List<Worker> listWorkersByCluster(int clusterId) {
+        return workerRepository.listWorkersByCluster(clusterId);
+    }
+
     public List<Worker> listWorkers() {
-        return null;
+        return workerRepository.listWorkers();
     }
 
     public boolean isFinalState(Worker worker) {

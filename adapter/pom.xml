@@ -28,7 +28,6 @@
         <module>storage</module>
         <module>benchmark</module>
         <module>runtime-manager</module>
-        <module>runtime-on-k8s</module>
     </modules>
 
 </project>

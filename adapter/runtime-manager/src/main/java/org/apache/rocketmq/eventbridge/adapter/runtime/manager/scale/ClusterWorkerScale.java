@@ -25,7 +25,9 @@ import org.apache.rocketmq.common.ThreadFactoryImpl;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.ClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ClusterWorkerScale {
     @Autowired
     ClusterService clusterService;
