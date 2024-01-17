@@ -20,7 +20,7 @@ public class WorkerInstanceRepositoryOnK8STest {
         Map<String, Object> environments = Maps.newHashMap();
         environments.put("key1", "value1");
         environments.put("key2", "value2");
-        workerInstanceRepositoryOnK8S.applyWorkerInstance("worker-4", "registry.cn-beijing.cr.aliyuncs.com/eventbridge:20231115195431f55971", new Gson().fromJson("{\"cpu\":1,\"memory\":1}", WorkerResource.class), null);
+        workerInstanceRepositoryOnK8S.applyWorkerInstance("worker-4", "registry.cn-beijing.cr.aliyuncs.com/eventbridge:20231115195431f55971", new Gson().fromJson("{\"cpu\":1,\"memory\":1}", WorkerResource.class), environments);
     }
 
     @Test
