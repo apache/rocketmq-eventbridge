@@ -15,23 +15,15 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.adapter.runtime.manager.task;
+package org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker;
 
-import java.util.List;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
-import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
+import org.springframework.stereotype.Service;
 
-public class RunnerTaskService {
+@Service
+public class WorkerLoadService {
 
-    List<RunnerTask> listRunnerTask(String runnerName) {
+    public Worker getMinLoadWorker(Cluster cluster) {
         return null;
-    }
-
-    public boolean updateRunnerTaskWorker(RunnerTask task, Worker worker) {
-        return true;
-    }
-
-    public boolean updateRunnerTaskCluster(RunnerTask task, Cluster cluster) {
-        return true;
     }
 }

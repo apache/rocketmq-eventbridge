@@ -57,9 +57,8 @@ public class WatchWorker {
                         if (!workerService.isFinalState(worker)) {
                             Map<String, Object> environments = new Gson().fromJson(worker.getConfig(), new TypeToken<Map<String, Object>>() {
                             }.getType());
-//                            WorkerResource workerResource = new Gson().fromJson(worker.getResources(), WorkerResource.class);
                             log.info("applyWorkerInstance, workerName: {}, workerImageTag: {}, workerResource: {}, environments: {}", worker.getName(), worker.getImage(), worker.getResources(), new Gson().toJson(environments));
-//                        workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImageTag(), workerResource, environments);
+//                            workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImage(), new Gson().fromJson(worker.getResources(), WorkerResource.class), environments);
                             workerService.refreshMD5(worker);
                         }
 

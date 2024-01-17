@@ -38,9 +38,10 @@ public class ClusterService {
         return true;
     }
 
-    public Cluster getCluster(String clusterName) {
+    public Cluster getCluster(long clusterId) {
         return null;
     }
+
 
     public List<Cluster> listCluster() {
         return clusterRepository.listCluster();

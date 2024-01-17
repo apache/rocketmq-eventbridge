@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClusterWorkerScale {
+public class ClusterScale {
     @Autowired
     ClusterService clusterService;
 
@@ -37,7 +37,7 @@ public class ClusterWorkerScale {
     private int DEFAULT_SCALE_DOWN_TRIGGER_LOAD = 20;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryImpl(ClusterWorkerScale.class.getSimpleName()));
+        new ThreadFactoryImpl(ClusterScale.class.getSimpleName()));
 
     public void start() {
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {

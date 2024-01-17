@@ -19,7 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.dispatch;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class RunnerTaskRebalance {
+public class WorkerRebalance {
 
     @Autowired
     private RunnerTaskDispatcher runnerTaskDispatcher;
