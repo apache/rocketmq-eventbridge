@@ -29,7 +29,7 @@
         <url>git@github.com:apache/rocketmq-eventbridge.git</url>
         <connection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</connection>
         <developerConnection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</developerConnection>
-        <tag>rocketmq-eventbridge-1.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <mailingLists>
@@ -419,26 +419,26 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                <version>2.17</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>verify</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <configuration>-->
-<!--                            <configLocation>style/rmq_checkstyle.xml</configLocation>-->
-<!--                            <encoding>UTF-8</encoding>-->
-<!--                            <consoleOutput>true</consoleOutput>-->
-<!--                            <failsOnError>true</failsOnError>-->
-<!--                            <includeTestSourceDirectory>false</includeTestSourceDirectory>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <executions>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <configuration>
+                            <configLocation>style/rmq_checkstyle.xml</configLocation>
+                            <encoding>UTF-8</encoding>
+                            <consoleOutput>true</consoleOutput>
+                            <failsOnError>true</failsOnError>
+                            <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
