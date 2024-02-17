@@ -88,13 +88,18 @@ curl  -X POST http://127.0.0.1:7001/putEvents  \
 -H "ce-datacontenttype:application/json"  \
 -H "ce-time:2018-04-05T17:31:00Z"  \
 -H "ce-eventbusname:demo-bus"  \
--d 'A test recrod.'
+-d 'A test event.'
 ```
 
 * Check if the local file received a write event
 
 In addition, by default, the system will create a demo rule for you to subscribe and push to the file. You can check whether there are events received in the directory:～/demo
-![img.png](docs/cn/images/demo.png)
+```agsl
+root % tail -f ～/demo
+A test event.
+A test event.
+A test event.
+```
 
 Why does the file output the data attribute of CloudEvent instead of other attributes?This is because the configuration in the demo rule is to output "$.data" in CloudEvent to the file line.
 You can refer to this [document](docs/CreateFileTarget.md)  to configure and modify event targets.
