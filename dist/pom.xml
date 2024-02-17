@@ -113,7 +113,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.apache.rocketmq.eventbridge.StartMain</mainClass>
+                            <mainClass>org.apache.rocketmq.eventbridge.Main</mainClass>
                         </configuration>
                     </execution>
                 </executions>
