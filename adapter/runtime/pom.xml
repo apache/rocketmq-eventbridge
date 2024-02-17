@@ -82,7 +82,6 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-common</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
