@@ -29,7 +29,7 @@
         <url>git@github.com:apache/rocketmq-eventbridge.git</url>
         <connection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</connection>
         <developerConnection>scm:git:git@github.com:apache/rocketmq-eventbridge.git</developerConnection>
-        <tag>rocketmq-eventbridge-1.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <mailingLists>
