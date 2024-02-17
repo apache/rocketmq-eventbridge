@@ -119,7 +119,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <finalName>rocketmq-eventbridge-start-1.0.0</finalName>
+                    <finalName>rocketmq-eventbridge-start-1.1.0-SNAPSHOT</finalName>
                 </configuration>
             </plugin>
         </plugins>
