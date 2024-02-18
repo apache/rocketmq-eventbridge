@@ -29,6 +29,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
 
     /**
      * Refresh subscriber inner data when runner keys changed
+     *
      * @param subscribeRunnerKeys
      * @param refreshTypeEnum
      */
@@ -42,7 +43,7 @@ public abstract class EventSubscriber implements TargetRunnerListener {
     public abstract List<ConnectRecord> pull();
 
     /**
-     * Commit the connect records.
+     * Commit connect records.
      *
      * @param connectRecordList
      */
@@ -54,12 +55,13 @@ public abstract class EventSubscriber implements TargetRunnerListener {
     public abstract void close();
 
     /**
-     * Put the connect record to the eventbus.
+     * Put connect record to the eventbus.
+     *
      * @param eventBusName
      * @param connectRecord
      * @param delaySec
      */
-    public  boolean put(String eventBusName, ConnectRecord connectRecord, int delaySec){
+    public boolean put(String eventBusName, ConnectRecord connectRecord, int delaySec) {
         // convert the eventBusName to Topic ?
         return true;
     }

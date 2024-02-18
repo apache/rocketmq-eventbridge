@@ -23,10 +23,6 @@ import org.apache.rocketmq.common.message.MessageExt;
 import java.time.Duration;
 import java.util.List;
 
-/**
- * @Author changfeng
- * @Date 2023/4/9 10:09 上午
- */
 public interface LitePullConsumer {
     void startup() throws MQClientException;
 

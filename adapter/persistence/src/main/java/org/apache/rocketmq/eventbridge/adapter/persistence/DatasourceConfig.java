@@ -75,7 +75,7 @@ public class DatasourceConfig {
     private Long validationTimeoutMs;
 
     @Bean("dataSource")
-    public DataSource getMasterDataSource(){
+    public DataSource getMasterDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(baseUrl);
         hikariConfig.setDriverClassName(baseDriverClassName);
@@ -102,7 +102,8 @@ public class DatasourceConfig {
     }
 
     @Bean("sqlSessionTemplate")
-    public SqlSessionTemplate masterSqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory){
+    public SqlSessionTemplate masterSqlSessionTemplate(
+        @Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
         return new SqlSessionTemplate(sqlSessionFactory);
     }
 

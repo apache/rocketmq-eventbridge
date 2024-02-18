@@ -52,19 +52,21 @@ public class RuntimeTargetRunnerAPIImpl implements TargetRunnerAPI {
         targetRunnerConfig.setName(name);
         List<Map<String, String>> components = Lists.newArrayList();
         targetRunnerConfig.setComponents(components);
-        Map<String, String> sourceComponent = new Gson().fromJson(new Gson().toJson(source
-            .getConfig()), new TypeToken<Map<String, String>>() {
-        }.getType());
-        Map<String, String> filterComponent = new Gson().fromJson(new Gson().toJson(RocketMQConverter.buildEventBridgeFilterTransform(filterPattern)
-            .getConfig()), new TypeToken<Map<String, String>>() {
-        }.getType());
 
-        Map<String, String> transformComponent = new Gson().fromJson(new Gson().toJson(RocketMQConverter.buildEventBridgeTransform(targetTransform)
-            .getConfig()), new TypeToken<Map<String, String>>() {
-        }.getType());
-        Map<String, String> targetComponent = new Gson().fromJson(new Gson().toJson(target
-            .getConfig()), new TypeToken<Map<String, String>>() {
-        }.getType());
+        Map<String, String> sourceComponent = new Gson().fromJson(
+            new Gson().toJson(source.getConfig()),
+            new TypeToken<Map<String, String>>() {}.getType());
+
+        Map<String, String> filterComponent = new Gson().fromJson(
+            new Gson().toJson(RocketMQConverter.buildEventBridgeFilterTransform(filterPattern).getConfig()),
+            new TypeToken<Map<String, String>>() {}.getType());
+
+        Map<String, String> transformComponent = new Gson().fromJson(new Gson().toJson(RocketMQConverter.buildEventBridgeTransform(targetTransform).getConfig()),
+            new TypeToken<Map<String, String>>() {}.getType());
+
+        Map<String, String> targetComponent = new Gson().fromJson(new Gson().toJson(target.getConfig()),
+            new TypeToken<Map<String, String>>() {}.getType());
+
         components.add(sourceComponent);
         components.add(filterComponent);
         components.add(transformComponent);

@@ -29,25 +29,24 @@ import java.util.Properties;
  */
 public class RuntimeConfigProps {
 
-    private final static Logger logger = LoggerFactory.getLogger(RuntimeConfigProps.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(RuntimeConfigProps.class);
 
     private Properties properties;
 
-    private RuntimeConfigProps(){
+    private RuntimeConfigProps() {
         try {
-             properties = PropertiesLoaderUtils.loadAllProperties("runtime.properties");
+            properties = PropertiesLoaderUtils.loadAllProperties("runtime.properties");
         } catch (IOException exception) {
-            logger.error("runtime load properties failed, stackTrace-", exception);
+            LOGGER.error("runtime load properties failed, stackTrace-", exception);
         }
     }
 
-    private static class  RuntimerConfigPropsHolder{
-        private static final RuntimeConfigProps instance = new RuntimeConfigProps();
+    private static class RuntimerConfigPropsHolder {
+        private static final RuntimeConfigProps INSTANCE = new RuntimeConfigProps();
     }
 
-    public static RuntimeConfigProps build(){
-        return RuntimerConfigPropsHolder.instance;
+    public static RuntimeConfigProps build() {
+        return RuntimerConfigPropsHolder.INSTANCE;
     }
-
 
 }

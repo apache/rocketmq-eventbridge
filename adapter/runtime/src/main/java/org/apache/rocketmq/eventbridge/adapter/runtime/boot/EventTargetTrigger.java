@@ -36,12 +36,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * event target push to sink task
- *
- * @author artisan
  */
 public class EventTargetTrigger extends ServiceThread {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventTargetTrigger.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventTargetTrigger.class);
 
     private final CirculatorContext circulatorContext;
     private final OffsetManager offsetManager;
@@ -49,7 +47,7 @@ public class EventTargetTrigger extends ServiceThread {
     private volatile Integer batchSize = 100;
 
     public EventTargetTrigger(CirculatorContext circulatorContext, OffsetManager offsetManager,
-                              ErrorHandler errorHandler) {
+        ErrorHandler errorHandler) {
         this.circulatorContext = circulatorContext;
         this.offsetManager = offsetManager;
         this.errorHandler = errorHandler;
@@ -60,15 +58,15 @@ public class EventTargetTrigger extends ServiceThread {
         while (!stopped) {
             Map<String, List<ConnectRecord>> targetRecordMap = circulatorContext.takeTargetRecords(batchSize);
             if (MapUtils.isEmpty(targetRecordMap)) {
-                logger.trace("current target pusher is empty");
+                LOGGER.trace("current target pusher is empty");
                 this.waitForRunning(1000);
                 continue;
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("start push content by pusher - {}", JSON.toJSONString(targetRecordMap));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("start push content by pusher - {}", JSON.toJSONString(targetRecordMap));
             }
 
-            for(String runnerName: targetRecordMap.keySet()){
+            for (String runnerName : targetRecordMap.keySet()) {
                 ExecutorService executorService = circulatorContext.getExecutorService(runnerName);
                 executorService.execute(() -> {
                     SinkTask sinkTask = circulatorContext.getPusherTaskMap().get(runnerName);
@@ -77,7 +75,7 @@ public class EventTargetTrigger extends ServiceThread {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);
                     } catch (Exception exception) {
-                        logger.error(getServiceName() + " push target exception, stackTrace-", exception);
+                        LOGGER.error(getServiceName() + " push target exception, stackTrace-", exception);
                         triggerRecords.forEach(triggerRecord -> errorHandler.handle(triggerRecord, exception));
                     }
                 });
@@ -101,7 +99,7 @@ public class EventTargetTrigger extends ServiceThread {
             circulatorContext.releaseExecutorService();
             circulatorContext.releaseTriggerTask();
         } catch (Exception e) {
-            logger.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
+            LOGGER.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
         }
     }
 }

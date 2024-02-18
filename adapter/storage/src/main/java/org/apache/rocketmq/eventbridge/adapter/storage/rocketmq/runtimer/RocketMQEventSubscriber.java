@@ -27,6 +27,13 @@ import io.openmessaging.connector.api.data.RecordOffset;
 import io.openmessaging.connector.api.data.RecordPartition;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +64,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,7 +78,7 @@ import java.util.stream.Collectors;
 @DependsOn("flyway")
 public class RocketMQEventSubscriber extends EventSubscriber {
 
-    private static final Logger logger = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RocketMQEventSubscriber.class);
 
     @Autowired
     private EventDataRepository eventDataRepository;
@@ -98,7 +104,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     public static final String MSG_ID = "msgId";
 
     @PostConstruct
-    public void initRocketMQEventSubscriber(){
+    public void initRocketMQEventSubscriber() {
         this.initMqProperties();
         this.initConsumeWorkers();
     }
@@ -123,18 +129,18 @@ public class RocketMQEventSubscriber extends EventSubscriber {
         ArrayList<MessageExt> messages = new ArrayList<>();
         messageBuffer.drainTo(messages, pullBatchSize);
         if (CollectionUtils.isEmpty(messages)) {
-            logger.trace("consumer poll message empty.");
+            LOGGER.trace("consumer poll message empty.");
             return null;
         }
         List<ConnectRecord> connectRecords = new CopyOnWriteArrayList<>();
         List<CompletableFuture<Void>> completableFutures = Lists.newArrayList();
-        messages.forEach(item->{
-            CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(()-> convertToSinkRecord(item))
-                    .exceptionally((exception) -> {
-                        logger.error("execute completable job failed，stackTrace-", exception);
-                        return null;
-                    })
-                    .thenAccept(connectRecords::add);
+        messages.forEach(item -> {
+            CompletableFuture<Void> recordCompletableFuture = CompletableFuture.supplyAsync(() -> convertToSinkRecord(item))
+                .exceptionally((exception) -> {
+                    LOGGER.error("execute completable job failed", exception);
+                    return null;
+                })
+                .thenAccept(connectRecords::add);
             completableFutures.add(recordCompletableFuture);
         });
 
@@ -145,24 +151,25 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     /**
      * group by runner name batch commit
+     *
      * @param connectRecordList
      */
     @Override
     public void commit(List<ConnectRecord> connectRecordList) {
-        if(CollectionUtils.isEmpty(connectRecordList)){
-            logger.warn("commit event record data empty!");
+        if (CollectionUtils.isEmpty(connectRecordList)) {
+            LOGGER.warn("commit event record data empty!");
             return;
         }
         String runnerName = connectRecordList.iterator().next().getExtension(RuntimeConfigDefine.RUNNER_NAME);
         List<String> msgIds = connectRecordList.stream().map(item -> item.getPosition()
-                .getPartition().getPartition().get(MSG_ID).toString()).collect(Collectors.toList());
+            .getPartition().getPartition().get(MSG_ID).toString()).collect(Collectors.toList());
         consumeWorkerMap.get(runnerName).commit(msgIds);
     }
 
     @Override
     public void close() {
         for (Map.Entry<String, ConsumeWorker> item : consumeWorkerMap.entrySet()) {
-            ConsumeWorker consumeWorker =  item.getValue();
+            ConsumeWorker consumeWorker = item.getValue();
             consumeWorker.shutdown();
         }
     }
@@ -187,7 +194,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
             clientConfig.setNameSrvAddr(namesrvAddr);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?
-                    AccessChannel.CLOUD : AccessChannel.LOCAL);
+                AccessChannel.CLOUD : AccessChannel.LOCAL);
             clientConfig.setNamespace(namespace);
             this.clientConfig = clientConfig;
 
@@ -196,7 +203,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             }
 
             if (StringUtils.isNotBlank(socks5UserName) && StringUtils.isNotBlank(socks5Password)
-                    && StringUtils.isNotBlank(socks5Endpoint)) {
+                && StringUtils.isNotBlank(socks5Endpoint)) {
                 SocksProxyConfig proxyConfig = new SocksProxyConfig();
                 proxyConfig.setUsername(socks5UserName);
                 proxyConfig.setPassword(socks5Password);
@@ -206,8 +213,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                 this.socksProxy = new Gson().toJson(proxyConfigMap);
             }
 
-        }catch (Exception exception){
-            logger.error("init rocket mq property exception, stack trace-", exception);
+        } catch (Exception exception) {
+            LOGGER.error("init rocket mq property exception, stack trace-", exception);
         }
     }
 
@@ -215,8 +222,8 @@ public class RocketMQEventSubscriber extends EventSubscriber {
      * init rocket mq pull consumer
      */
     private void initConsumeWorkers() {
-        Set<SubscribeRunnerKeys> subscribeRunnerKeysSet =  runnerConfigObserver.getSubscribeRunnerKeys();
-        if(subscribeRunnerKeysSet == null || subscribeRunnerKeysSet.isEmpty()){
+        Set<SubscribeRunnerKeys> subscribeRunnerKeysSet = runnerConfigObserver.getSubscribeRunnerKeys();
+        if (subscribeRunnerKeysSet == null || subscribeRunnerKeysSet.isEmpty()) {
             return;
         }
         for (SubscribeRunnerKeys subscribeRunnerKeys : subscribeRunnerKeysSet) {
@@ -229,6 +236,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     /**
      * first init default rocketmq pull consumer
+     *
      * @return
      */
     public LitePullConsumer initLitePullConsumer(SubscribeRunnerKeys subscribeRunnerKeys) {
@@ -245,7 +253,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
             pullConsumer.attachTopic(topic, "*");
             pullConsumer.startup();
         } catch (Exception exception) {
-            logger.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
+            LOGGER.error("init default pull consumer exception, topic -" + topic + "-stackTrace-", exception);
             throw new EventBridgeException(" init rocketmq consumer failed");
         }
         return pullConsumer;
@@ -265,6 +273,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     /**
      * MessageExt convert to connect record
+     *
      * @param messageExt
      * @return
      */
@@ -311,7 +320,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private void putConsumeWorker(SubscribeRunnerKeys subscribeRunnerKeys) {
         ConsumeWorker consumeWorker = consumeWorkerMap.get(subscribeRunnerKeys.getRunnerName());
-        if (!Objects.isNull(consumeWorker)){
+        if (!Objects.isNull(consumeWorker)) {
             consumeWorker.shutdown();
         }
         LitePullConsumer litePullConsumer = initLitePullConsumer(subscribeRunnerKeys);
@@ -322,7 +331,7 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     private void removeConsumeWorker(SubscribeRunnerKeys subscribeRunnerKeys) {
         ConsumeWorker consumeWorker = consumeWorkerMap.remove(subscribeRunnerKeys.getRunnerName());
-        if (!Objects.isNull(consumeWorker)){
+        if (!Objects.isNull(consumeWorker)) {
             consumeWorker.shutdown();
         }
     }
@@ -352,12 +361,12 @@ public class RocketMQEventSubscriber extends EventSubscriber {
                         messageBuffer.put(message);
                     }
                 } catch (Exception exception) {
-                    logger.error(getServiceName() + " - RocketMQEventSubscriber pull record exception, stackTrace - ", exception);
+                    LOGGER.error(getServiceName() + " - RocketMQEventSubscriber pull record exception, stackTrace - ", exception);
                 }
             }
         }
 
-        public void commit(List<String> messageIds){
+        public void commit(List<String> messageIds) {
             this.pullConsumer.commit(messageIds);
         }
 

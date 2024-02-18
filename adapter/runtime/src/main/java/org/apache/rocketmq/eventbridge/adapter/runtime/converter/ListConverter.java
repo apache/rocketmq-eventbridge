@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class ListConverter implements Converter<List> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.EVENT_BRIDGE_RUNTIMER);
 
     private Class clazz;
 

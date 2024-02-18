@@ -71,19 +71,11 @@ public class TargetRunnerConfig implements Serializable {
 
     private boolean isEqualsComponents(List<Map<String, String>> source, List<Map<String, String>> target) {
         if (source == null || target == null) {
-            if (source != target) {
-                return false;
-            } else {
-                return true;
-            }
+            return source == target;
         }
 
         if (source.isEmpty() || target.isEmpty()) {
-            if (source.isEmpty() && target.isEmpty()) {
-                return true;
-            } else {
-                return false;
-            }
+            return source.isEmpty() && target.isEmpty();
         }
 
         if (source.size() != target.size()) {
@@ -99,10 +91,8 @@ public class TargetRunnerConfig implements Serializable {
                 String element = targetComponent.get(entry.getKey());
                 if (element == null && entry.getValue() == null) {
                     return true;
-                } else if (element.equals(entry.getValue())) {
-                    return true;
                 } else {
-                    return false;
+                    return element.equals(entry.getValue());
                 }
             }
         }
@@ -117,7 +107,7 @@ public class TargetRunnerConfig implements Serializable {
         return components.get(0).get(ACCOUNT_ID);
     }
 
-    public SubscribeRunnerKeys getSubscribeRunnerKeys(){
+    public SubscribeRunnerKeys getSubscribeRunnerKeys() {
         SubscribeRunnerKeys subscribeRunnerKeys = new SubscribeRunnerKeys();
         subscribeRunnerKeys.setRunnerName(this.getName());
         subscribeRunnerKeys.setAccountId(this.getAccountId());

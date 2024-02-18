@@ -21,8 +21,8 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.common;
  * Define all the logger name of the runtime.
  */
 public class LoggerName {
-    public static final String EventBridge_RUNTIMER = "EventBridgeRuntimer";
-    public static final String EventBus_Listener = "EventBusListener";
-    public static final String EventRule_Transfer = "EventRuleTransfer";
-    public static final String EventTarget_Trigger = "EventTargetTrigger";
+    public static final String EVENT_BRIDGE_RUNTIMER = "EventBridgeRuntimer";
+    public static final String EVENT_BUS_LISTENER = "EventBusListener";
+    public static final String EVENT_RULE_TRANSFER = "EventRuleTransfer";
+    public static final String EVENT_TARGET_TRIGGER = "EventTargetTrigger";
 }

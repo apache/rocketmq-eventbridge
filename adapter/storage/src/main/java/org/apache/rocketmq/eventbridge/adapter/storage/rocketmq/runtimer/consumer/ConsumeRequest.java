@@ -21,10 +21,6 @@ import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 
-/**
- * @Author changfeng
- * @Date 2023/4/9 10:07 上午
- */
 public class ConsumeRequest {
     private final MessageExt messageExt;
     private final MessageQueue messageQueue;
