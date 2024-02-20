@@ -4,6 +4,8 @@
     <id>assembly</id>
     <formats>
         <format>dir</format>
+        <format>zip</format>
+        <format>tar.gz</format>
     </formats>
 
     <includeBaseDirectory>true</includeBaseDirectory>
@@ -17,6 +19,23 @@
             <outputFileNameMapping>rocketmq-eventbridge.jar</outputFileNameMapping>
         </dependencySet>
     </dependencySets>
+
+    <moduleSets>
+        <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
+            <includes>
+                <include>org.apache.rocketmq:connect-filter-transform</include>
+                <include>org.apache.rocketmq:connect-eventbridge-transform</include>
+                <include>org.apache.rocketmq:eventbridge-connect-file</include>
+            </includes>
+            <binaries>
+                <attachmentClassifier>jar-with-dependencies</attachmentClassifier>
+                <outputDirectory>plugin/</outputDirectory>
+                <unpack>false</unpack>
+                <includeDependencies>false</includeDependencies>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
 
     <fileSets>
         <fileSet>
