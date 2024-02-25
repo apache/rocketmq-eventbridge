@@ -24,8 +24,9 @@ public enum PushRetryStrategyEnum {
      * 3 times: every 10s~20s
      */
     BACKOFF_RETRY(1, 3),
+
     /**
-     * 176 times: 1，2，4，8，16，32，64，128，256，512，512...512秒 ... 512s(176)
+     * 176 times: 1, 2, 4, 8, 16, 36, 64, 128, 256, 512, 512...512s(176)
      */
     EXPONENTIAL_DECAY_RETRY(2, 176);
 

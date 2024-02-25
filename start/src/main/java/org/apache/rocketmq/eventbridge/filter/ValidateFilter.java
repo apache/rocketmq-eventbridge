@@ -43,27 +43,27 @@ public class ValidateFilter implements WebFilter {
 
     private List<AuthValidation> validations = new CopyOnWriteArrayList<>();
 
-    @Value(value="${auth.validation:default}")
+    @Value(value = "${auth.validation:default}")
     private String validationName;
 
     @PostConstruct
     public void init() {
         List<String> validationNames = Arrays.stream(validationName.split(",")).collect(Collectors.toList());
-        boolean match = Arrays.stream(validationName.split(",")).allMatch(validationName-> validationName.equals("default"));
+        boolean match = Arrays.stream(validationName.split(",")).allMatch(validationName -> validationName.equals("default"));
         if (!match) {
             validationNames.add(0, "default");
         }
-        validationNames.forEach(action->validations.add(ValidationServiceFactory.getInstance(action)));
+        validationNames.forEach(action -> validations.add(ValidationServiceFactory.getInstance(action)));
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         return chain.filter(exchange)
-                .subscriberContext(ctx -> {
-                    AtomicReference<Context> result = new AtomicReference<Context>();
-                    validations.forEach(validation-> result.set(validation.validate(request, ctx)));
-                    return result.get();
-                });
+            .subscriberContext(ctx -> {
+                AtomicReference<Context> result = new AtomicReference<Context>();
+                validations.forEach(validation -> result.set(validation.validate(request, ctx)));
+                return result.get();
+            });
     }
 }

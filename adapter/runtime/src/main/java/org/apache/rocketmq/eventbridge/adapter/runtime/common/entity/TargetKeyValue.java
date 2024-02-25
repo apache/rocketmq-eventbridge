@@ -139,15 +139,17 @@ public class TargetKeyValue implements KeyValue, Serializable {
         this.properties = properties;
     }
 
-    public KeyValue putAll(Map<String,String> configProps){
+    public KeyValue putAll(Map<String, String> configProps) {
         this.properties.putAll(configProps);
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         TargetKeyValue that = (TargetKeyValue) o;
         return Objects.equals(targetKeyId, that.targetKeyId) && Objects.equals(properties, that.properties);
     }
@@ -160,9 +162,9 @@ public class TargetKeyValue implements KeyValue, Serializable {
     @Override
     public String toString() {
         return "TargetKeyValue{" +
-                "targetKeyId='" + targetKeyId + '\'' +
-                ", properties=" + properties +
-                '}';
+            "targetKeyId='" + targetKeyId + '\'' +
+            ", properties=" + properties +
+            '}';
     }
 
     public String getTargetKeyId() {

@@ -19,9 +19,8 @@ package org.apache.rocketmq.eventbridge.infrastructure.trace;
 
 
 /**
- * EventMeshTraceService
- * SPI可扩展
- * 基于OpenTelemetry实现封装不同追踪器
+ * Offers extension capability via SPI, allowing different tracing/metrics observation implementations: OpenTelemetry,
+ * Jaeger, Zipkin, etc.
  */
 public interface TraceStrategy {
 

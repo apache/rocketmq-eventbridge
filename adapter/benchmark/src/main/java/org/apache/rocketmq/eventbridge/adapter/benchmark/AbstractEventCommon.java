@@ -48,19 +48,19 @@ public abstract class AbstractEventCommon {
             return;
         }
 
-        // tps: 每秒文件打印的行数
+        // tps: rows to print for each second
         final long tps = currentRowCount - previousRowCount.get();
         previousRowCount.set(currentRowCount);
         writeCount.add(currentRowCount);
         costTime.add(1000);
-        // delayTime（条/ms）=接收的数量/花费的时间
+        // delayTime(record/ms)= receiving-amount / time
         final double delayTime = writeCount.longValue() / costTime.longValue();
         // String delayTimeStr = twoDecimal(delayTime);
 
         String info = String.format("Current Time: %s  |  TPS: %d  ",
                 UtilAll.timeMillisToHumanString2(System.currentTimeMillis()), tps);
 
-        System.out.println(info);
+        System.out.printf("%s%n", info);
     }
 
 

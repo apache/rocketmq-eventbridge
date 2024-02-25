@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ServiceThread extends AbstractStartAndShutdown implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerName.EVENT_BRIDGE_RUNTIMER);
 
     private static final long JOIN_TIME = 90 * 1000;
 
@@ -45,14 +45,14 @@ public abstract class ServiceThread extends AbstractStartAndShutdown implements 
     public abstract String getServiceName();
 
     public void start() {
-        logger.info("Try to start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
+        LOGGER.info("Try to start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
         if (!hasNotified.compareAndSet(false, true)) {
             return;
         }
         stopped = false;
         this.thread.setDaemon(isDaemon);
         this.thread.start();
-        logger.info("Start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
+        LOGGER.info("Start service thread:{} started:{} lastThread:{}", getServiceName(), hasNotified.get(), thread);
     }
 
     public void shutdown() {
@@ -61,7 +61,7 @@ public abstract class ServiceThread extends AbstractStartAndShutdown implements 
 
     public void shutdown(final boolean interrupt) {
         this.stopped = true;
-        logger.info("shutdown thread " + this.getServiceName() + " interrupt " + interrupt);
+        LOGGER.info("shutdown thread " + this.getServiceName() + " interrupt " + interrupt);
 
         if (hasNotified.compareAndSet(false, true)) {
             waitPoint.countDown(); // notify
@@ -77,10 +77,10 @@ public abstract class ServiceThread extends AbstractStartAndShutdown implements 
                 this.thread.join(this.getJointime());
             }
             long eclipseTime = System.currentTimeMillis() - beginTime;
-            logger.info("join thread " + this.getServiceName() + " eclipse time(ms) " + eclipseTime + " "
+            LOGGER.info("join thread " + this.getServiceName() + " eclipse time(ms) " + eclipseTime + " "
                 + this.getJointime());
         } catch (InterruptedException e) {
-            logger.error("Interrupted", e);
+            LOGGER.error("Interrupted", e);
         }
     }
 
@@ -94,7 +94,7 @@ public abstract class ServiceThread extends AbstractStartAndShutdown implements 
 
     public void stop(final boolean interrupt) {
         this.stopped = true;
-        logger.info("stop thread " + this.getServiceName() + " interrupt " + interrupt);
+        LOGGER.info("stop thread " + this.getServiceName() + " interrupt " + interrupt);
 
         if (hasNotified.compareAndSet(false, true)) {
             waitPoint.countDown(); // notify
@@ -107,7 +107,7 @@ public abstract class ServiceThread extends AbstractStartAndShutdown implements 
 
     public void makeStop() {
         this.stopped = true;
-        logger.info("makestop thread " + this.getServiceName());
+        LOGGER.info("makestop thread " + this.getServiceName());
     }
 
     public void wakeup() {

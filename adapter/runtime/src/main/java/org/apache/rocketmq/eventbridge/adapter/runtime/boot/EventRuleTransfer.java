@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EventRuleTransfer extends ServiceThread {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventRuleTransfer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventRuleTransfer.class);
 
     private volatile Integer batchSize = 100;
 
@@ -68,18 +68,18 @@ public class EventRuleTransfer extends ServiceThread {
 
     @Override
     public void run() {
-        List<ConnectRecord> afterTransformConnect = new CopyOnWriteArrayList<>();;
+        List<ConnectRecord> afterTransformConnect = new CopyOnWriteArrayList<>();
         while (!stopped) {
             try {
                 Map<String, List<ConnectRecord>> eventRecordMap = circulatorContext.takeEventRecords(batchSize);
                 if (MapUtils.isEmpty(eventRecordMap)) {
-                    logger.trace("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
+                    LOGGER.trace("listen eventRecords is empty, continue by curTime - {}", System.currentTimeMillis());
                     this.waitForRunning(1000);
                     continue;
                 }
                 Map<String, TransformEngine<ConnectRecord>> latestTransformMap = circulatorContext.getTaskTransformMap();
                 if (MapUtils.isEmpty(latestTransformMap)) {
-                    logger.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
+                    LOGGER.warn("latest transform engine is empty, continue by curTime - {}", System.currentTimeMillis());
                     this.waitForRunning(3000);
                     continue;
                 }
@@ -92,7 +92,7 @@ public class EventRuleTransfer extends ServiceThread {
                     curEventRecords.forEach(pullRecord -> {
                         CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
                             .exceptionally((exception) -> {
-                                logger.error("transfer do transform event record failed，stackTrace-", exception);
+                                LOGGER.error("transfer do transform event record failed, stackTrace-", exception);
                                 errorHandler.handle(pullRecord, exception);
                                 return null;
                             })
@@ -108,9 +108,9 @@ public class EventRuleTransfer extends ServiceThread {
                 }
                 CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[eventRecordMap.values().size()])).get();
                 circulatorContext.offerTargetTaskQueue(afterTransformConnect);
-                logger.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
+                LOGGER.info("offer target task queues succeed, transforms - {}", JSON.toJSONString(afterTransformConnect));
             } catch (Exception exception) {
-                logger.error("transfer event record failed, stackTrace-", exception);
+                LOGGER.error("transfer event record failed, stackTrace-", exception);
                 afterTransformConnect.forEach(transferRecord -> errorHandler.handle(transferRecord, exception));
             }
 
@@ -127,7 +127,7 @@ public class EventRuleTransfer extends ServiceThread {
         try {
             circulatorContext.releaseTaskTransform();
         } catch (Exception e) {
-            logger.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
+            LOGGER.error(String.format("current thread: %s, error Track: %s ", getServiceName(), ExceptionUtil.getErrorMessage(e)));
         }
     }
 

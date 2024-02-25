@@ -30,12 +30,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * listen the event and offer to queue
- *
- * @author artisan
  */
 public class EventBusListener extends ServiceThread {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventBusListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventBusListener.class);
 
     private final CirculatorContext circulatorContext;
     private final EventSubscriber eventSubscriber;
@@ -60,7 +58,7 @@ public class EventBusListener extends ServiceThread {
                 }
                 circulatorContext.offerEventRecords(pullRecordList);
             } catch (Exception exception) {
-                logger.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
+                LOGGER.error(getServiceName() + " - event bus pull record exception, stackTrace - ", exception);
                 pullRecordList.forEach(pullRecord -> errorHandler.handle(pullRecord, exception));
             }
         }

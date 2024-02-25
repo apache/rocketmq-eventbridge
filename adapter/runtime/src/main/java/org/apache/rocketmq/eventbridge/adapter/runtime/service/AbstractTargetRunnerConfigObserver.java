@@ -46,7 +46,7 @@ public abstract class AbstractTargetRunnerConfigObserver implements TargetRunner
 
     @Override
     public Set<SubscribeRunnerKeys> getSubscribeRunnerKeys() {
-        if(CollectionUtils.isEmpty(targetRunnerConfigs)){
+        if (CollectionUtils.isEmpty(targetRunnerConfigs)) {
             return null;
         }
         return targetRunnerConfigs.stream().map(item -> {
