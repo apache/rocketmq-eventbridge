@@ -31,7 +31,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class RecordOffsetConverter implements Converter<RecordOffset> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.EVENT_BRIDGE_RUNTIMER);
 
     @Override
     public byte[] objectToByte(RecordOffset recordOffset) {

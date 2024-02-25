@@ -91,7 +91,7 @@ public class ErrorHandler {
                     return -1;
                 }
                 int pow = (int) Math.pow(2, 3 + retryTimes);
-                return (pow > 512 ? 512 : pow);
+                return pow > 512 ? 512 : pow;
             default:
                 return -1;
         }

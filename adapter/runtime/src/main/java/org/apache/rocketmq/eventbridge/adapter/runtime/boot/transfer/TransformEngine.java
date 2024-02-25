@@ -37,7 +37,7 @@ import java.util.Objects;
 
 public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggerName.EventRule_Transfer);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerName.EVENT_RULE_TRANSFER);
 
     private final List<Transform> transformList;
 
@@ -76,18 +76,19 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
                 transform.init(transformConfig);
                 this.transformList.add(transform);
             } catch (Exception e) {
-                logger.error("transform new instance error", e);
+                LOGGER.error("transform new instance error", e);
             }
         }
     }
 
     /**
      * format listener and pusher key
+     *
      * @param components
      * @return
      */
     private TargetKeyValue formatTargetKey(List<Map<String, String>> components) {
-        if(CollectionUtils.isEmpty(components)){
+        if (CollectionUtils.isEmpty(components)) {
             return null;
         }
         int startIndex = 0;
@@ -101,6 +102,7 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     /**
      * transform event record for target record
+     *
      * @param connectRecord
      * @return
      */
@@ -120,10 +122,11 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     /**
      * get task config value by key
+     *
      * @param configKey
      * @return
      */
-    public String getConnectConfig(String configKey){
+    public String getConnectConfig(String configKey) {
         return config.getString(configKey);
     }
 
@@ -149,8 +152,10 @@ public class TransformEngine<R extends ConnectRecord> implements AutoCloseable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         TransformEngine<?> that = (TransformEngine<?>) o;
         return transformList.equals(that.transformList) && config.equals(that.config);
     }

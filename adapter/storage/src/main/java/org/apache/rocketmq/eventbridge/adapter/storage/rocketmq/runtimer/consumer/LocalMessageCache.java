@@ -37,10 +37,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * @Author changfeng
- * @Date 2023/4/9 10:06 上午
- */
 public class LocalMessageCache {
     private static final Logger log = LoggerFactory.getLogger(LocalMessageCache.class);
     private final BlockingQueue<ConsumeRequest> consumeRequestCache;

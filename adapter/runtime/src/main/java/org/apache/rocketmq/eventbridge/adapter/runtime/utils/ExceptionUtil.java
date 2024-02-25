@@ -25,7 +25,7 @@ import java.io.StringWriter;
 
 public class ExceptionUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionUtil.class);
 
     public static String getErrorMessage(Throwable e) {
         if (null == e) {
@@ -40,7 +40,7 @@ public class ExceptionUtil {
             StringBuffer buffer = stringWriter.getBuffer();
             return buffer.toString();
         } catch (Throwable ex) {
-            logger.error("", ex);
+            LOGGER.error("", ex);
         }
         return null;
     }

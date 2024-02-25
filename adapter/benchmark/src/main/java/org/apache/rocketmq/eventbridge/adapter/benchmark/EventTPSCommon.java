@@ -16,18 +16,20 @@
  */
 package org.apache.rocketmq.eventbridge.adapter.benchmark;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.util.TimerTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 整条链路
+ * End-to-End use case
  */
 public class EventTPSCommon extends AbstractEventCommon {
     public static void main(String[] args) {
@@ -35,12 +37,10 @@ public class EventTPSCommon extends AbstractEventCommon {
         if (args.length > 0) {
             filePath = args[0];
         }
-        EventTPSCommon tpsCommon = null;
+        EventTPSCommon tpsCommon;
         try {
             tpsCommon = new EventTPSCommon(filePath);
             tpsCommon.start();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class EventTPSCommon extends AbstractEventCommon {
         previousRowCount = new AtomicReference<>();
         previousRowCount.set(0);
         executorService = new ScheduledThreadPoolExecutor(1,
-                new BasicThreadFactory.Builder().namingPattern("BenchmarkTimerThread-all-%d").build());
+            new BasicThreadFactory.Builder().namingPattern("BenchmarkTimerThread-all-%d").build());
     }
 
     @Override

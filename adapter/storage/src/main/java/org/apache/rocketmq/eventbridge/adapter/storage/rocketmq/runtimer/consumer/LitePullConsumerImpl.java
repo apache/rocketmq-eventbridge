@@ -48,12 +48,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @Author changfeng
- * @Date 2023/4/9 10:10 上午
- */
 public class LitePullConsumerImpl implements LitePullConsumer {
-    private static final Logger log = LoggerFactory.getLogger(LitePullConsumerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LitePullConsumerImpl.class);
     private final DefaultMQPullConsumer rocketmqPullConsumer;
     private final LocalMessageCache localMessageCache;
     private final ClientConfig clientConfig;
@@ -83,7 +79,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
     @Override
     public void startup() throws MQClientException {
         rocketmqPullConsumer.start();
-        log.info("RocketmqPullConsumer start.");
+        LOGGER.info("RocketmqPullConsumer start.");
     }
 
     @Override
@@ -98,7 +94,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
             try {
                 executor.awaitTermination(60, TimeUnit.SECONDS);
             } catch (Exception e) {
-                log.error("Shutdown threadPool failed", e);
+                LOGGER.error("Shutdown threadPool failed", e);
             }
             if (!executor.isTerminated()) {
                 executor.shutdownNow();
@@ -114,7 +110,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
             public void messageQueueChanged(String topic, Set<MessageQueue> mqAll, Set<MessageQueue> mqDivided) {
                 submitPullTask(topic, tag, mqDivided);
                 localMessageCache.shrinkPullOffsetTable(mqDivided);
-                log.info("Load balance result of topic {} changed, mqAll {}, mqDivided {}.", topic, mqAll, mqDivided);
+                LOGGER.info("Load balance result of topic {} changed, mqAll {}, mqDivided {}.", topic, mqAll, mqDivided);
             }
         });
     }
@@ -156,7 +152,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
             }
         }
         if (CollectionUtils.isEmpty(assignedQueues)) {
-            log.warn("Not found any messageQueue, topic:{}", topic);
+            LOGGER.warn("Not found any messageQueue, topic:{}", topic);
             return;
         }
 
@@ -167,10 +163,10 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                 try {
                     PullTask pullTask = new PullTask(messageQueue, tag);
                     pullImmediately(pullTask);
-                    log.info("Submit pullTask:{}", messageQueue);
+                    LOGGER.info("Submit pullTask:{}", messageQueue);
                 } catch (Exception e) {
-                    log.error("Failed submit pullTask:{}, {}, wait next balancing", topic, messageQueue, e);
-                    // 添加pull失败，等待下次 rebalance
+                    LOGGER.error("Failed submit pullTask:{}, {}, wait next balancing", topic, messageQueue, e);
+                    // Failed to add pull task, waiting for the next round of re-balance
                     processQueue = rocketmqPullConsumer.getDefaultMQPullConsumerImpl().getRebalanceImpl()
                             .getProcessQueueTable().remove(messageQueue);
                     if (processQueue != null) {
@@ -215,13 +211,13 @@ public class LitePullConsumerImpl implements LitePullConsumer {
         public void run() {
             try {
                 if (!ServiceState.RUNNING.equals(rocketmqPullConsumer.getDefaultMQPullConsumerImpl().getServiceState())) {
-                    log.warn("RocketmqPullConsumer not running, pullTask exit.");
+                    LOGGER.warn("RocketmqPullConsumer not running, pullTask exit.");
                     return;
                 }
                 ProcessQueue processQueue = rocketmqPullConsumer.getDefaultMQPullConsumerImpl().getRebalanceImpl()
                         .getProcessQueueTable().get(messageQueue);
                 if (processQueue == null || processQueue.isDropped()) {
-                    log.info("ProcessQueue {} dropped, pullTask exit", messageQueue);
+                    LOGGER.info("ProcessQueue {} dropped, pullTask exit", messageQueue);
                     return;
                 }
                 long offset = localMessageCache.nextPullOffset(messageQueue);
@@ -231,7 +227,7 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                     public void onSuccess(PullResult pullResult) {
                         try {
                             if (!ServiceState.RUNNING.equals(rocketmqPullConsumer.getDefaultMQPullConsumerImpl().getServiceState())) {
-                                log.warn("rocketmqPullConsumer not running, pullTask exit.");
+                                LOGGER.warn("rocketmqPullConsumer not running, pullTask exit.");
                                 return;
                             }
 
@@ -248,11 +244,11 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                                         pullImmediately(PullTask.this);
                                     } else {
                                         localMessageCache.removePullOffset(messageQueue);
-                                        log.info("ProcessQueue {} dropped, discard the pulled message.", messageQueue);
+                                        LOGGER.info("ProcessQueue {} dropped, discard the pulled message.", messageQueue);
                                     }
                                     break;
                                 case OFFSET_ILLEGAL:
-                                    log.warn("The pull request offset is illegal, offset is {}, message queue is {}, " +
+                                    LOGGER.warn("The pull request offset is illegal, offset is {}, message queue is {}, " +
                                                     "pull result is {}, delay {} ms for next pull",
                                             offset, messageQueue, pullResult, PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION);
                                     localMessageCache.updatePullOffset(messageQueue, pullResult.getNextBeginOffset());
@@ -260,16 +256,16 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                                     break;
                                 case NO_NEW_MSG:
                                 case NO_MATCHED_MSG:
-                                    log.info("No NEW_MSG or MATCHED_MSG for mq:{}, pull again.", messageQueue);
+                                    LOGGER.info("No NEW_MSG or MATCHED_MSG for mq:{}, pull again.", messageQueue);
                                     localMessageCache.updatePullOffset(messageQueue, pullResult.getNextBeginOffset());
                                     pullImmediately(PullTask.this);
                                     break;
                                 default:
-                                    log.warn("Failed to process pullResult, mq:{} {}", messageQueue, pullResult);
+                                    LOGGER.warn("Failed to process pullResult, mq:{} {}", messageQueue, pullResult);
                                     break;
                             }
                         } catch (Throwable t) {
-                            log.error("Exception occurs when process pullResult", t);
+                            LOGGER.error("Exception occurs when process pullResult", t);
                             pullLater(PullTask.this, PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION, TimeUnit.MILLISECONDS);
                         }
                     }
@@ -282,13 +278,13 @@ public class LitePullConsumerImpl implements LitePullConsumer {
                         } else {
                             delayTimeMillis = PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION;
                         }
-                        log.error("Exception happens when pull message process, delay {} ms for message queue {}",
+                        LOGGER.error("Exception happens when pull message process, delay {} ms for message queue {}",
                                 delayTimeMillis, messageQueue, e);
                         pullLater(PullTask.this, delayTimeMillis, TimeUnit.MILLISECONDS);
                     }
                 });
             } catch (Throwable t) {
-                log.error("Error occurs when pull message process, delay {} ms for message queue {}",
+                LOGGER.error("Error occurs when pull message process, delay {} ms for message queue {}",
                         PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION, messageQueue, t);
                 pullLater(PullTask.this, PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION, TimeUnit.MILLISECONDS);
             }

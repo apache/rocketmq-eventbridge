@@ -19,6 +19,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.common.plugin;
 import io.openmessaging.connector.api.component.Transform;
 import io.openmessaging.connector.api.component.connector.Connector;
 import io.openmessaging.connector.api.component.task.Task;
+import java.util.ArrayList;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
@@ -39,7 +40,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Collection;
+import java.util.Set;
+import java.util.Arrays;
 
 @Component
 public class Plugin extends URLClassLoader {
@@ -48,7 +54,7 @@ public class Plugin extends URLClassLoader {
     @Value("${runtime.pluginpath:}")
     private String pluginPath;
 
-    private Map<String, PluginWrapper> classLoaderMap = new HashMap<>();
+    private final Map<String, PluginWrapper> classLoaderMap = new HashMap<>();
 
     public Plugin() {
         super(new URL[0], Plugin.class.getClassLoader());
@@ -62,7 +68,7 @@ public class Plugin extends URLClassLoader {
         }
     }
 
-    private List<String> initPluginPath(String plugin){
+    private List<String> initPluginPath(String plugin) {
         List<String> pluginPaths = new ArrayList<>();
         if (StringUtils.isNotEmpty(plugin)) {
             String[] strArr = plugin.split(",");

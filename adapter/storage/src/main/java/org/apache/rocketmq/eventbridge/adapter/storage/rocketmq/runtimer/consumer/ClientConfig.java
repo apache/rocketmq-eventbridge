@@ -20,10 +20,6 @@ package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.runtimer.consum
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 
-/**
- * @Author changfeng
- * @Date 2023/4/9 10:08 上午
- */
 public class ClientConfig {
     private int rmqPullMessageCacheCapacity = 1000;
     private int rmqPullMessageBatchNums = 20;
@@ -59,7 +55,7 @@ public class ClientConfig {
     }
 
     public void setConsumeFromWhere(
-            final ConsumeFromWhere consumeFromWhere) {
+        final ConsumeFromWhere consumeFromWhere) {
         this.consumeFromWhere = consumeFromWhere;
     }
 
@@ -118,7 +114,6 @@ public class ClientConfig {
     public void setAccessChannel(AccessChannel accessChannel) {
         this.accessChannel = accessChannel;
     }
-
 
     public static ClientConfig cloneConfig(ClientConfig clientConfig) {
         ClientConfig newConfig = new ClientConfig();

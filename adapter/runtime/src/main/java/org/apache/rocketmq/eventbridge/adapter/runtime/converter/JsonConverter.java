@@ -30,7 +30,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class JsonConverter implements Converter {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.EVENT_BRIDGE_RUNTIMER);
 
     private Class clazz;
 

@@ -34,19 +34,16 @@ import org.springframework.stereotype.Component;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook.StartAndShutdown;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.hook.AbstractStartAndShutdown;
 
-
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * event bridge runtime
- *
- * @author artisan
  */
 @Component
 public class Runtime {
 
-    private static final Logger logger = LoggerFactory.getLogger(Runtime.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Runtime.class);
 
     private AtomicReference<RuntimeState> runtimerState;
 
@@ -65,7 +62,7 @@ public class Runtime {
 
     @PostConstruct
     public void initAndStart() throws Exception {
-        logger.info("Start init runtime.");
+        LOGGER.info("Start init runtime.");
         circulatorContext.initCirculatorContext(runnerConfigObserver.getTargetRunnerConfig());
         runnerConfigObserver.registerListener(circulatorContext);
         runnerConfigObserver.registerListener(eventSubscriber);
@@ -80,11 +77,11 @@ public class Runtime {
         RUNTIME_START_AND_SHUTDOWN.start();
 
         java.lang.Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("try to shutdown server");
+            LOGGER.info("try to shutdown server");
             try {
                 RUNTIME_START_AND_SHUTDOWN.shutdown();
             } catch (Exception e) {
-                logger.error("err when shutdown runtime ", e);
+                LOGGER.error("err when shutdown runtime ", e);
             }
         }));
 

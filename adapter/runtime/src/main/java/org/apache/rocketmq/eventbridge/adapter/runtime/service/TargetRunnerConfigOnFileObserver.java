@@ -38,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.rocketmq.common.utils.ThreadUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.entity.TargetRunnerConfig;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 //@Component

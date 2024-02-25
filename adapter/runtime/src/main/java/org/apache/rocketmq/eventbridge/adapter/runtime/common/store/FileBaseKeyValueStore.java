@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class FileBaseKeyValueStore<K, V> extends MemoryBasedKeyValueStore<K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.EventBridge_RUNTIMER);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.EVENT_BRIDGE_RUNTIMER);
 
     private String configFilePath;
     private Converter keyConverter;
