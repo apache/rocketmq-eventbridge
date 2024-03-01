@@ -26,7 +26,6 @@ import lombok.ToString;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.BaseResponse;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 
-import static org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode.RequestParameterInvalid;
 
 @AllArgsConstructor
 @Getter
@@ -40,13 +39,6 @@ public class GetConnectionResponse extends BaseResponse {
     public GetConnectionResponse success() {
         setCode(EventBridgeErrorCode.Success.getCode());
         setMessage(EventBridgeErrorCode.Success.getMsg());
-        return this;
-    }
-
-    public GetConnectionResponse parameterCheckFailRes(String errorMsg) {
-        setCode(RequestParameterInvalid.getCode());
-        setMessage(errorMsg);
-        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

@@ -36,11 +36,13 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDes
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.ListApiDestinationsResponse;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationRequest;
 import org.apache.rocketmq.eventbridge.adapter.api.dto.apidestination.UpdateApiDestinationResponse;
+import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationDTO;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.ApiDestinationService;
 import org.apache.rocketmq.eventbridge.domain.model.apidestination.parameter.HttpApiParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,7 +75,7 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new CreateApiDestinationResponse(null).parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 ApiDestinationDTO apiDestinationDTO = getEventApiDestination(
                     createApiDestinationRequest.getHttpApiParameters(), createApiDestinationRequest.getDescription(),
@@ -97,7 +99,7 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new UpdateApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 ApiDestinationDTO apiDestinationDTO = getEventApiDestination(
                     updateApiDestinationRequest.getHttpApiParameters(), updateApiDestinationRequest.getDescription(),
@@ -121,8 +123,7 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new GetApiDestinationResponse(null, null, null, null, null, null).parameterCheckFailRes(
-                        errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 final ApiDestinationDTO apiDestinationDTO = apiDestinationService.getApiDestination(
                     accountAPI.getResourceOwnerAccountId(ctx), getApiDestinationRequest.getApiDestinationName());
@@ -145,7 +146,7 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new DeleteApiDestinationResponse().parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 apiDestinationService.deleteApiDestination(accountAPI.getResourceOwnerAccountId(ctx),
                     deleteApiDestinationRequest.getApiDestinationName());
@@ -165,8 +166,7 @@ public class ApiDestinationController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new ListApiDestinationsResponse(null, null, null, 0).parameterCheckFailRes(
-                        errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 listApiDestinationsRequest.checkMaxResultsAndNextToken();
                 final PaginationResult<List<ApiDestinationDTO>> listPaginationResult

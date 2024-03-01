@@ -28,7 +28,6 @@ public class BaseResponse extends BaseDTO {
     public String requestId = UUID.randomUUID()
         .toString();
     public String code;
-    private int httpCode;
     public String message;
 
 }
