@@ -41,6 +41,7 @@ public class UpdateConnectionResponse extends BaseResponse {
     public UpdateConnectionResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

@@ -41,6 +41,7 @@ public class DeleteApiDestinationResponse extends BaseResponse {
     public DeleteApiDestinationResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

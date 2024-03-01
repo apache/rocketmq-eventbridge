@@ -43,6 +43,7 @@ public class CreateConnectionResponse extends BaseResponse {
     public CreateConnectionResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

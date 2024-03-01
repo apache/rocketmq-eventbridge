@@ -88,17 +88,17 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     EventRuleAlreadyExist(409, "EventRuleAlreadyExist", "The event rule [{0}] of event bus [{1}] already existed!"),
 
     //Connection
-    ConnectionBoundApiDestination(409, "ConnectionBoundApiDestination", "The Connection [{0}] has bound API Destination, deletion is not allowed."),
+    ConnectionBoundApiDestination(409, "ConnectionBoundApiDestination", "The Connection [{0}] has bound API Destination，deletion is not allowed."),
     ConnectionAlreadyExist(409, "ConnectionAlreadyExist", "The Connection [{0}]  already existed!"),
     ConnectionNameInvalid(409, "ConnectionNameInvalid", "The Connection name [{0}] is invalid! Which should match the pattern [{1}]."),
-    ConnectionCountExceedLimit(409, "ConnectionCountExceedLimit", "The current count of Connection is [{0}], which will exceed the limit quota [{1}]."),
+    ConnectionCountExceedLimit(409, "ConnectionCountExceedLimit", "The current count of Connection is [{0}]，which will exceed the limit quota [{1}]."),
     ConnectionAuthParametersInvalid(409, "ConnectionAuthParametersInvalid", "The auth parameters of Connection is invalid! Please see the documentation for details."),
     ConnectionNetworkParametersInvalid(409, "ConnectionNetworkParametersInvalid", "The network parameters of Connection is invalid! Please see the documentation for details."),
     ConnectionNotExist(409, "ConnectionNotExist", "The Connection [{0}] not existed!"),
-    LimitSizeInvalid(409, "LimitSizeInvalid", "The limit size of page is invalid, which must greater than 0 and less than [{0}]."),
+    LimitSizeInvalid(409, "LimitSizeInvalid", "The limit size of page is invalid，which must greater than 0 and less than [{0}]."),
     NextTokenInvalid(409, "NextTokenInvalid", "The next token of page is invalid. which should be {[0]}."),
     OauthHttpParametersEmpty(409, "OauthHttpParametersEmpty", "OauthHttpParameters is Empty."),
-    BasicRequiredParameterIsEmpty(409, "BasicRequiredParameterIsEmpty", "Basic required parameters are empty, the required parameters are username and password!"),
+    BasicRequiredParameterIsEmpty(409, "BasicRequiredParameterIsEmpty", "Basic required parameters are empty，the required parameters are username and password!"),
 
     BasicUserNameLengthExceed(409, "BasicUserNameLengthExceed", "Basic username length cannot exceed 127!"),
 
@@ -107,12 +107,12 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     ApiKeyNameLengthExceed(409, "ApiKeyNameLengthExceed", "Api key name length cannot exceed 127!"),
 
     ApiKeyValueLengthExceed(409, "ApiKeyValueLengthExceed", "Api key value length cannot exceed 127!"),
-    ApiKeyRequiredParameterIsEmpty(409, "ApiKeyRequiredParameterIsEmpty", "Api Key required parameters are empty, the required parameters are apiKeyName and apiKeyValue!"),
-    OAuthRequiredParameterIsEmpty(409, "OAuthRequiredParameterIsEmpty", "OAuth required parameters are empty, the required parameters are authorizationEndpoint and httpMethod!"),
+    ApiKeyRequiredParameterIsEmpty(409, "ApiKeyRequiredParameterIsEmpty", "Api Key required parameters are empty，the required parameters are apiKeyName and apiKeyValue!"),
+    OAuthRequiredParameterIsEmpty(409, "OAuthRequiredParameterIsEmpty", "OAuth required parameters are empty，the required parameters are authorizationEndpoint and httpMethod!"),
 
     //API Destination
     ApiDestinationNameInvalid(409, "ApiDestinationNameInvalid", "The api-destination name [{0}] is invalid! Which should match the pattern [{1}]."),
-    ApiDestinationCountExceedLimit(409, "ApiDestinationCountExceedLimit", "The current count of api-destination is [{0}], which will exceed the limit quota [{1}]."),
+    ApiDestinationCountExceedLimit(409, "ApiDestinationCountExceedLimit", "The current count of api-destination is [{0}]，which will exceed the limit quota [{1}]."),
     ApiDestinationAlreadyExist(409, "ApiDestinationAlreadyExist", "The api-destination [{0}]  already existed!"),
     ApiDestinationParametersInvalid(409, "ApiDestinationParametersInvalid", "The api-destination parameters [{0}] is invalid! Please see the documentation for details."),
     ApiDestinationNotExist(409, "ApiDestinationNotExist", "The api-destination [{0}] not existed!"),

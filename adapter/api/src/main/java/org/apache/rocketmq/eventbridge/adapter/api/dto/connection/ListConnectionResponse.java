@@ -55,6 +55,7 @@ public class ListConnectionResponse extends BaseResponse {
     public ListConnectionResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

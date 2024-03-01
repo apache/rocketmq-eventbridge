@@ -41,6 +41,7 @@ public class DeleteConnectionResponse extends BaseResponse {
     public DeleteConnectionResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }

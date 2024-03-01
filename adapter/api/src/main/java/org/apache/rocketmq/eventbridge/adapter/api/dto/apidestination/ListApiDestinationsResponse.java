@@ -55,6 +55,7 @@ public class ListApiDestinationsResponse extends BaseResponse {
     public ListApiDestinationsResponse parameterCheckFailRes(String errorMsg) {
         setCode(RequestParameterInvalid.getCode());
         setMessage(errorMsg);
+        setHttpCode(RequestParameterInvalid.getHttpCode());
         return this;
     }
 }
