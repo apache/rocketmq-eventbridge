@@ -21,7 +21,7 @@ jobs:
           distribution: 'adopt'
 
       - name: Build with Maven
-        run: cd dist && mvn clean package
+        run: mvn install && cd dist && mvn package
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
