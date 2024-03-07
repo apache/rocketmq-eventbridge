@@ -64,7 +64,7 @@ jobs:
       - name: Upload source-release
         uses: actions/upload-artifact@v2
         with:
-          name: "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release"
+          name: rocketmq-eventbridge-${{ env.MAVEN_PROJECT_VERSION}}-source-release
           path: ./*.zip
 
 
