@@ -50,11 +50,30 @@ jobs:
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
+      - name: Get Maven Project Version
+        id: get_version
+        run: |
+          echo "MAVEN_PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Build source-release
+        run: |
+          cp -r ./../rocketmq-eventbridge  rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release &&  zip -r rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip  rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release
+
+      - name: Upload source-release
+        uses: actions/upload-artifact@v2
+        with:
+          name: source-release
+          path: rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: Upload artifact
+      - name: Build artifact
+        run: |
+           mv dist/target/rocketmq-eventbridge-dist-${MAVEN_PROJECT_VERSION}.zip rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip
+
+      - name: Upload bin-release
         uses: actions/upload-artifact@v2
         with:
-          name: executable-jar
-          path: dist/target/*.jar
+          name: bin-release
+          path: rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip
