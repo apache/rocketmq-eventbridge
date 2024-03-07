@@ -61,4 +61,12 @@ jobs:
           name: rocketmq-eventbridge-${{ env.MAVEN_PROJECT_VERSION}}-source-release
           path: ./*
 
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Upload bin-release
+        uses: actions/upload-artifact@v2
+        with:
+          name: rocketmq-eventbridge-${{ env.MAVEN_PROJECT_VERSION}}-bin-release
+          path: dist/target/rocketmq-eventbridge/*
 
