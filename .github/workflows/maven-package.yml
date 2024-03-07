@@ -55,16 +55,10 @@ jobs:
         run: |
           echo "MAVEN_PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: Build source-release
-        run: |
-          echo "MAVEN_PROJECT_VERSION="${MAVEN_PROJECT_VERSION}
-          cd .. &&  zip -r "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip"  rocketmq-eventbridge
-          cp "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip" rocketmq-eventbridge
-
       - name: Upload source-release
         uses: actions/upload-artifact@v2
         with:
           name: rocketmq-eventbridge-${{ env.MAVEN_PROJECT_VERSION}}-source-release
-          path: ./*.zip
+          path: ./*
 
 
