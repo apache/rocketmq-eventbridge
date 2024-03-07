@@ -79,3 +79,4 @@ jobs:
         with:
           name: bin-release
           path: dist/target/*.zip
+
