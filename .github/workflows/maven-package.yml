@@ -68,5 +68,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: rocketmq-eventbridge-${{ env.MAVEN_PROJECT_VERSION}}-bin-release
-          path: dist/target/rocketmq-eventbridge-dist-*/rocketmq-eventbridge/*
+          path: ./dist/target/rocketmq-eventbridge-dist-*/rocketmq-eventbridge/*
 
