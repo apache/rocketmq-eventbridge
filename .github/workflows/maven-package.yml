@@ -57,7 +57,7 @@ jobs:
 
       - name: Build source-release
         run: |
-          cp -r ./../rocketmq-eventbridge  rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release &&  zip -r rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip  rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release
+         cd .. &&  zip -r rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip  rocketmq-eventbridge
 
       - name: Upload source-release
         uses: actions/upload-artifact@v2
