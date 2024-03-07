@@ -57,23 +57,24 @@ jobs:
 
       - name: Build source-release
         run: |
-         cd .. &&  zip -r rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip  rocketmq-eventbridge
+          echo "MAVEN_PROJECT_VERSION="${MAVEN_PROJECT_VERSION}
+          cd .. &&  zip -r "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip"  rocketmq-eventbridge
 
       - name: Upload source-release
         uses: actions/upload-artifact@v2
         with:
           name: source-release
-          path: rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip
+          path: "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-source-release.zip"
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
       - name: Build artifact
         run: |
-           mv dist/target/rocketmq-eventbridge-dist-${MAVEN_PROJECT_VERSION}.zip rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip
+           mv "dist/target/rocketmq-eventbridge-dist-${MAVEN_PROJECT_VERSION}.zip" "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip"
 
       - name: Upload bin-release
         uses: actions/upload-artifact@v2
         with:
           name: bin-release
-          path: rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip
+          path: "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release.zip"
