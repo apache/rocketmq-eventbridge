@@ -64,7 +64,7 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: Run shell commands
+      - name: Rename artifact
         run: |
           mv "dist/target/rocketmq-eventbridge-dist-${MAVEN_PROJECT_VERSION}/rocketmq-eventbridge" "rocketmq-eventbridge-${MAVEN_PROJECT_VERSION}-bin-release"
 
