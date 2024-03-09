@@ -7,21 +7,6 @@ RocketMQ EventBridge 需要一个消息服务来存储事件，另外需要一�
 * 64位操作系统，推荐 Linux/Unix/macOS
 * 64位 JDK 1.8+
 
-### 部署Apache RocketMQ
-
-Apache RocketMQ 是一个很棒的消息服务，我们默认选择它作为EventBus的默认存储。这里您可以根据这个手册快速部署: [Apache RocketMQ Quick Start](https://rocketmq.apache.org/docs/quick-start/)
-
-### 部署Apache RocketMQ Connect
-
-我们使用Apache RocketMQ Connect作为我们的默认Runtime，来连接外部的上下游服务，您可以根据手册完成部署: [RocketMQ Connect Quick Start](https://github.com/apache/rocketmq-connect) 。在部署 Apache RocketMQ Connect 之前，您应该下载下面的插件，并将其放在rocketmq-connect中配置参数“pluginPaths”所定义的目录下：
-
-
-* [rocketmq-connect-eventbridge-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-eventbridge-0.0.1-SNAPSHOT-jar-with-dependencies.jar)
-* [rocketmq-connect-dingtalk-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-dingtalk-1.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-cloudevent-transform-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-cloudevent-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-filter-transform-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-filter-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-eventbridge-transform-jar-with-dependencies.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-eventbridge-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-
 ### 部署Apache RocketMQ EventBridge
 
 * 获取 EventBridge
@@ -34,154 +19,56 @@ Apache RocketMQ 是一个很棒的消息服务，我们默认选择它作为Even
 |   |——eventbridge.sh
 |——config
 |   |——application.properties
-|——jar
-|   |——rocketmq-eventbridge.jar
+|——plugin
+|   |——eventbridge-connect-file-with-dependencies.jar
+|   |——connect-filter-transform-with-dependencies.jar
+|   |——connect-eventbridge-transform-with-dependencies.jar
+|——rocketmq-eventbridge.jar
 ```
-  
 
-* 配置 EventBridge
 
-运行前，我们需要配置EventBridge的运行环境，修改config/application.properties,参考如下：
+* 配置
+
+运行前，我们需要配置EventBridge的运行环境，修改config/application.properties中的RocketMQ nameserver连接地址。RocketMQ部署参考: [Apache RocketMQ Quick Start](https://rocketmq.apache.org/docs/4.x/introduction/02quickstart)
 
 ```properties
-# Mysql数据库的连接地址
-spring.datasource.url=jdbc:mysql://xxxx:3306/xxxx?characterEncoding=utf8
-spring.datasource.username=xxx
-spring.datasource.password=xxxx
-
-# RocketMQ nameserver的连接地址
-rocketmq.namesrvAddr=xxxxx:9876
-
-# RocketMQ的集群名称.
-rocketmq.cluster.name=DefaultCluster
-
-# RocketMQ Connect的连接地址
-rocketmq.connect.endpoint=xxxxxx:8082
-
-# log默认配置
-log.path=～
-log.level=INFO
-app.name=rocketmq-eventbridge
+rocketmq.namesrvAddr=localhost:9876
 ```
 
 * 启动 EventBridge
+
+注意：下载的EventBridge二进制包可能没有权限执行，可以通过chmod提前授权。
+
 ```shell
 sh bin/eventbridge.sh start 
 ```
-log默认目录为～/rocketmq-eventbridge/rocketmq-eventbridge.log,可以修改上述log.path和app.name进行修改。可以通过日志来观察服务是否正常启动：
-![img.png](images/img.png)
+log默认目录为～/rocketmq-eventbridge/rocketmq-eventbridge.log,可以修改config/application.properties中的log.path和app.name进行修改，通过日志来观察服务是否正常启动。
 
-* 测试 EventBridge
+### 测试Apache RocketMQ EventBridge
 
-当服务启动后，我们就可以通过下面的Demo用例来测试和验证EventBridge。
-  
-## Demo
-
-####
-
-* 创建事件总线
-
+当服务启动后，系统默认会初始化一个名称为“demo-bus”的EventBus，并在该Bus下默认创建一个规则，用于订阅该Bus上的所有事件，并推送写入到一个本地文件。所以我们可以通过如下方式来进行测试验证：
+* 发送事件
 ```text
-POST /bus/createEventBus HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-"eventBusName":"demo-bus",
-"description":"a demo bus."
-}
+curl  -X POST http://127.0.0.1:7001/putEvents  \
+-H "Content-Type: application/json; charset=UTF-8"  \
+-H "ce-specversion:1.0"  \
+-H "ce-type:com.github.pull_request.opened"  \
+-H "ce-source:https://github.com/cloudevents/spec/pull"  \
+-H "ce-subject:demo"  \
+-H "ce-id:1234-1234-1234"  \
+-H "ce-datacontenttype:application/json"  \
+-H "ce-time:2018-04-05T17:31:00Z"  \
+-H "ce-eventbusname:demo-bus"  \
+-d 'A test event.'
 ```
 
-* 创建事件源
-```text
-POST /source/createEventSource HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-"eventBusName":"demo-bus",
-"eventSourceName":"demo-source",
-"description":"A demo source."
-}
-```
+* 查看事件是否成功写入Rule订阅的目标端
 
-* 创建事件规则
+默认创建的Rule会将数据写入本地文件“～/demo”，可以通过查看文件内容来判断发送的事件，是否成功投递到目标端。
 
-```text
-POST /rule/createEventRule HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-  "eventBusName":"demo-bus",
-  "eventRuleName":"demo-rule",
-  "description":"A demo rule.",
-  "filterPattern":"{}"
-}
-```
-
-* 创建事件目标
-
-创建一个投递到云上EventBridge的事件目标：
-
-```text
-POST /target/createEventTargets HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-    "eventBusName":"demo-bus",
-    "eventRuleName":"demo-rule",
-    "eventTargets":[
-            {
-            "eventTargetName":"eventbridge-target",
-            "className":"acs.eventbridge",
-                "config":{
-                "RegionId":"cn-hangzhou",
-                "AliyunEventBus":"rocketmq-eventbridge"
-                }
-            }
-        ]
-}
-```
-
-创建一个投递到钉钉机器人推送通知的事件目标：
-
-```text
-POST /target/createEventTargets HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type: application/json; charset=utf-8
-{
-    "eventBusName":"demo-bus",
-    "eventRuleName":"demo-rule",
-    "eventTargets":[
-        {
-            "eventTargetName":"dingtalk-target",
-            "className":"acs.dingtalk",
-            "config":{
-            "WebHook":"https://oapi.dingtalk.com/robot/send?access_token=b43a54b702314415c2acdae97eda1e092528b7a9dddb31510a5b4430be2ef867",
-            "SecretKey":"SEC53483bf496b8f9e0b4ab0ab669d422208e6ccfaedfd5120ea6b8426b9ecd47aa",
-            "Body":"{\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\",\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\"}"
-            }
-        }
-    ]
-}
-```
-
-* 发送事件到EventBus
-  
-  最后，我们通过API发送一条事件，并验证Target端是否按预期收到对应的事件。
-```text
-POST /putEvents HTTP/1.1
-Host: demo.eventbridge.com
-Content-Type:"application/cloudevents+json; charset=UTF-8"
-{
-  "specversion" : "1.0",
-  "type" : "com.github.pull_request.opened",
-  "source" : "https://github.com/cloudevents/spec/pull",
-  "subject" : "123",
-  "id" : "A234-1234-1234",
-  "time" : "2018-04-05T17:31:00Z",
-  "datacontenttype" : "application/json",
-  "data" : {
-    "body":"demo"
-  },
-  "eventbusname":"demo-bus"
-}
+```agsl
+root % tail -f ～/demo
+A test event.
+A test event.
+A test event.
 ```
