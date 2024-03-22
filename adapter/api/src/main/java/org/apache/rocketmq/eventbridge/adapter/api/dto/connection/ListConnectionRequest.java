@@ -33,7 +33,7 @@ public class ListConnectionRequest extends BaseRequest {
     @SerializedName("ConnectionNamePrefix")
     private String connectionNamePrefix;
 
-    @Min(value = 0, message = "The limit size of page is invalid, which must greater than 0 and less than [{0}].")
+    @Min(value = 0, message = "The limit size of page is invalid，which must greater than 0 and less than [{0}].")
     @SerializedName("MaxResults")
     private Integer maxResults;
 

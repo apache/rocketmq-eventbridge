@@ -41,6 +41,7 @@ import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnecti
 import org.apache.rocketmq.eventbridge.adapter.api.dto.connection.UpdateConnectionResponse;
 import org.apache.rocketmq.eventbridge.domain.common.enums.AuthorizationTypeEnum;
 import org.apache.rocketmq.eventbridge.domain.common.enums.NetworkTypeEnum;
+import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
 import org.apache.rocketmq.eventbridge.domain.model.PaginationResult;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionDTO;
 import org.apache.rocketmq.eventbridge.domain.model.connection.ConnectionService;
@@ -48,6 +49,7 @@ import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.ApiKeyA
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.BasicAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.model.connection.parameter.OAuthParameters;
 import org.apache.rocketmq.eventbridge.domain.rpc.AccountAPI;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -80,7 +82,7 @@ public class ConnectionController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new CreateConnectionResponse(null).parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(ctx, createConnectionRequest);
                 return new CreateConnectionResponse(connectionService.createConnection(connectionDTO)).success();
@@ -99,7 +101,7 @@ public class ConnectionController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new DeleteConnectionResponse().parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 connectionService.deleteConnection(accountAPI.getResourceOwnerAccountId(ctx),
                     deleteConnectionRequest.getConnectionName());
@@ -119,7 +121,7 @@ public class ConnectionController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new UpdateConnectionResponse().parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 ConnectionDTO connectionDTO = getEventConnectionWithBLOBs(ctx, updateConnectionRequest);
                 connectionService.updateConnection(connectionDTO, accountAPI.getResourceOwnerAccountId(ctx));
@@ -138,8 +140,7 @@ public class ConnectionController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new GetConnectionResponse(null).parameterCheckFailRes(
-                        errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 final List<ConnectionDTO> connectionDTOS = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(ctx), getConnectionRequest.getConnectionName());
                 List<ConnectionResponse> connectionResponses = Lists.newArrayList();
@@ -162,7 +163,7 @@ public class ConnectionController {
                 final Set<ConstraintViolation<GetConnectionRequest>> validate = validator.validate(getConnectionRequest);
                 List<String> errMessage = validate.stream().map(ConstraintViolation::getMessage).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new GetConnectionResponse(null).parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 final List<ConnectionDTO> connectionDTOS = connectionService.getConnection(accountAPI.getResourceOwnerAccountId(ctx), getConnectionRequest.getConnectionName());
                 List<ConnectionResponse> connectionResponses = Lists.newArrayList();
@@ -188,7 +189,7 @@ public class ConnectionController {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(errMessage)) {
-                    return new ListConnectionResponse(null, null, null, 0).parameterCheckFailRes(errMessage.toString());
+                    throw new EventBridgeException(EventBridgeErrorCode.RequestParameterInvalid, errMessage.toString());
                 }
                 listConnectionRequest.checkMaxResultsAndNextToken();
                 final PaginationResult<List<ConnectionDTO>> listPaginationResult = connectionService.listConnections(
