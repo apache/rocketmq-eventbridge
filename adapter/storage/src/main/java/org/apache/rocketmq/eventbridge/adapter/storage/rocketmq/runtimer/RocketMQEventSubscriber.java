@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -58,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -85,6 +83,9 @@ public class RocketMQEventSubscriber extends EventSubscriber {
 
     @Autowired
     private TargetRunnerConfigObserver runnerConfigObserver;
+
+    @Autowired
+    private ConfigLoader configLoader;
 
     private final BlockingQueue<MessageExt> messageBuffer = new LinkedBlockingQueue<>(50000);
 
@@ -180,17 +181,16 @@ public class RocketMQEventSubscriber extends EventSubscriber {
     private void initMqProperties() {
         try {
             ClientConfig clientConfig = new ClientConfig();
-            Properties properties = PropertiesLoaderUtils.loadAllProperties("runtime.properties");
-            String namesrvAddr = properties.getProperty("rocketmq.namesrvAddr");
-            pullTimeOut = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullTimeOut"));
-            pullBatchSize = Integer.valueOf(properties.getProperty("rocketmq.consumer.pullBatchSize"));
-            String accessChannel = properties.getProperty("rocketmq.accessChannel");
-            String namespace = properties.getProperty("rocketmq.namespace");
-            String accessKey = properties.getProperty("rocketmq.consumer.accessKey");
-            String secretKey = properties.getProperty("rocketmq.consumer.secretKey");
-            String socks5UserName = properties.getProperty("rocketmq.consumer.socks5UserName");
-            String socks5Password = properties.getProperty("rocketmq.consumer.socks5Password");
-            String socks5Endpoint = properties.getProperty("rocketmq.consumer.socks5Endpoint");
+            String namesrvAddr = configLoader.getString("rocketmq.namesrvAddr");
+            pullTimeOut = Integer.valueOf(configLoader.getString("rocketmq.consumer.pullTimeOut"));
+            pullBatchSize = Integer.valueOf(configLoader.getString("rocketmq.consumer.pullBatchSize"));
+            String accessChannel = configLoader.getString("rocketmq.accessChannel");
+            String namespace = configLoader.getString("rocketmq.namespace");
+            String accessKey = configLoader.getString("rocketmq.consumer.accessKey");
+            String secretKey = configLoader.getString("rocketmq.consumer.secretKey");
+            String socks5UserName = configLoader.getString("rocketmq.consumer.socks5UserName");
+            String socks5Password = configLoader.getString("rocketmq.consumer.socks5Password");
+            String socks5Endpoint = configLoader.getString("rocketmq.consumer.socks5Endpoint");
 
             clientConfig.setNameSrvAddr(namesrvAddr);
             clientConfig.setAccessChannel(AccessChannel.CLOUD.name().equals(accessChannel) ?

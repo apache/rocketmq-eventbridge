@@ -50,5 +50,10 @@
             <outputDirectory>config/</outputDirectory>
             <fileMode>0755</fileMode>
         </fileSet>
+        <fileSet>
+            <directory>src/main/plugin</directory>
+            <outputDirectory>plugin/</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
     </fileSets>
 </assembly>
