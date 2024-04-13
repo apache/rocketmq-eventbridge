@@ -33,8 +33,12 @@ RUN set -x \
     && touch "$EVENTBRIDGE_LOG_FILE"
 
 WORKDIR /home/apps
-ADD rocketmq-eventbridge-dist-1.1.0.zip /home/apps
-RUN cd /home/apps && unzip rocketmq-eventbridge-dist-1.1.0.zip
+ARG version
+# Rocketmq eventbridge version
+ENV ROCKETMQ_EVENTBRIDGE_VERSION ${version}
+
+ADD rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip /home/apps
+RUN cd /home/apps && unzip rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip && rm -rf rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip
 
 RUN chown -R "$EVENTBRIDGE_USER:$EVENTBRIDGE_USER" "$EVENTBRIDGE_HOME"  "$EVENTBRIDGE_LOG_DIR"
 COPY docker-entrypoint.sh /home/apps/rocketmq-eventbridge/bin

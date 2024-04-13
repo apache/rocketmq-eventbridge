@@ -28,13 +28,13 @@ checkVersion() {
 
 checkZipFile() {
 
-	  file="../dist/target/rocketmq-eventbridge-dist-${ROCKETMQ_VERSION}.zip"
+	  file="../dist/target/rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip"
 
     if [ -e "$file" ]; then
         return 1
     fi
 
-	  echo "the installation package rocketmq-eventbridge-dist-${ROCKETMQ_VERSION}.zip does not exist in dist/target, please check released package"
+	  echo "the installation package rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip does not exist in dist/target, please check released package"
     exit -1
 }
 
@@ -42,14 +42,14 @@ if [ $# -lt 1 ]; then
     echo -e "Usage: sh $0 Version"
     exit -1
 fi
-ROCKETMQ_VERSION=$1
-checkVersion $ROCKETMQ_VERSION
+ROCKETMQ_EVENTBRIDGE_VERSION=$1
+checkVersion $ROCKETMQ_EVENTBRIDGE_VERSION
 checkZipFile
 # copy package to docker directory
-cp ../dist/target/rocketmq-eventbridge-dist-${ROCKETMQ_VERSION}.zip ./
+cp ../dist/target/rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip ./
 
 # Build rocketmq-eventbridge
 
-docker build -f Dockerfile -t apache/rocketmq-eventbridge:${ROCKETMQ_VERSION} .
-rm -rf rocketmq-eventbridge-dist-${ROCKETMQ_VERSION}.zip
+docker build --no-cache -f Dockerfile -t apache/rocketmq-eventbridge:${ROCKETMQ_EVENTBRIDGE_VERSION} --build-arg version=${ROCKETMQ_EVENTBRIDGE_VERSION} .
+rm -rf rocketmq-eventbridge-dist-${ROCKETMQ_EVENTBRIDGE_VERSION}.zip
 
