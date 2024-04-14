@@ -241,7 +241,9 @@ public class CirculatorContext implements TargetRunnerListener {
                 int endIndex = targetRunnerConfig.getComponents().size() - 1;
                 TargetKeyValue targetKeyValue = new TargetKeyValue(targetRunnerConfig.getComponents().get(endIndex));
                 SinkTask sinkTask = initTargetSinkTask(targetKeyValue);
-                pusherTaskMap.put(runnerName, sinkTask);
+                if(sinkTask != null) {
+                    pusherTaskMap.put(runnerName, sinkTask);
+                }
 
                 if (!pusherExecutorMap.containsKey(runnerName)) {
                     pusherExecutorMap.put(runnerName, initDefaultThreadPoolExecutor(runnerName));

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,29 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-server.port=7001
-management.server.port=7002
-management.endpoints.web.base-path=/
-spring.profiles.active=local
-## database
-#spring.datasource.hikari.jdbc-url=jdbc:mysql://localhost:3306/eventBridge?useUnicode=true&characterEncoding=utf8&useSSL=false
-#spring.datasource.hikari.driver-class-name=com.mysql.jdbc.Driver
-#spring.datasource.hikari.username=xxxxx
-#spring.datasource.hikari.password=xxxxx
-mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
-## flyway
-## rocketmq
-rocketmq.namesrvAddr=127.0.0.1:9876
+set -e
 
-rocketmq.cluster.name=DefaultCluster
-## runtime
-runtime.config.mode=DB
-runtime.storage.mode=ROCKETMQ
-rumtime.name=eventbridge-runtimer
-runtime.pluginpath=./plugin
+START_EVENTBRIDGE="./bin/eventbridge.sh start"
+echo "${START_EVENTBRIDGE}" &&  source ${START_EVENTBRIDGE}
 
-
-## log
-app.name=rocketmqeventbridge
-log.level=INFO
-log.path=~/logs
+START_CMD="tail -f /home/apps/logs/rocketmq-eventbridge.log"
+#START_TEST="tail -f /etc/hosts"
+#echo "${START_TEST}" &&  exec ${START_TEST}
+echo "${START_CMD}" &&  exec ${START_CMD}
