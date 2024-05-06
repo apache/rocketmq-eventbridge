@@ -43,7 +43,7 @@ public enum PushRetryStrategyEnum {
             return BACKOFF_RETRY;
         }
         for (PushRetryStrategyEnum pushRetryStrategyEnum : PushRetryStrategyEnum.values()) {
-            if (pushRetryStrategyEnum.equals(pushRetryStrategy)) {
+            if (pushRetryStrategyEnum.name().equals(pushRetryStrategy)) {
                 return pushRetryStrategyEnum;
             }
         }
