@@ -70,12 +70,12 @@ public class RocketMQEventDataAPIImpl implements EventDataOnRocketMQConnectAPI {
             rocketMQMsg.setBody(eventBridgeEvent.getData());
             size += rocketMQMsg.getBody().length;
         }
-        size += fillEventAttribues(rocketMQMsg, eventBridgeEvent);
+        size += fillEventAttributes(rocketMQMsg, eventBridgeEvent);
         size += fillExtension(rocketMQMsg, eventBridgeEvent.getExtensions());
         return size;
     }
 
-    public static int fillEventAttribues(Message rocketMQMsg, EventBridgeEvent eventBridgeEvent) {
+    public static int fillEventAttributes(Message rocketMQMsg, EventBridgeEvent eventBridgeEvent) {
         int totalLength = 0;
         totalLength += putIfPresent(PROPERTY_ATTRIBUTE_EVENT_ID, eventBridgeEvent.getId(), rocketMQMsg);
         totalLength += putIfPresent(PROPERTY_ATTRIBUTE_EVENT_SOURCE, eventBridgeEvent.getSource(), rocketMQMsg);
