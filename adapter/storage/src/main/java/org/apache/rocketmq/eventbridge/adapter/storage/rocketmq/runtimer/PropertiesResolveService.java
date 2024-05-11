@@ -37,8 +37,8 @@ public class PropertiesResolveService implements EmbeddedValueResolverAware, Pri
     }
 
     public String getPropertiesValue(String name) {
-        if (!name.contains(CommonConstants.V_PREFIXE)) {
-            name = CommonConstants.V_PREFIXE + name + CommonConstants.V_POSTFIX;
+        if (!name.contains(CommonConstants.V_PREFIX)) {
+            name = CommonConstants.V_PREFIX + name + CommonConstants.V_POSTFIX;
         }
         return stringValueResolver.resolveStringValue(name);
     }

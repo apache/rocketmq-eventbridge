@@ -83,7 +83,7 @@ public class JsonPathUtil {
         if (!JsonPathUtil.isValidAndDefinite(jsonPath)) {
             throw new EventBridgeException(TransformErrorCode.InvalidConfig, jsonPath);
         }
-        String subPath = jsonPath.substring(2, jsonPath.length());
+        String subPath = jsonPath.substring(2);
         String[] paths = subPath.split(JSONPATH_SPLIT);
         if (paths.length <= index) {
             throw new EventBridgeException(TransformErrorCode.InvalidConfig, jsonPath);
@@ -101,14 +101,14 @@ public class JsonPathUtil {
         if (!JsonPathUtil.isValidAndDefinite(jsonPath)) {
             throw new EventBridgeException(TransformErrorCode.InvalidConfig, jsonPath);
         }
-        String subPath = jsonPath.substring(2, jsonPath.length());
+        String subPath = jsonPath.substring(2);
         String[] paths = subPath.split(JSONPATH_SPLIT);
         if (paths.length <= startIndex) {
             throw new EventBridgeException(TransformErrorCode.InvalidConfig, jsonPath);
         }
         StringBuffer buffer = new StringBuffer("$");
         for (; startIndex < paths.length; startIndex++) {
-            buffer.append("." + paths[startIndex]);
+            buffer.append(".").append(paths[startIndex]);
         }
         return buffer.toString();
     }
