@@ -131,7 +131,7 @@ public class PatternEvaluatorBuilder {
                         PatternErrorMessages.INVALID_PATTERN_VALUE + element.getAsString());
                 }
 
-                if (entries.size() == 0) {
+                if (entries.isEmpty()) {
                     throw new InvalidEventPatternException(PatternErrorMessages.NO_DATA_PATTERN_KEY);
                 }
             }
@@ -173,7 +173,7 @@ public class PatternEvaluatorBuilder {
     }
 
     private static PatternEntry parsePatternEntry(String ruleName, String rulePath, JsonArray jsonElements) {
-        if (jsonElements.size() == 0) {
+        if (jsonElements.isEmpty()) {
             // Empty array
             throw new InvalidEventPatternException(
                 PatternErrorMessages.INVALID_PATTERN_VALUE + jsonElements.toString());

@@ -62,7 +62,7 @@ public class StringSubstitutorTemplate implements Template {
         log.debug("template: " + outputTemplate);
 
         List<Map.Entry<String, JsonElement>> jsonTemplateEntryList = getAndCheckEmbedObject();
-        if (jsonTemplateEntryList.size() > 0) {
+        if (!jsonTemplateEntryList.isEmpty()) {
             for (Map.Entry<String, JsonElement> entry : jsonTemplateEntryList) {
                 String key = removeVariableMark(entry.getValue().getAsJsonObject().get(EB_SYS_EMBED_OBJECT).getAsString());
                 JsonObject embedJsonObject = entry.getValue().getAsJsonObject();
