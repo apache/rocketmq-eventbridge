@@ -17,18 +17,27 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.k8s.api;
 
-import org.springframework.stereotype.Service;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Service
-public class K8SNameSpaceService {
+import java.io.IOException;
 
-    /**
-     * Get the namespace from properties.
-     *
-     * @return
-     */
-    public String getNameSpace() {
-        return "default";
+public abstract class BaseK8SApiService {
+
+    @Autowired
+    private KubectlService kubectlService;
+
+    protected KubernetesClient getKubernetesClient(String clientId) throws IOException {
+        KubernetesClient client = kubectlService.getClient();
+        if (StringUtils.isNotBlank(clientId)) {
+            client = kubectlService.generateKubeApiClient(clientId);
+        }
+        return client;
+    }
+
+    protected KubernetesClient getKubernetesClient() {
+        return kubectlService.getClient();
     }
 
 }
