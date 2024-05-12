@@ -38,17 +38,19 @@ public interface WorkerInstanceRepository {
      * Delete the worker
      *
      * @param name
+     * @param environments
      * @return
      */
-    boolean deleteWorkerInstance(String name);
+    boolean deleteWorkerInstance(String name, Map<String, Object> environments);
 
     /**
      * Get the status of worker
      *
      * @param name
+     * @param environments
      * @return
      */
-    WorkerStatusEnum getWorkerInstanceStatus(String name);
+    WorkerStatusEnum getWorkerInstanceStatus(String name, Map<String, Object> environments);
 
     /**
      * Apply(Create/Update) the config to the worker instance. It may contains more than one config in worker instance.
@@ -58,7 +60,7 @@ public interface WorkerInstanceRepository {
      * @param config
      * @return
      */
-    boolean applyWorkerInstanceConfigFile(String name, String filePath, String config);
+    boolean applyWorkerInstanceConfigFile(String name, String filePath, String config, Map<String, Object> environments);
 
     /**
      * Get the config to the worker instance.
@@ -67,5 +69,5 @@ public interface WorkerInstanceRepository {
      * @param filePath
      * @return
      */
-    boolean getWorkerInstanceConfigFile(String name, String filePath);
+    String getWorkerInstanceConfigFile(String name, String filePath, Map<String, Object> environments);
 }

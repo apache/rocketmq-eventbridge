@@ -21,6 +21,6 @@ import lombok.Data;
 
 @Data
 public class WorkerResource {
-    Double cpu;
-    Double memory;
+    Long cpu;
+    Long memory;
 }
