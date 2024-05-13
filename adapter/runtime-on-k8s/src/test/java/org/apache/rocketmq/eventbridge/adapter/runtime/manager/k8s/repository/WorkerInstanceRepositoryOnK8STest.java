@@ -41,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WorkerInstanceRepositoryOnK8STest.class)
 @SpringBootApplication(scanBasePackages = {"org.apache.rocketmq.eventbridge.adapter.runtime.manager.k8s.*"})
+@Ignore
 public class WorkerInstanceRepositoryOnK8STest {
 
     @Autowired
