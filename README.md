@@ -33,50 +33,54 @@ events.Here, we choose the Apache RocketMQ as our message service， and choose 
 service.Of course, you can also choose other alternative services. Eventbridge do not limit it. You only need to provide
 the relevant adapter API implementation.
 
-#### Apache RocketMQ
+#### Deploy Apache RocketMQ
 
 Apache RocketMQ is a great messaging service,and we choose it as our message service.You can deploy the apache rocketmq
 according to the manual: [RocketMQ Quick Start](https://rocketmq.apache.org/docs/quick-start/)
 
-#### Apache RocketMQ Connect
+### Deploy Apache RocketMQ EventBridge
 
-Apache RocketMQ Connect can connect the external upstream and downstream services,and You can deploy it according to the
-manual: [RocketMQ Connect Quick Start](https://github.com/apache/rocketmq-connect)
-. Before deploy the Apache RocketMQ Connect, you should download the plugins below and put it to the "pluginpath" which
-defined on rocketmq-connect.
+* Download EventBridge Binary Package
 
-* [rocketmq-connect-eventbridge.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/rocketmq-connect-eventbridge-0.0.1-SNAPSHOT-jar-with-dependencies.jar)
-* [eventbridge-connect-file.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/eventbridge-connect-file-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-cloudevent-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-cloudevent-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-filter-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-filter-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-* [connect-eventbridge-transform.jar](https://cn-hangzhou-eventbridge.oss-cn-hangzhou.aliyuncs.com/connect-eventbridge-transform-1.0.0-SNAPSHOT-jar-with-dependencies.jar)
-
-#### Apache RocketMQ EventBridge
-
-Before run the project,configure the following properties which :
-
+You can download it from [here](https://www.apache.org/dyn/closer.cgi?path=rocketmq/rocketmq-eventbridge/1.1.0/rocketmq-eventbridge-1.1.0-bin-release.zip) EventBridge binary package: rocketmq-eventbridge-xxx-bin-release.zip. After downloading, unzip it. You will get a directory as follows:
+```text
+/rocketmq-eventbridge-xxx-bin-release/
+|——bin
+|   |——runserver.sh
+|   |——eventbridge.sh
+|——config
+|   |——application.properties
+|——plugin
+|   |——eventbridge-connect-file-with-dependencies.jar
+|   |——connect-filter-transform-with-dependencies.jar
+|   |——connect-eventbridge-transform-with-dependencies.jar
+|——rocketmq-eventbridge.jar
 ```
-# The config of mysql databse.
-spring.datasource.url=jdbc:mysql://xxxx:3306/xxxx?characterEncoding=utf8
-spring.datasource.username=xxx
-spring.datasource.password=xxxx
 
-# The endpoint of rocketmq nameserver.
-rocketmq.namesrvAddr=xxxxx:9876
+* Config
 
-# The cluster name of rocketmq.
-rocketmq.cluster.name=DefaultCluster
-runtime.pluginpath=xxxx
+  Before running, we need to configure the running environment of EventBridge and modify the RocketMQ nameserver connection address in config/application.properties.
 
+```properties
+rocketmq.namesrvAddr=localhost:9876
 ```
-Config the runtime.pluginpath to set the directory of plugin.
+
+* Start EventBridge
+
+Note: The downloaded EventBridge binary package may not have permission to execute. You can authorize it in advance through chmod.
+
+```shell
+sh bin/eventbridge.sh start 
+```
+The default log directory is ~/rocketmq-eventbridge/rocketmq-eventbridge.log. You can modify log.path and app.name in config/application.properties to observe whether the service starts normally through the log.
 
 ## Demo
 
 ####
 
 * Put Events to EventBus
-  The system creates a demo bus by default, and you can send events directly to the bus.
+
+  When the service is started, the system will initialize an EventBus named "demo-bus" by default, and create a rule under the Bus by default to subscribe to all events on the Bus and push and write them to a local file. So we can test and verify in the following ways:
 ```text
 curl  -X POST http://127.0.0.1:7001/putEvents  \
 -H "Content-Type: application/json; charset=UTF-8"  \
@@ -91,15 +95,13 @@ curl  -X POST http://127.0.0.1:7001/putEvents  \
 -d 'A test event.'
 ```
 
-* Check if the local file received a write event
+* Check whether the event is successfully written to the target end of the Rule subscription
 
-In addition, by default, the system will create a demo rule for you to subscribe and push to the file. You can check whether there are events received in the directory:～/demo
+  The Rule created by default will write data to the local file "~/demo". You can judge whether the event sent is successfully delivered to the target by viewing the file content.
+
 ```agsl
 root % tail -f ～/demo
 A test event.
 A test event.
 A test event.
 ```
-
-Why does the file output the data attribute of CloudEvent instead of other attributes?This is because the configuration in the demo rule is to output "$.data" in CloudEvent to the file line.
-You can refer to this [document](docs/CreateFileTarget.md)  to configure and modify event targets.
