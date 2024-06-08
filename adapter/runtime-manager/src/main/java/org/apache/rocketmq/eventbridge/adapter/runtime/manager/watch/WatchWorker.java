@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.watch;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.List;
@@ -40,8 +41,8 @@ public class WatchWorker {
 
     @Autowired
     WorkerService workerService;
-//    @Autowired
-//    WorkerInstanceRepository workerInstanceRepository;
+    @Autowired
+    WorkerInstanceRepository workerInstanceRepository;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryImpl(WatchWorker.class.getSimpleName()));
@@ -57,8 +58,11 @@ public class WatchWorker {
                         if (!workerService.isFinalState(worker)) {
                             Map<String, Object> environments = new Gson().fromJson(worker.getConfig(), new TypeToken<Map<String, Object>>() {
                             }.getType());
+                            if(environments == null){
+                                 environments = Maps.newHashMap();
+                            }
                             log.info("applyWorkerInstance, workerName: {}, workerImageTag: {}, workerResource: {}, environments: {}", worker.getName(), worker.getImage(), worker.getResources(), new Gson().toJson(environments));
-//                            workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImage(), new Gson().fromJson(worker.getResources(), WorkerResource.class), environments);
+                            workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImage(), new Gson().fromJson(worker.getResources(), WorkerResource.class), environments);
                             workerService.refreshMD5(worker);
                         }
 

@@ -25,16 +25,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import io.fabric8.kubernetes.client.Config;
 
 @Slf4j
 @Service
-public class KubectlService implements AutoCloseable{
+public class KubectlService implements AutoCloseable {
 
-    private KubernetesClient client ;
+    private KubernetesClient client;
 
     @Value("${eventbus.cs.accessKey:}")
     private String accessKey;
@@ -45,7 +47,7 @@ public class KubectlService implements AutoCloseable{
     @Value("${conductor.run.env:online}")
     private String env;
 
-    @Value("${kubernates.api.server}")
+    @Value("${kubernates.api.server:}")
     private String apiServer;
 
     @Value("${kubernates.api.version:apps/v1}")
@@ -54,16 +56,18 @@ public class KubectlService implements AutoCloseable{
     @Value("${kubernates.auth.token:}")
     private String oauthToken;
 
-    private final String DEFAULT_KEY= "default";
+    @Value("${kubernates.kube.config:}")
+    private String kubeConfig;
+    private final String DEFAULT_KEY = "default";
 
     private Map<String, KubernetesClient> kubernetesClientMap = new ConcurrentHashMap<>();
 
     @PostConstruct
-    public void initClient(){
+    public void initClient() {
         client = getKubernetesClient();
     }
 
-    public KubernetesClient getClient(){
+    public KubernetesClient getClient() {
         return this.client;
     }
 
@@ -82,19 +86,29 @@ public class KubectlService implements AutoCloseable{
     private KubernetesClient getKubernetesClient() {
         Config config = getKubeConfig();
         log.info("connect to api server [{}]", apiServer);
-        return new KubernetesClientBuilder().withConfig(config).build();
+        if (config == null && !Strings.isBlank(kubeConfig)) {
+            System.setProperty(Config.KUBERNETES_KUBECONFIG_FILE, kubeConfig);
+            return new DefaultKubernetesClient();
+        } else {
+            return new KubernetesClientBuilder().withConfig(config).build();
+        }
     }
 
     private Config getKubeConfig() {
-        Config config = new ConfigBuilder()
+        Config config = null;
+        if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
+            config = new ConfigBuilder()
                 .withMasterUrl(apiServer)
                 .withApiVersion(apiVersion)
                 .build();
-        if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
             config.setUsername(accessKey);
             config.setPassword(secretKey);
             log.info("use ak and sk connect to api server.");
-        } else if(StringUtils.isNotBlank(oauthToken)){
+        } else if (StringUtils.isNotBlank(oauthToken)) {
+            config = new ConfigBuilder()
+                .withMasterUrl(apiServer)
+                .withApiVersion(apiVersion)
+                .build();
             config.setTrustCerts(true);
             config.setOauthToken(oauthToken);
             log.info("use auth token connect to api server.");
@@ -107,14 +121,14 @@ public class KubectlService implements AutoCloseable{
     @Override
     public void close() throws Exception {
 
-        if(client != null) {
+        if (client != null) {
             client.close();
         }
 
         if (!kubernetesClientMap.isEmpty()) {
-            for(String clientId : kubernetesClientMap.keySet()) {
+            for (String clientId : kubernetesClientMap.keySet()) {
                 KubernetesClient kubernetesClient = kubernetesClientMap.get(clientId);
-                if(kubernetesClient != null){
+                if (kubernetesClient != null) {
                     kubernetesClient.close();
                 }
             }

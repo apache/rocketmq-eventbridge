@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WorkerInstanceRepositoryOnK8STest.class)
 @SpringBootApplication(scanBasePackages = {"org.apache.rocketmq.eventbridge.adapter.runtime.manager.k8s.*"})
-@Ignore
+//@Ignore
 public class WorkerInstanceRepositoryOnK8STest {
 
     @Autowired
@@ -52,7 +52,7 @@ public class WorkerInstanceRepositoryOnK8STest {
         Map<String, Object> environments = Maps.newHashMap();
         environments.put("key1", "value1");
         environments.put("key2", "value2");
-        workerInstanceRepositoryOnK8S.applyWorkerInstance("worker-4", "apache/rocketmq-eventbridge:1.1.0", new Gson().fromJson("{\"cpu\":100,\"memory\":100}", WorkerResource.class), environments);
+        workerInstanceRepositoryOnK8S.applyWorkerInstance("worker-3", "apache/rocketmq-eventbridge:1.1.0", new Gson().fromJson("{\"cpu\":100,\"memory\":100}", WorkerResource.class), environments);
     }
 
     @Test
