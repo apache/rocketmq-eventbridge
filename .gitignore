@@ -22,3 +22,5 @@ domain/target/
 start/target/
 common/target/
 supports/*/target/
+*libraries*
+.vscode

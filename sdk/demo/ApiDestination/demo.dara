@@ -1,0 +1,116 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @config = OpenApi.Config;
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    @config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(@config);
+}
+
+/**
+  ApiDestination Controller apis:
+    * createApiDestination *
+    * updateApiDestination *
+    * getApiDestination    *
+    * deleteApiDestination *
+    * listApiDestinations  *
+*/
+
+async function testCreateApiDestination(): void {
+    var request = new SDKClient.CreateApiDestinationRequest{
+        apiDestinationName = "new-api-destination",
+        connectionName = "new-connection",
+        description = "demo api destination for test",
+        httpApiParameters = {
+            endpoint = @endpoint,
+            method = "POST"
+        }
+    };
+
+    try {
+        var res = @sdkClient.createApiDestination(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testupdateApiDestination(): void {
+    var request = new SDKClient.UpdateApiDestinationRequest{
+        apiDestinationName = "new-api-destination",
+        connectionName = "new-connection",
+        description = "!updated! demo api destination for test",
+        httpApiParameters = {
+            endpoint = @endpoint,
+            method = "GET"
+        }
+    };
+
+    try {
+        var res = @sdkClient.updateApiDestination(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testGetApiDestination(): void {
+    var request = new SDKClient.GetApiDestinationRequest{
+        apiDestinationName = "new-api-destination"
+    };
+    try {
+        var res = @sdkClient.getApiDestination(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+}
+
+async function testDeleteApiDestination(): void {
+    var request = new SDKClient.DeleteApiDestinationRequest{
+        apiDestinationName = "new-api-destination"
+    };
+    try {
+        var res = @sdkClient.deleteApiDestination(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+}
+
+async function testListApiDestinations(): void {
+    var request = new SDKClient.ListApiDestinationsRequest{};
+
+    try {
+        var res = @sdkClient.listApiDestinations(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}

@@ -1,0 +1,35 @@
+{
+  "scope": "Demo",
+  "name": "demo",
+  "version": "0.0.0",
+  "main": "./demo.dara",
+  "libraries": {
+    "SDKClient" : "../../",
+    "Util": "darabonba:Util:*",
+    "OpenApi": "alibabacloud:OpenApi:*",
+    "OpenApiUtil": "alibabacloud:OpenApiUtil:*",
+    "Console": "darabonba:Console:*"
+  },
+  "java": {
+    "package": "org.apache.rocketmq.eventbridge.demo",
+    "className": "Demo",
+    "packageInfo": {
+      "groupId": "org.apache.rocketmq.eventbridge",
+      "artifactId": "demo",
+      "version": "0.0.0",
+      "description": "EventBridge SDK demo for Java",
+      "url": "",
+      "licenseName": "The Apache License, Version 2.0",
+      "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "developerId": "ludi",
+      "developerName": "EventBridge SDK",
+      "developerEmail": "zjuludi@gmail.com",
+      "scmConnection": "",
+      "scmDeveloperConnection": "",
+      "scmUrl": ""
+    }
+  },
+  "go": {
+    "clientName": "DemoClient"
+  }
+}

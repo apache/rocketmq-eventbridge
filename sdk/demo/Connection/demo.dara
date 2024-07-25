@@ -1,0 +1,145 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @config = OpenApi.Config;
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    @config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(@config);
+}
+
+/**
+  test func for Connection Controller apis:
+    * createConnection    *
+    * deleteConnection    *
+    * updateConnection    *
+    * getConnection       *
+    * selectOneConnection *
+    * listConnections     *
+    * listEnumsResponse   *
+*/
+
+async function testCreateConnection(): void {
+    var request = new SDKClient.CreateConnectionRequest{
+        connectionName = "new-connection",
+        networkParameters = {
+            networkType = "PublicNetwork"
+        }
+    };
+
+    try {
+        var res = @sdkClient.createConnection(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testDeleteConnection(): void {
+    var request = new SDKClient.DeleteConnectionRequest{
+        connectionName = "new-connection"
+    };
+    try {
+        var res = @sdkClient.deleteConnection(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+}
+
+async function testUpdateConnection(): void {
+    var request = new SDKClient.UpdateConnectionRequest{
+        connectionName = "new-connection",
+        networkParameters = {
+            networkType = "PrivateNetwork",
+            securityGroupId = "eb-167adad548759-security_grop/sg-bp1addad26peuh9qh9rtyb",
+            vpcId = "eb-test/vpc-bp1symadadwnwgmqud",
+            vswitcheId = "vsw-bp1iu4x7aeradadown1og8,vsw-bp193sqmadadlaszpeqbt2c"
+        }
+    };
+
+    try {
+        var res = @sdkClient.updateConnection(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testGetConnections(): void {
+    var request = new SDKClient.GetConnectionRequest{
+        connectionName = "new-connection"
+    };
+    try {
+        var res = @sdkClient.getConnection(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testSelectOneConnection(): void {
+    var request = new SDKClient.GetConnectionRequest{
+        connectionName = "new-connection"
+    };
+    try {
+        var res = @sdkClient.selectOneConnection(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testListConnections(): void {
+    var request = new SDKClient.ListConnectionsRequest{};
+
+    try {
+        var res = @sdkClient.listConnections(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testListEnumsResponse(): void {
+    try {
+        var res = @sdkClient.listEnumsResponse();
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
