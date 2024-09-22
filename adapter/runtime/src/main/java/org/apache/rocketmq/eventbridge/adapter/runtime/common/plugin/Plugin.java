@@ -76,7 +76,7 @@ public class Plugin extends URLClassLoader {
     }
 
     private void loadPlugin(String path) {
-        Path pluginPath = Paths.get(path).toAbsolutePath();
+        Path pluginPath = Paths.get(path.replaceFirst("^~", System.getProperty("user.home"))).toAbsolutePath();
         path = pluginPath.toString();
         try {
             if (Files.isDirectory(pluginPath)) {
