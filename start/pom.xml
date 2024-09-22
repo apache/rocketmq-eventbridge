@@ -106,6 +106,15 @@
             <version>1.0.0</version>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>okhttp</artifactId>
+                <groupId>com.squareup.okhttp3</groupId>
+                <version>3.12.12</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <finalName>rocketmq-eventbridge</finalName>

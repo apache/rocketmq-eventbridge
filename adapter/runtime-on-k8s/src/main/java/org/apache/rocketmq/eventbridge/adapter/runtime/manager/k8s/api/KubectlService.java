@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+
 import io.fabric8.kubernetes.client.Config;
 
 @Slf4j
@@ -64,7 +65,11 @@ public class KubectlService implements AutoCloseable {
 
     @PostConstruct
     public void initClient() {
-        client = getKubernetesClient();
+        try {
+            client = getKubernetesClient();
+        } catch (Throwable e) {
+            log.error("init kubectl client failed.",e);
+        }
     }
 
     public KubernetesClient getClient() {
@@ -98,17 +103,17 @@ public class KubectlService implements AutoCloseable {
         Config config = null;
         if (StringUtils.isNotBlank(accessKey) && StringUtils.isNotBlank(secretKey)) {
             config = new ConfigBuilder()
-                .withMasterUrl(apiServer)
-                .withApiVersion(apiVersion)
-                .build();
+                    .withMasterUrl(apiServer)
+                    .withApiVersion(apiVersion)
+                    .build();
             config.setUsername(accessKey);
             config.setPassword(secretKey);
             log.info("use ak and sk connect to api server.");
         } else if (StringUtils.isNotBlank(oauthToken)) {
             config = new ConfigBuilder()
-                .withMasterUrl(apiServer)
-                .withApiVersion(apiVersion)
-                .build();
+                    .withMasterUrl(apiServer)
+                    .withApiVersion(apiVersion)
+                    .build();
             config.setTrustCerts(true);
             config.setOauthToken(oauthToken);
             log.info("use auth token connect to api server.");

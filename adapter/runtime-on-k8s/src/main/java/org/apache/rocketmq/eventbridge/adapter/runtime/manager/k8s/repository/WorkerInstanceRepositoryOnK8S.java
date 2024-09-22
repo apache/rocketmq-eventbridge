@@ -92,6 +92,12 @@ public class WorkerInstanceRepositoryOnK8S implements WorkerInstanceRepository {
     @Autowired
     private K8SNameSpaceService k8SNameSpaceService;
 
+    public WorkerInstanceRepositoryOnK8S(K8SDeploymentService k8SDeploymentService, DeploySpecTemplateSpec deploySpecTemplateSpec, K8SNameSpaceService k8SNameSpaceService) {
+        this.k8SDeploymentService = k8SDeploymentService;
+        this.deploySpecTemplateSpec = deploySpecTemplateSpec;
+        this.k8SNameSpaceService = k8SNameSpaceService;
+    }
+
     @Override
     public boolean applyWorkerInstance(String name, String image, WorkerResource resources, Map<String, Object> environments) {
 
