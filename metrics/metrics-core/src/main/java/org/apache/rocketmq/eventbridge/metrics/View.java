@@ -21,6 +21,6 @@ package org.apache.rocketmq.eventbridge.metrics;
 public interface View {
 
     int UPDATE_INTERVAL_SECONDS = 5;
-    
+
     void update();
 }
