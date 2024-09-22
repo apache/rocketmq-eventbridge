@@ -13,7 +13,7 @@
     <artifactId>metrics</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>metrics-api</module>
+        <module>metrics-core</module>
     </modules>
 
     <properties>
