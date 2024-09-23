@@ -49,12 +49,12 @@
         WHERE account_id = #{accountId}
         AND bus = #{eventBusName}
         AND source = #{eventSourceName}
-        LIMIT #{nextToken} #{maxResults}
+        LIMIT #{nextToken} , #{maxResults}
     </select>
 
     <select id="getEventTypeCount" parameterType="java.util.Map" resultType="java.lang.Integer">
         SELECT
-        <include refid="COLUMN_LIST"/>
+            count(1)
         FROM
         <include refid="TABLE_NAME"/>
         WHERE account_id = #{accountId}
