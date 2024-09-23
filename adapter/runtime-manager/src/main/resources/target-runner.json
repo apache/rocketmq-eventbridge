@@ -1,0 +1,24 @@
+[
+  {
+    "name":"demo-runner",
+    "components":[
+      {
+        "accountId": "654321",
+        "eventBusName":"demo-bus"
+      },
+      {
+        "filterPattern":"{}",
+        "class":"org.apache.rocketmq.connect.transform.eventbridge.EventBridgeFilterTransform"
+      },
+      {
+        "data":"{\"form\":\"TEMPLATE\",\"value\":\"{\\\"content\\\":\\\"$.data.body\\\"}\",\"template\":\"{\\\"text\\\":{\\\"content\\\":\\\"${content}\\\"},\\\"msgtype\\\":\\\"text\\\"}\"}",
+        "class": "org.apache.rocketmq.connect.transform.eventbridge.EventBridgeTransform"
+      },
+      {
+        "class":"org.apache.rocketmq.connect.dingtalk.sink.DingTalkSinkTask",
+        "webHook":"xxxxxxxxxxx",
+        "secretKey":"xxxxxxxxxxx"
+      }
+    ]
+  }
+]

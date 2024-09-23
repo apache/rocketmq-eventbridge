@@ -18,16 +18,22 @@
 package org.apache.rocketmq.eventbridge.tools;
 
 import com.google.common.collect.Maps;
+
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.eventbridge.tools.pattern.InvalidEventPatternException;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternErrorMessages;
 
 public class JsonUtil {
 
+    private static Gson gson = new GsonBuilder().create();
     /**
      * Convert the value of map to json element
      *
@@ -62,4 +68,30 @@ public class JsonUtil {
         }
         return "{}".equals(element.toString()) ? Boolean.TRUE : Boolean.FALSE;
     }
+
+    public static <T> T parse(String str, Class<T> clazz) {
+        if (StringUtils.isNotEmpty(str) && clazz != null) {
+            try {
+                return gson.fromJson(str, clazz);
+            } catch (Exception e) {
+                throw new InvalidEventPatternException(PatternErrorMessages.INVALID_JSON_STRING, e);
+            }
+        } else {
+            return null;
+        }
+    }
+
+
+    public static <T> String toJson(T obj) {
+        if (obj == null) {
+            return null;
+        } else {
+            try {
+                return gson.toJson(obj);
+            } catch (Exception var2) {
+                return null;
+            }
+        }
+    }
+
 }
