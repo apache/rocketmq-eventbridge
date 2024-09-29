@@ -1,0 +1,157 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @config = OpenApi.Config;
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    @config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(@config);
+}
+
+/**
+  EventTarget Controller apis:
+    * createEventTargets *
+    * updateEventTargets *
+    * deleteEventTargets *
+    * listEventTargets   *
+*/
+
+async function testCreateEventTargets(): void {
+    var request = new SDKClient.CreateEventTargetsRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+        eventTargets = [
+            new SDKClient.EventTarget{
+                eventTargetName = 'newTarget',
+                className = 'file',
+                config = {
+                    fileName = "~/Target",
+                    line = "{    \"form\":\"JSONPATH\",    \"value\":\"$.data\"}"
+                },
+                runOptions = {
+                    errorsTolerance = "",
+                    retryStrategy = {
+                        pushRetryStrategy = "",
+                        maximumEventAgeInSeconds = 100,
+                        maximumRetryAttempts = 100
+                    },
+                    deadLetterQueue = {
+                        type = "",
+                        config = {}
+                    }
+                }
+            },
+            new SDKClient.EventTarget{
+                eventTargetName = 'newTarget222',
+                className = 'file',
+                config = {
+                    fileName = "~/Target222",
+                    line = "{    \"form\":\"JSONPATH\",    \"value\":\"$.data\"}"
+                },
+                runOptions = {
+                    errorsTolerance = "",
+                    retryStrategy = {
+                        pushRetryStrategy = "",
+                        maximumEventAgeInSeconds = 100,
+                        maximumRetryAttempts = 100
+                    },
+                    deadLetterQueue = {
+                        type = "",
+                        config = {}
+                    }
+                }
+            }
+        ]
+    };
+
+    try {
+        var res = @sdkClient.createEventTargets(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testUpdateEventTargets(): void {
+    var request = new SDKClient.UpdateEventTargetsRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+        eventTargets = [
+            new SDKClient.EventTarget{
+                eventTargetName = 'newTarget',
+                className = 'file',
+                config = {
+                    fileName = "~/newTarget",
+                    line = "{    \"form\":\"JSONPATH\",    \"value\":\"$.data\"}"
+                }
+            },
+            new SDKClient.EventTarget{
+                eventTargetName = 'newTarget222',
+                className = 'file',
+                config = {
+                    fileName = "~/newTarget222",
+                    line = "{    \"form\":\"JSONPATH\",    \"value\":\"$.data\"}"
+                }
+            }
+        ]
+    };
+
+    try {
+        var res = @sdkClient.updateEventTargets(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testDeleteEventTargets(): void {
+    var request = new SDKClient.DeleteEventTargetsRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+        eventTargetNames = ["newTarget", "newTarget222"]
+    };
+
+    try {
+        var res = @sdkClient.deleteEventTargets(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testListEventTargets(): void {
+    var request = new SDKClient.ListEventTargetsRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule'
+    };
+
+    try {
+        var res = @sdkClient.listEventTargets(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
