@@ -22,3 +22,7 @@ domain/target/
 start/target/
 common/target/
 supports/*/target/
+*libraries*
+.vscode/
+node_modules/
+*.sln

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

@@ -1,0 +1,91 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    var config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(config);
+}
+
+/**
+  test func for EventBus Controller apis:
+    * createEventBus *
+    * getEventBus    *
+    * deleteEventBus *
+    * listEventBuses *
+*/
+
+async function testCreateEventBus(): void {
+    var request = new SDKClient.CreateEventBusRequest{
+        eventBusName = 'newBus'
+    };
+
+    try {
+        var res = @sdkClient.createEventBus(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testDeleteEventBus(): void {
+    var request = new SDKClient.DeleteEventBusRequest{
+        eventBusName = 'newBus'
+    };
+
+    try {
+        var res = @sdkClient.deleteEventBus(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testGetEventBus(): void {
+    var request = new SDKClient.GetEventBusRequest{
+        eventBusName = 'newBus'
+    };
+
+    try {
+        var res = @sdkClient.getEventBus(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testListEventBuses(): void {
+    var request = new SDKClient.ListEventBusesRequest{
+        maxResults = 2
+    };
+
+    try {
+        var res = @sdkClient.listEventBuses(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}

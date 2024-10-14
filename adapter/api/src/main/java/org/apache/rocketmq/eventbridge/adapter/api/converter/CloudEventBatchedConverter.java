@@ -34,6 +34,9 @@ public class CloudEventBatchedConverter implements EventConverter {
     @Override
     public boolean hit(Map<String, String> headers) {
         String contentType = headers.get(CONTENT_TYPE);
+        if(Strings.isNullOrEmpty(contentType)){
+            contentType = headers.get(CONTENT_TYPE.toLowerCase());
+        }
         return !Strings.isNullOrEmpty(contentType) && contentType.startsWith(HTTP_BATCHED_PROTOCOL_BINDING);
     }
 
