@@ -1,0 +1,157 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    var config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(config);
+}
+
+/**
+  EventRule Controller apis:
+    * createEventRule  *
+    * getEventRule     *
+    * deleteEventRule  *
+    * updateEventRule  *
+    * listEventRules   *
+    * enableEventRule  *
+    * disableEventRule *
+*/
+
+async function testCreateEventRule(): void {
+    var request = new SDKClient.CreateEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+        description = 'an event rule for test',
+        filterPattern = "{}"
+    };
+
+    try {
+        var res = @sdkClient.createEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testGetEventRule(): void {
+    var request = new SDKClient.GetEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+    };
+
+    try {
+        var res = @sdkClient.getEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testDeleteEventRule(): void {
+    var request = new SDKClient.DeleteEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+    };
+
+    try {
+        var res = @sdkClient.deleteEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testUpdateEventRule(): void {
+    var request = new SDKClient.UpdateEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+        description = 'new description for testing update API',
+        filterPattern = '{}'
+    };
+
+    try {
+        var res = @sdkClient.updateEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testListEventRules(): void {
+    var request = new SDKClient.ListEventRulesRequest{
+        eventBusName = 'newBus',
+        maxResults = 2,
+        nextToken = "0"
+    };
+
+    try {
+        var res = @sdkClient.listEventRules(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testEnableEventRule(): void {
+    var request = new SDKClient.EnableEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+    };
+
+    try {
+        var res = @sdkClient.enableEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
+
+async function testDisableEventRule(): void {
+    var request = new SDKClient.DisableEventRuleRequest{
+        eventBusName = 'newBus',
+        eventRuleName = 'newRule',
+    };
+
+    try {
+        var res = @sdkClient.disableEventRule(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}

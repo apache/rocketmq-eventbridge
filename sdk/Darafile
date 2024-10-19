@@ -1,0 +1,87 @@
+{
+  "scope": "SDKClient",
+  "name": "sdk-client",
+  "version": "1.0.0",
+  "main": "./main.dara",
+  "libraries": {
+    "Util": "darabonba:Util:*",
+    "OpenApi": "alibabacloud:OpenApi:*"
+  },
+  "releases": {
+    "java": "org.apache.rocketmq.eventbridge:sdk:0.0.0",
+    "go": "github.com/org-apache-rocketmq/eventbridge-sdk/client:v0.0.0",
+    "csharp": "RocketMQ.Eventbridge.SDK:1.0.0",
+    "ts": "@org.apache.rocketmq/eventbridge-sdk:0.0.0",
+    "php": "rocketmq/eventbridge-sdk:0.0.0",
+    "python": "rocketmq_eventbridge20240701:0.0.0"    
+  },
+  "java": {
+    "className": "Client",
+    "package": "org.apache.rocketmq.eventbridge.sdk",
+    "enableMinimizeModelName": false,
+    "packageInfo": {
+      "groupId": "org.apache.rocketmq.eventbridge",
+      "artifactId": "sdk",
+      "version": "0.0.0",
+      "description": "Eventbridge (20240701) SDK for Java",
+      "url": "",
+      "licenseName": "The Apache License, Version 2.0",
+      "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "developerId": "rocketmq",
+      "developerName": "rocketmq",
+      "developerEmail": "zjuludi@gmail.com"
+    }
+  },
+  "ts":{
+    "packageName": "SDKClient"
+  },
+  "csharp": {
+    "className": "SDKClient",
+    "namespace": "RocketMQ.Eventbridge.SDK",
+    "packageInfo": {
+      "name": "sdk",
+      "version": "0.0.0",
+      "title": "eventbridge-sdk",
+      "description": "open source eventbridge (20240701) SDK Library for .NET"
+    }
+  },
+  "php": {
+    "package": "RocketMQ.Eventbridge.SDK",
+    "clientName": "SDKClient",
+    "packageInfo": {
+      "name": "rocketmq/eventbridge-sdk",
+      "desc": "RocketMQ eventbridge (20240701) SDK Library for PHP",
+      "github": "unavailable",
+      "files": {
+        "LICENSE": "../LICENSE"
+      }
+    }
+  },
+  "python": {
+    "package": "rocketmq_eventbridge",
+    "clientName": "client",
+    "packageInfo": {
+      "name": "rocketmq_eventbridge",
+      "desc": "Alibaba Cloud eventbridge (20240701) SDK Library for Python",
+      "github": "https://github.com/aliyun/alibabacloud-python-sdk",
+      "author": "Alibaba Cloud SDK",
+      "email": "sdk-team@alibabacloud.com"
+    }
+  },
+  "swift": {
+    "clientName": "Client",
+    "packageInfo": {
+      "name": "AlibabacloudEventbridge20240701",
+      "desc": "Alibaba Cloud eventbridge (20240701) SDK Library for Swift",
+      "github": "https://github.com/alibabacloud-sdk-swift/eventbridge-20240701",
+      "author": "Alibaba Cloud SDK",
+      "email": "sdk-team@alibabacloud.com"
+    }
+  },
+  "go": {
+    "interface": true,
+    "clientName": "Client"
+  },
+  "productId": "eventbridge",
+  "apiVersions": "2024-07-01"
+}

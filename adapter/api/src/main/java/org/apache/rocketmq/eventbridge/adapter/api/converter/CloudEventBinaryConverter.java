@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
+
 import org.springframework.stereotype.Service;
 
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
@@ -38,6 +39,9 @@ public class CloudEventBinaryConverter implements EventConverter {
     @Override
     public boolean hit(Map<String, String> headers) {
         String contentType = headers.get(CONTENT_TYPE);
+        if(Strings.isNullOrEmpty(contentType)){
+            contentType = headers.get(CONTENT_TYPE.toLowerCase());
+        }
         if (Strings.isNullOrEmpty(contentType) || !contentType.startsWith(HTTP_BINARY_PROTOCOL_BINDING)) {
             return false;
         }
@@ -61,6 +65,9 @@ public class CloudEventBinaryConverter implements EventConverter {
             .stream()
             .forEach(entry -> headerMap.add(entry.getKey(), entry.getValue()));
         String mediaType = headers.get(CONTENT_TYPE);
+        if(Strings.isNullOrEmpty(mediaType)){
+            mediaType = headers.get(CONTENT_TYPE.toLowerCase());
+        }
         CloudEvent cloudEvent = RestfulWSMessageFactory.create(MediaType.valueOf(mediaType), headerMap, body)
             .toEvent();
         return Lists.newArrayList(cloudEvent);

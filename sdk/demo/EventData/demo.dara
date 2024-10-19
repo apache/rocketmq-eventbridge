@@ -1,0 +1,38 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    var config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(config);
+}
+
+/**
+  EventData Controller apis:
+    * putEvents *
+*/
+
+async function testPutEvents(): void {
+    var request = new SDKClient.PutEventsRequest{
+        eventBusName = 'demo-bus',
+        event = 'an event for API test'
+    };
+
+    try {
+        var res = @sdkClient.putEvents(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}

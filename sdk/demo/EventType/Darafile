@@ -1,0 +1,66 @@
+{
+  "scope": "Demo",
+  "name": "demo",
+  "version": "0.0.0",
+  "main": "./demo.dara",
+  "libraries": {
+    "SDKClient" : "../../",
+    "Util": "darabonba:Util:*",
+    "OpenApi": "alibabacloud:OpenApi:*",
+    "OpenApiUtil": "alibabacloud:OpenApiUtil:*",
+    "Console": "darabonba:Console:*"
+  },
+  "java": {
+    "package": "org.apache.rocketmq.eventbridge.demo",
+    "className": "Demo",
+    "packageInfo": {
+      "groupId": "org.apache.rocketmq.eventbridge",
+      "artifactId": "demo",
+      "version": "0.0.0",
+      "description": "EventBridge SDK demo for Java",
+      "url": "",
+      "licenseName": "The Apache License, Version 2.0",
+      "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "developerId": "ludi",
+      "developerName": "EventBridge SDK",
+      "developerEmail": "zjuludi@gmail.com",
+      "scmConnection": "",
+      "scmDeveloperConnection": "",
+      "scmUrl": ""
+    }
+  },
+  "go": {
+    "clientName": "DemoClient"
+  },
+  "csharp": {
+    "className": "Demo",
+    "namespace": "RocketMQ.Eventbridge.Demo",
+    "packageInfo": {
+      "name": "sdkDemo",
+      "version": "0.0.0",
+      "title": "eventbridge-sdk-demo",
+      "description": "open source eventbridge (20240701) SDK Demo Library for .NET"
+    }
+  },
+  "php": {
+    "package": "RocketMQ.Eventbridge.SDK.Demo",
+    "clientName": "Demo",
+    "packageInfo": {
+      "name": "rocketmq/eventbridge-sdk-demo",
+      "desc": "RocketMQ eventbridge (20240701) SDK Demo for PHP",
+      "github": "unavailable",
+      "files": {
+        "LICENSE": "../LICENSE"
+      }
+    }
+  },
+  "python": {
+    "package": "rocketmq_eventbridge_demo",
+    "clientName": "demo",
+    "packageInfo": {
+      "name": "rocketmq_eventbridge_demo",
+      "desc": "Alibaba Cloud eventbridge (20240701) SDK Library for Python",
+      "github": "unavailable"
+    }
+  }
+}

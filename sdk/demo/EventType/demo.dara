@@ -1,0 +1,40 @@
+import Util;
+import OpenApi;
+import SDKClient;
+import Console;
+
+type @sdkClient = SDKClient;
+type @endpoint = string;
+
+init(){
+    @endpoint = '127.0.0.1:7001';
+    var config = new OpenApi.Config{
+        endpoint = @endpoint
+    };
+    @sdkClient = new SDKClient(config);
+}
+
+/**
+  EventType Controller apis:
+    * listEventTypes *
+*/
+
+async function testListEventTypes(): void {
+    var request = new SDKClient.ListEventTypesRequest{
+        eventBusName = 'newBus',
+        eventSourceName = 'newSource',
+        maxResults = 10,
+        nextToken = "0"
+    };
+
+    try {
+        var res = @sdkClient.listEventTypes(request);
+        Console.log(Util.toJSONString(res.body));
+    } catch(err) {
+        Console.log('err!');
+        Console.log(err.message);
+    } finally {
+        Console.log('test end!');
+    }
+    
+}
