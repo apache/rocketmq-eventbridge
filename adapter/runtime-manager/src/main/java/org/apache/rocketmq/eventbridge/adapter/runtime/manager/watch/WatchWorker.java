@@ -68,8 +68,8 @@ public class WatchWorker {
                             }
                             List<Map<String, String>> env = new ArrayList<>();
                             env.add(new HashMap<String, String>(){{
-                                put("name", "envKey");
-                                put("value", "envValue");
+                                put("name", "workerName");
+                                put("value", worker.getName());
                             }});
                             environments.put("env", env);
                             log.info("applyWorkerInstance, workerName: {}, workerImageTag: {}, workerResource: {}, environments: {}", worker.getName(), worker.getImage(), worker.getResources(), new Gson().toJson(environments));
