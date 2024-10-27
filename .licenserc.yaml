@@ -27,6 +27,7 @@ header:
     - '**/*.json'
     - 'licenses'
     - '**/*.md'
+    - 'sdk/*'
     - 'LICENSE'
     - 'NOTICE'
     - '**/*.BUILD'
