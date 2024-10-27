@@ -134,7 +134,11 @@ public enum EventBridgeErrorCode implements BaseErrorCode {
     ClientSecretLengthExceed(409, "ClientSecretLengthExceed", "ClientSecret length cannot exceed 127!"),
     AuthorizationEndpointLengthExceed(409, "AuthorizationEndpointLengthExceed", "Authorization endpoint length cannot exceed 127!"),
     NetworkParametersIsEmpty(409, "NetworkParametersIsEmpty", "Network required parameter is empty!"),
-    RequestParameterInvalid(409, "RequestParameterInvalid", "Request parameter Invalid!");
+    RequestParameterInvalid(409, "RequestParameterInvalid", "Request parameter Invalid!"),
+
+    //cluster
+    EventClusterNotExist(409, "EventClusterNotExist", "The event custer [{0}] not existed!"),
+    ;
 
     private final int httpCode;
     private final String code;

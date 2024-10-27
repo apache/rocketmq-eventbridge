@@ -17,13 +17,20 @@
 
 package org.apache.rocketmq.eventbridge.demo;
 
+import ch.qos.logback.classic.layout.TTLLLayout;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.ClusterService;
 import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
+import org.apache.rocketmq.eventbridge.domain.model.bus.EventBus;
 import org.apache.rocketmq.eventbridge.domain.model.bus.EventBusService;
 import org.apache.rocketmq.eventbridge.domain.model.rule.EventRuleService;
 import org.apache.rocketmq.eventbridge.domain.model.target.EventTarget;
@@ -47,6 +54,9 @@ public class DefaultDemo {
     @Autowired
     EventTargetService eventTargetService;
 
+    @Autowired
+    ClusterService clusterService;
+
     private static final String DEFAULT_ACCOUNT_ID = "default";
 
     private static final String DEFAULT_EVENT_TOPIC_NAME = "demo-bus";
@@ -55,20 +65,44 @@ public class DefaultDemo {
 
     private static final String DEFAULT_EVENT_TARGET_NAME = "demo-target";
 
+    private static final String DEFAULT_EVENT_CLUSTER = "demo-cluster";
+
     private static final String DEFAULT_EVENT_TARGET_CLASS = "file";
 
     @PostConstruct
     public void initDemo() {
-        log.info("init demo");
-        initEventBus();
-        initEventRule();
-        intEventTarget();
+        try {
+            log.info("start init demo");
+            initEventBus();
+            initEventRule();
+            intEventTarget();
+            intEventCluster();
+        } catch (Throwable e) {
+            log.error("init demo error", e);
+        }
+    }
 
+    private void intEventCluster() {
+        try {
+            Cluster cluster = clusterService.getCluster(DEFAULT_EVENT_CLUSTER);
+            log.info("cluster is exist.info={}", new Gson().toJson(cluster));
+        } catch (EventBridgeException e) {
+            if (EventBridgeErrorCode.EventClusterNotExist.getCode().equals(e.getCode())) {
+                Cluster cluster = new Cluster();
+                cluster.setName(DEFAULT_EVENT_CLUSTER);
+                cluster.setResources("{ \"cpu\":1, \"memory\":2 }");
+                cluster.setReplica(2);
+                cluster.setImage("demo-image-url");
+                clusterService.createCluster(cluster);
+                log.info("Create demo event cluster:{}", DEFAULT_EVENT_TOPIC_NAME);
+            }
+        }
     }
 
     private void initEventBus() {
         try {
-            eventBusService.getEventBus(DEFAULT_ACCOUNT_ID, DEFAULT_EVENT_TOPIC_NAME);
+            EventBus eventBus = eventBusService.getEventBus(DEFAULT_ACCOUNT_ID, DEFAULT_EVENT_TOPIC_NAME);
+            log.info("eventbus is exist.info={}", new Gson().toJson(eventBus));
         } catch (EventBridgeException e) {
             if (EventBridgeErrorCode.EventBusNotExist.getCode().equals(e.getCode())) {
                 eventBusService.createEventBus(DEFAULT_ACCOUNT_ID, DEFAULT_EVENT_TOPIC_NAME, "A demo bus.");

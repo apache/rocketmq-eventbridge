@@ -28,6 +28,12 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>okio-jvm</artifactId>
+                    <groupId>com.squareup.okio</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
@@ -44,6 +50,24 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-adapter-storage</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>okhttp</artifactId>
+                    <groupId>com.squareup.okhttp3</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>rocketmq-acl</artifactId>
+                    <groupId>org.apache.rocketmq</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>rocketmq-common</artifactId>
+                    <groupId>org.apache.rocketmq</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>okio</artifactId>
+                    <groupId>com.squareup.okio</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
@@ -67,6 +91,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <artifactId>rocketmq-eventbridge-adapter-runtime-manager</artifactId>
+            <groupId>org.apache.rocketmq</groupId>
+            <version>1.0.0</version>
+        </dependency>
         <!--Tools -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -88,7 +117,31 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-eventbridge-adapter-runtime-on-k8s</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>1.2.41</version>
+            </dependency>
+            <dependency>
+                <artifactId>okhttp</artifactId>
+                <groupId>com.squareup.okhttp3</groupId>
+                <version>3.12.12</version>
+            </dependency>
+            <dependency>
+                <artifactId>okio</artifactId>
+                <groupId>com.squareup.okio</groupId>
+                <version>1.15.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <resources>
