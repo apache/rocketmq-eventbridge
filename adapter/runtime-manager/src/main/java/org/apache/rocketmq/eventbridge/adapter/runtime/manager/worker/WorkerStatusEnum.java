@@ -20,7 +20,7 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker;
 public enum WorkerStatusEnum {
     UNKNOWN(-1, "Unknown"),
 
-    WAIT_DEPLOY(0, "Deployed"),
+    DEPLOYED(0, "Deployed"),
     STARTING(3, "Starting"),
     RUN(5, "Run"),
     STOP(10, "Stop"),

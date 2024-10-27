@@ -60,4 +60,18 @@
         (#{id},#{clusterId},#{name},#{image},#{resources},#{config},#{status},#{md5},now(),now())
     </insert>
 
+    <update id="updateWorker" parameterType="java.util.Map">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            gmt_modify = now()
+            <if test="md5 != null">
+                ,md5= #{md5}
+            </if>
+            <if test="status != null">
+                ,status= #{status}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
 </mapper>

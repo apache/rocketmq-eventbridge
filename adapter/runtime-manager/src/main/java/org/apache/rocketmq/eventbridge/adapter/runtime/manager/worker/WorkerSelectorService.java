@@ -33,7 +33,7 @@ public class WorkerSelectorService {
     ClusterService clusterService;
 
     public Worker selectWorker(RunnerTask runnerTask) {
-        Cluster cluster = clusterService.getCluster(runnerTask.getClusterId());
+        Cluster cluster = clusterService.getCluster(runnerTask.getName());
         Worker worker = workerLoadService.getMinLoadWorker(cluster);
         return worker;
     }

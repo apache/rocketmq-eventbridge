@@ -18,6 +18,7 @@
 package org.apache.rocketmq.eventbridge.adapter.persistence.cluster.mybatis.mapper;
 
 import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster;
 
@@ -25,4 +26,8 @@ public interface EventClusterMapper {
     List<Cluster> listCluster();
 
     int updateCluster(@Param("id") int id, @Param("md5") String md5);
+
+    int createCluster(@Param("name") String name, @Param("resources") String resources, @Param("replica") int replica, @Param("image") String image, @Param("md5") String md5);
+
+    Cluster getCluster(@Param("name") String name);
 }

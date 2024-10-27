@@ -25,4 +25,8 @@ public interface ClusterRepository {
     List<Cluster> listCluster();
 
     boolean updateCluster(int clusterId, String md5);
+
+    boolean createCluster(Cluster cluster);
+
+    Cluster getCluster(String clusterName);
 }

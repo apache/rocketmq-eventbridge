@@ -52,6 +52,13 @@ public class WorkerInstanceRepositoryOnK8STest {
         Map<String, Object> environments = Maps.newHashMap();
         environments.put("key1", "value1");
         environments.put("key2", "value2");
+
+        List<Map<String, String>> env = new ArrayList<>();
+        env.add(new HashMap<String, String>(){{
+            put("name", "envKey");
+            put("value", "envValue");
+        }});
+        environments.put("env", env);
         workerInstanceRepositoryOnK8S.applyWorkerInstance("worker-3", "apache/rocketmq-eventbridge:1.1.0", new Gson().fromJson("{\"cpu\":100,\"memory\":100}", WorkerResource.class), environments);
     }
 

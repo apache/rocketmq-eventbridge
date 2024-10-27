@@ -18,37 +18,46 @@
 package org.apache.rocketmq.eventbridge.adapter.persistence.worker.mybatis.repository;
 
 import java.util.List;
+
 import org.apache.rocketmq.eventbridge.adapter.persistence.worker.mybatis.mapper.EventWorkerMapper;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerRepository;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-@Repository public class MybatisWorkerRepository implements WorkerRepository {
+@Repository
+public class MybatisWorkerRepository implements WorkerRepository {
 
-    @Autowired EventWorkerMapper eventWorkerMapper;
+    @Autowired
+    EventWorkerMapper eventWorkerMapper;
 
-    @Override public List<Worker> listWorkersByCluster(int clusterId) {
+    @Override
+    public List<Worker> listWorkersByCluster(int clusterId) {
         return eventWorkerMapper.listWorkersByCluster(clusterId);
     }
 
-    @Override public List<Worker> listWorkers() {
+    @Override
+    public List<Worker> listWorkers() {
         return eventWorkerMapper.listWorkers();
     }
 
-    @Override public boolean createWorker(Worker worker) {
+    @Override
+    public boolean createWorker(Worker worker) {
         return eventWorkerMapper.createWorker(worker.getId(), worker.getClusterId(), worker.getName(), worker.getImage(), worker.getResources(), worker.getConfig(), worker.getStatus(), worker.getMd5()) == 1;
     }
 
-    @Override public boolean updateWorker(Worker worker) {
+    @Override
+    public boolean updateWorker(Worker worker) {
+        return eventWorkerMapper.updateWorker(worker.getId(), worker.getStatus(), worker.getMd5()) == 1;
+    }
+
+    @Override
+    public boolean deleteWorker(int workerId) {
         return false;
     }
 
-    @Override public boolean deleteWorker(int workerId) {
-        return false;
-    }
-
-    @Override public boolean deleteWorkers(int clusterId) {
+    @Override
+    public boolean deleteWorkers(int clusterId) {
         return false;
     }
 }

@@ -19,16 +19,20 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.google.common.base.Strings;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service public class WorkerService {
+@Service
+public class WorkerService {
 
-    @Autowired private WorkerRepository workerRepository;
+    @Autowired
+    private WorkerRepository workerRepository;
 
     public boolean createWorker(int clusterId, String workerName, String image, String resources, String config,
-        String status) {
+                                String status) {
         Worker worker = Worker.builder().id(UUID.randomUUID().toString()).clusterId(clusterId).name(workerName).image(image).resources(resources).config(config).status(status).build();
         return workerRepository.createWorker(worker);
     }
@@ -49,6 +53,11 @@ import org.springframework.stereotype.Service;
         return false;
     }
 
+    public boolean isDeployed(Worker worker) {
+        return !Strings.isNullOrEmpty(worker.getStatus());
+    }
+
     public void refreshMD5(Worker worker) {
+        workerRepository.updateWorker(worker);
     }
 }

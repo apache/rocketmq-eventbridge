@@ -20,18 +20,23 @@ package org.apache.rocketmq.eventbridge.adapter.runtime.manager.watch;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.ThreadFactoryImpl;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.WorkerInstanceRepository;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.Worker;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerResource;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerService;
+import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +50,7 @@ public class WatchWorker {
     WorkerInstanceRepository workerInstanceRepository;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryImpl(WatchWorker.class.getSimpleName()));
+            new ThreadFactoryImpl(WatchWorker.class.getSimpleName()));
 
     @PostConstruct
     public void start() {
@@ -55,14 +60,23 @@ public class WatchWorker {
                 try {
                     List<Worker> workers = workerService.listWorkers();
                     workers.forEach(worker -> {
-                        if (!workerService.isFinalState(worker)) {
+                        if (!workerService.isDeployed(worker)) {
                             Map<String, Object> environments = new Gson().fromJson(worker.getConfig(), new TypeToken<Map<String, Object>>() {
                             }.getType());
-                            if(environments == null){
-                                 environments = Maps.newHashMap();
+                            if (environments == null) {
+                                environments = Maps.newHashMap();
                             }
+                            List<Map<String, String>> env = new ArrayList<>();
+                            env.add(new HashMap<String, String>(){{
+                                put("name", "envKey");
+                                put("value", "envValue");
+                            }});
+                            environments.put("env", env);
                             log.info("applyWorkerInstance, workerName: {}, workerImageTag: {}, workerResource: {}, environments: {}", worker.getName(), worker.getImage(), worker.getResources(), new Gson().toJson(environments));
-                            workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImage(), new Gson().fromJson(worker.getResources(), WorkerResource.class), environments);
+                            boolean isApplied = workerInstanceRepository.applyWorkerInstance(worker.getName(), worker.getImage(), new Gson().fromJson(worker.getResources(), WorkerResource.class), environments);
+                            if (isApplied) {
+                                worker.setStatus(WorkerStatusEnum.DEPLOYED.getDesc());
+                            }
                             workerService.refreshMD5(worker);
                         }
 

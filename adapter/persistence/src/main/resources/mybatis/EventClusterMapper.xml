@@ -19,6 +19,10 @@
     <sql id="COLUMN_LIST">
         id,name,resources,replica,image,md5,gmt_create,gmt_modify
     </sql>
+
+    <sql id="INSERT_COLUMN_LIST">
+        name,resources,replica,image,md5,gmt_create,gmt_modify
+    </sql>
     <resultMap id="resultMap" type="org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster.Cluster">
         <result property="id" column="id"/>
         <result property="name" column="name"/>
@@ -49,4 +53,24 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <select id="getCluster" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT
+        <include refid="COLUMN_LIST"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE name = #{name}
+        limit 1;
+    </select>
+
+    <insert id="createCluster" parameterType="java.util.Map">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        (
+        <include refid="INSERT_COLUMN_LIST"/>
+        )
+        VALUES
+        (#{name},#{resources},#{replica},#{image},#{md5},now(),now())
+    </insert>
+
 </mapper>

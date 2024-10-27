@@ -29,4 +29,7 @@ public interface EventWorkerMapper {
     int createWorker(@Param("id") String id, @Param("clusterId") int clusterId, @Param("name") String name,
         @Param("image") String image, @Param("resources") String resources, @Param("config") String config,
         @Param("status") String status, @Param("md5") String md5);
+
+    int updateWorker(@Param("id") String id,
+                     @Param("status") String status, @Param("md5") String md5);
 }

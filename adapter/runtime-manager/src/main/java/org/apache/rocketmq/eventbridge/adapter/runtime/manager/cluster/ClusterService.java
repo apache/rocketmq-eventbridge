@@ -18,9 +18,13 @@
 package org.apache.rocketmq.eventbridge.adapter.runtime.manager.cluster;
 
 import com.google.common.base.Strings;
+
 import java.util.List;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.repository.ClusterRepository;
+import org.apache.rocketmq.eventbridge.domain.common.exception.EventBridgeErrorCode;
+import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,18 +34,21 @@ public class ClusterService {
     @Autowired
     private ClusterRepository clusterRepository;
 
-    public boolean createCluster() {
-        return true;
+    public boolean createCluster(Cluster cluster) {
+        return clusterRepository.createCluster(cluster);
     }
 
     public boolean scaleCluster(String clusterName, int replica) {
         return true;
     }
 
-    public Cluster getCluster(long clusterId) {
-        return null;
+    public Cluster getCluster(String clusterName) {
+        Cluster cluster = clusterRepository.getCluster(clusterName);
+        if (cluster == null) {
+            throw new EventBridgeException(EventBridgeErrorCode.EventClusterNotExist, clusterName);
+        }
+        return cluster;
     }
-
 
     public List<Cluster> listCluster() {
         return clusterRepository.listCluster();
