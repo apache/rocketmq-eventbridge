@@ -38,6 +38,7 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerReso
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerService;
 import org.apache.rocketmq.eventbridge.adapter.runtime.manager.worker.WorkerStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,6 +49,10 @@ public class WatchWorker {
     WorkerService workerService;
     @Autowired
     WorkerInstanceRepository workerInstanceRepository;
+
+
+    @Value("${rocketmq.namesrvAddr}")
+    private String rmqNamesrvAddr;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryImpl(WatchWorker.class.getSimpleName()));
@@ -70,6 +75,10 @@ public class WatchWorker {
                             env.add(new HashMap<String, String>(){{
                                 put("name", "workerName");
                                 put("value", worker.getName());
+                            }});
+                            env.add(new HashMap<String, String>(){{
+                                put("name", "rocketmq.namesrvAddr");
+                                put("value", rmqNamesrvAddr);
                             }});
                             environments.put("env", env);
                             log.info("applyWorkerInstance, workerName: {}, workerImageTag: {}, workerResource: {}, environments: {}", worker.getName(), worker.getImage(), worker.getResources(), new Gson().toJson(environments));
