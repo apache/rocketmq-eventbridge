@@ -14,13 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.eventbridge.metrics.otlp;
 
-package org.apache.rocketmq.eventbridge.metrics;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.context.Context;
 
-public interface Metric<R> {
-    default MetricType getMetricType() {
-        throw new UnsupportedOperationException("Custom metric type is not supported.");
+public class NopLongCounter implements LongCounter {
+
+    @Override
+    public void add(long l) {
+
     }
 
-    void setInstrument(R instrument);
+    @Override
+    public void add(long l, Attributes attributes) {
+
+    }
+
+    @Override
+    public void add(long l, Attributes attributes, Context context) {
+
+    }
 }

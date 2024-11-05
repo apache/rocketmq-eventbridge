@@ -18,19 +18,41 @@
 
 package org.apache.rocketmq.eventbridge.metrics;
 
-public abstract class HistogramStatistics {
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
+import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongCounter;
 
-    public abstract double getQuantile(double quantile);
+public class DefaultLongCounter implements Counter<Attributes, LongCounter> {
 
-    public abstract long[] getValues();
+    private LongCounter longCounter = new NopLongCounter();
 
-    public abstract int size();
+    private long count;
 
-    public abstract double getMean();
+    @Override
+    public void inc() {
+        count++;
+        longCounter.add(count);
+    }
 
-    public abstract double getStdDev();
+    @Override
+    public void inc(long n, Attributes attachment) {
+        longCounter.add(n, attachment);
+    }
 
-    public abstract long getMax();
+    @Override
+    public void dec() {
+        count--;
+        longCounter.add(count);
+    }
 
-    public abstract long getMin();
+
+    @Override
+    public void dec(long n, Attributes attachment) {
+        longCounter.add(n, attachment);
+    }
+
+    @Override
+    public void setInstrument(LongCounter instrument) {
+        this.longCounter = instrument;
+    }
 }

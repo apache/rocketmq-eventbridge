@@ -19,17 +19,15 @@
 package org.apache.rocketmq.eventbridge.metrics;
 
 
-public interface Counter extends Metric {
+public interface Counter<P, R> extends Metric<R> {
 
-    void inc();
+    default void inc(){}
 
-    void inc(long n);
+    default void inc(long n, P attachment){}
 
-    void dec();
+    default void dec(){}
 
-    void dec(long n);
-
-    long getCount();
+    default void dec(long n, P attachment){}
 
     @Override
     default MetricType getMetricType() {

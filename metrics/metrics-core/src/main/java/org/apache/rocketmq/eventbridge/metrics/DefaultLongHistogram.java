@@ -18,18 +18,26 @@
 
 package org.apache.rocketmq.eventbridge.metrics;
 
-public interface Meter extends Metric {
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongHistogram;
+import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongHistogram;
 
-    void markEvent();
+public class DefaultLongHistogram implements Histogram<Attributes, LongHistogram> {
 
-    void markEvent(long n);
-
-    double getRate();
-
-    long getCount();
+    private LongHistogram longHistogram = new NopLongHistogram();
 
     @Override
-    default MetricType getMetricType() {
-        return MetricType.METER;
+    public void update(long value, Attributes attachment) {
+        longHistogram.record(value, attachment);
+    }
+
+    @Override
+    public LongHistogram getValue() {
+        return longHistogram;
+    }
+
+    @Override
+    public void setInstrument(LongHistogram instrument) {
+        this.longHistogram = instrument;
     }
 }

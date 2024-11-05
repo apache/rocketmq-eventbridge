@@ -18,14 +18,26 @@
 
 package org.apache.rocketmq.eventbridge.metrics;
 
-public interface Histogram<P, R> extends Metric<R> {
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongGauge;
+import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongGauge;
 
-    default void update(long value, P attachment){}
+public class DefaultLongGauge implements Histogram<Attributes, LongGauge> {
 
-    default R getValue(){return null;}
+    private LongGauge LongGauge = new NopLongGauge();
 
     @Override
-    default MetricType getMetricType() {
-        return MetricType.HISTOGRAM;
+    public void update(long value, Attributes attachment) {
+        LongGauge.set(value, attachment);
+    }
+
+    @Override
+    public LongGauge getValue() {
+        return LongGauge;
+    }
+
+    @Override
+    public void setInstrument(LongGauge instrument) {
+        this.LongGauge = instrument;
     }
 }

@@ -18,9 +18,12 @@
 
 package org.apache.rocketmq.eventbridge.metrics;
 
-public interface View {
+public interface Gauge<T, N> extends Metric<N> {
 
-    int UPDATE_INTERVAL_SECONDS = 5;
+    default T getValue(){return null;}
 
-    void update();
+    @Override
+    default MetricType getMetricType() {
+        return MetricType.GAUGE;
+    }
 }

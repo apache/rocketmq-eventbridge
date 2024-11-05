@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.rocketmq.eventbridge.metrics;
 
-public interface Metric<R> {
-    default MetricType getMetricType() {
-        throw new UnsupportedOperationException("Custom metric type is not supported.");
-    }
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 
-    void setInstrument(R instrument);
+import java.util.function.Supplier;
+
+public class EventBridgeMetricsManager {
+
+    public static Supplier<AttributesBuilder> attributesBuilderSupplier = Attributes::builder;
+
+
 }
