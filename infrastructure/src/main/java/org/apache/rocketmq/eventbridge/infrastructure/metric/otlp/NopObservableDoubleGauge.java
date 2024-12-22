@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.metrics.otlp;
+package org.apache.rocketmq.eventbridge.infrastructure.metric.otlp;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongGauge;
-import io.opentelemetry.context.Context;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 
-public class NopLongGauge implements LongGauge {
+public class NopObservableDoubleGauge implements ObservableDoubleMeasurement {
 
     @Override
-    public void set(long l) {
+    public void record(double l) {
 
     }
 
     @Override
-    public void set(long l, Attributes attributes) {
-
-    }
-
-    @Override
-    public void set(long l, Attributes attributes, Context context) {
+    public void record(double l, Attributes attributes) {
 
     }
 }

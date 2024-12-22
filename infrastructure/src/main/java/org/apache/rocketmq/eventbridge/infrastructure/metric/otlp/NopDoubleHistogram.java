@@ -14,16 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric.otlp;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.context.Context;
 
-import java.util.function.Supplier;
+public class NopDoubleHistogram implements DoubleHistogram {
 
-public class EventBridgeMetricsManager {
+    @Override
+    public void record(double l) {
 
-    public static Supplier<AttributesBuilder> attributesBuilderSupplier = Attributes::builder;
+    }
 
+    @Override
+    public void record(double l, Attributes attributes) {
 
+    }
+
+    @Override
+    public void record(double l, Attributes attributes, Context context) {
+
+    }
 }

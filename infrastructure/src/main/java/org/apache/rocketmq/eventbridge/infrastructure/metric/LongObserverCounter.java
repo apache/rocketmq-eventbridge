@@ -16,43 +16,33 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
-import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongCounter;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.otlp.NopObservableLongCounter;
 
-public class DefaultLongCounter implements Counter<Attributes, LongCounter> {
+public class LongObserverCounter implements ObservableCounter<Long, Attributes, ObservableLongMeasurement> {
 
-    private LongCounter longCounter = new NopLongCounter();
-
-    private long count;
+    private io.opentelemetry.api.metrics.ObservableLongMeasurement observableLongCounter = new NopObservableLongCounter();
 
     @Override
-    public void inc() {
-        count++;
-        longCounter.add(count);
+    public void inc(Attributes attachment) {
+        observableLongCounter.record(1, attachment);
     }
 
     @Override
-    public void inc(long n, Attributes attachment) {
-        longCounter.add(n, attachment);
+    public void inc(Long n, Attributes attachment) {
+        observableLongCounter.record(n, attachment);
     }
 
     @Override
-    public void dec() {
-        count--;
-        longCounter.add(count);
-    }
-
-
-    @Override
-    public void dec(long n, Attributes attachment) {
-        longCounter.add(n, attachment);
+    public String getMetricName() {
+        return "observableLongCounter";
     }
 
     @Override
-    public void setInstrument(LongCounter instrument) {
-        this.longCounter = instrument;
+    public void setInstrument(ObservableLongMeasurement instrument) {
+        this.observableLongCounter = instrument;
     }
 }

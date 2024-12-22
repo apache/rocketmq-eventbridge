@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.metrics.otlp;
+package org.apache.rocketmq.eventbridge.infrastructure.metric.otlp;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongHistogram;
-import io.opentelemetry.context.Context;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 
-public class NopLongHistogram implements LongHistogram {
+public class NopObservableLongCounter implements ObservableLongMeasurement{
 
     @Override
-    public void record(long l) {
+    public void record(long v) {
 
     }
 
     @Override
-    public void record(long l, Attributes attributes) {
-
-    }
-
-    @Override
-    public void record(long l, Attributes attributes, Context context) {
+    public void record(long v, Attributes attributes) {
 
     }
 }

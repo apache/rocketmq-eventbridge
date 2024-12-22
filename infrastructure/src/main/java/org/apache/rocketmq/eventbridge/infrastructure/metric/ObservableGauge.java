@@ -16,11 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
-public interface Gauge<T, N> extends Metric<N> {
 
-    default T getValue(){return null;}
+public interface ObservableGauge<P1, P2, N> extends Metric<N> {
+
+    default N getValue(){return null;}
+
+    void set(P1 l, P2 attributes);
 
     @Override
     default MetricType getMetricType() {

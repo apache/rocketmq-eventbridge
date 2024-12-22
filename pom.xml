@@ -87,6 +87,7 @@
         <common.net>3.9.0</common.net>
         <cloudevents.version>2.3.0</cloudevents.version>
         <apache.commons-text.version>1.10.0</apache.commons-text.version>
+        <apache.commons-collections4.version>4.5.0-M2</apache.commons-collections4.version>
         <mockito.version>2.13.0</mockito.version>
         <jupiter.version>5.9.2</jupiter.version>
         <caffeine.version>2.9.3</caffeine.version>
@@ -97,6 +98,7 @@
         <flyway.version>8.5.7</flyway.version>
         <lombok.version>1.18.20</lombok.version>
         <opentelemetry.version>1.39.0</opentelemetry.version>
+        <opentelemetry.exporter.prometheus.version>1.39.0-alpha</opentelemetry.exporter.prometheus.version>
     </properties>
 
     <modules>
@@ -110,7 +112,6 @@
         <module>supports/eventbridge-connect-file</module>
         <module>test</module>
         <module>dist</module>
-        <module>metrics</module>
     </modules>
 
     <dependencyManagement>
@@ -284,6 +285,12 @@
                 <artifactId>commons-text</artifactId>
                 <version>${apache.commons-text.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${apache.commons-collections4.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
@@ -324,6 +331,30 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk</artifactId>
                 <version>${opentelemetry.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${opentelemetry.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-logging</artifactId>
+                <version>${opentelemetry.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-logging-otlp</artifactId>
+                <version>${opentelemetry.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-prometheus</artifactId>
+                <version>${opentelemetry.exporter.prometheus.version}</version>
             </dependency>
 
             <!--TEST-->

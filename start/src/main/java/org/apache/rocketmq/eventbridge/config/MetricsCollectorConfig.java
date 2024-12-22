@@ -15,12 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.config;
 
-public interface Metric<R> {
-    default MetricType getMetricType() {
-        throw new UnsupportedOperationException("Custom metric type is not supported.");
+import org.apache.rocketmq.eventbridge.infrastructure.metric.MetricConfig;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.MetricsCollectorFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MetricsCollectorConfig implements InitializingBean {
+
+    @Autowired
+    private MetricConfig metricConfig;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        MetricsCollectorFactory.getInstance().start(metricConfig);
     }
-
-    void setInstrument(R instrument);
 }

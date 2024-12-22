@@ -16,18 +16,14 @@
  */
 
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
 
-public interface Counter<P, R> extends Metric<R> {
+public interface Counter<P1, P2, R> extends Metric<R> {
 
-    default void inc(){}
+    default void inc(P2 attachment){}
 
-    default void inc(long n, P attachment){}
-
-    default void dec(){}
-
-    default void dec(long n, P attachment){}
+    default void inc(P1 n, P2 attachment){}
 
     @Override
     default MetricType getMetricType() {

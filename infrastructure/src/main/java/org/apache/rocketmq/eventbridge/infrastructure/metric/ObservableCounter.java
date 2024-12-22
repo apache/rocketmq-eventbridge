@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.metrics.otlp;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.ObservableLongCounter;
-import io.opentelemetry.context.Context;
 
-public class NopObservableLongCounter implements ObservableLongCounter {
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
+
+public interface ObservableCounter<P1, P2, R> extends Metric<R> {
+
+    default void inc(P2 attachment){}
+
+    default void inc(P1 n, P2 attachment){}
+
+    @Override
+    default MetricType getMetricType() {
+        return MetricType.COUNTER;
+    }
 }

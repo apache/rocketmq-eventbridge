@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
-public interface Histogram<P, R> extends Metric<R> {
+public interface Histogram<P1, P2, R> extends Metric<R> {
 
-    default void update(long value, P attachment){}
+    default void update(P1 value, P2 attachment){}
 
     default R getValue(){return null;}
 

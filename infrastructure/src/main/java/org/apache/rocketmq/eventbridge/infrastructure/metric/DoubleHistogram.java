@@ -16,28 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongHistogram;
-import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongHistogram;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.otlp.NopDoubleHistogram;
 
-public class DefaultLongHistogram implements Histogram<Attributes, LongHistogram> {
+public class DoubleHistogram implements Histogram<Double, Attributes, io.opentelemetry.api.metrics.DoubleHistogram> {
 
-    private LongHistogram longHistogram = new NopLongHistogram();
+    private io.opentelemetry.api.metrics.DoubleHistogram doubleHistogram = new NopDoubleHistogram();
 
     @Override
-    public void update(long value, Attributes attachment) {
-        longHistogram.record(value, attachment);
+    public void update(Double value, Attributes attachment) {
+        doubleHistogram.record(value, attachment);
     }
 
     @Override
-    public LongHistogram getValue() {
-        return longHistogram;
+    public io.opentelemetry.api.metrics.DoubleHistogram getValue() {
+        return doubleHistogram;
     }
 
     @Override
-    public void setInstrument(LongHistogram instrument) {
-        this.longHistogram = instrument;
+    public String getMetricName() {
+        return "LongHistogram";
+    }
+
+    @Override
+    public void setInstrument(io.opentelemetry.api.metrics.DoubleHistogram instrument) {
+        this.doubleHistogram = instrument;
     }
 }

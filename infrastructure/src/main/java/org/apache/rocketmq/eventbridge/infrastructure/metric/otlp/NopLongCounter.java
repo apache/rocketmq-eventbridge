@@ -14,12 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.eventbridge.infrastructure.metric.otlp;
 
-package org.apache.rocketmq.eventbridge.metrics;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.context.Context;
 
-public enum MetricType {
-    COUNTER,
-    METER,
-    GAUGE,
-    HISTOGRAM
+public class NopLongCounter implements LongCounter {
+
+    @Override
+    public void add(long l) {
+
+    }
+
+    @Override
+    public void add(long l, Attributes attributes) {
+
+    }
+
+    @Override
+    public void add(long l, Attributes attributes, Context context) {
+
+    }
 }

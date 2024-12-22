@@ -16,28 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.eventbridge.metrics;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongGauge;
-import org.apache.rocketmq.eventbridge.metrics.otlp.NopLongGauge;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.otlp.NopLongCounter;
 
-public class DefaultLongGauge implements Histogram<Attributes, LongGauge> {
+public class LongCounter implements Counter<Long, Attributes, io.opentelemetry.api.metrics.LongCounter> {
 
-    private LongGauge LongGauge = new NopLongGauge();
+    private io.opentelemetry.api.metrics.LongCounter longCounter = new NopLongCounter();
 
     @Override
-    public void update(long value, Attributes attachment) {
-        LongGauge.set(value, attachment);
+    public void inc(Attributes attachment) {
+        longCounter.add(1, attachment);
     }
 
     @Override
-    public LongGauge getValue() {
-        return LongGauge;
+    public void inc(Long n, Attributes attachment) {
+        longCounter.add(n, attachment);
     }
 
     @Override
-    public void setInstrument(LongGauge instrument) {
-        this.LongGauge = instrument;
+    public String getMetricName() {
+        return "longCounter";
+    }
+
+    @Override
+    public void setInstrument(io.opentelemetry.api.metrics.LongCounter instrument) {
+        this.longCounter = instrument;
     }
 }

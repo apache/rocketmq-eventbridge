@@ -14,26 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.eventbridge.metrics.otlp;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.context.Context;
+package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
-public class NopLongCounter implements LongCounter {
+public enum MetricsExporterType {
+    DISABLE(0),
+    OTLP_GRPC(1),
+    PROM(2),
+    LOG(3);
 
-    @Override
-    public void add(long l) {
+    private final int value;
 
+    MetricsExporterType(int value) {
+        this.value = value;
     }
 
-    @Override
-    public void add(long l, Attributes attributes) {
-
+    public int getValue() {
+        return value;
     }
 
-    @Override
-    public void add(long l, Attributes attributes, Context context) {
+    public static MetricsExporterType valueOf(int value) {
+        switch (value) {
+            case 1:
+                return OTLP_GRPC;
+            case 2:
+                return PROM;
+            case 3:
+                return LOG;
+            default:
+                return DISABLE;
+        }
+    }
 
+    public boolean isEnable() {
+        return this.value > 0;
     }
 }
