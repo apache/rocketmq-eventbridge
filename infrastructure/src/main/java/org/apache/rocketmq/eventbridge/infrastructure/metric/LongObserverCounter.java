@@ -26,6 +26,12 @@ public class LongObserverCounter implements ObservableCounter<Long, Attributes, 
 
     private io.opentelemetry.api.metrics.ObservableLongMeasurement observableLongCounter = new NopObservableLongCounter();
 
+    private final String metricName;
+
+    public LongObserverCounter(String metricName) {
+        this.metricName = metricName;
+    }
+
     @Override
     public void inc(Attributes attachment) {
         observableLongCounter.record(1, attachment);
@@ -38,7 +44,7 @@ public class LongObserverCounter implements ObservableCounter<Long, Attributes, 
 
     @Override
     public String getMetricName() {
-        return "observableLongCounter";
+        return this.metricName;
     }
 
     @Override

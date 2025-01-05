@@ -25,6 +25,13 @@ public class DoubleObserverGauge implements ObservableGauge<Double, Attributes, 
 
     private io.opentelemetry.api.metrics.ObservableDoubleMeasurement observableDoubleGauge = new NopObservableDoubleGauge();
 
+    private final String metricName;
+
+    public DoubleObserverGauge(String metricName) {
+        this.metricName = metricName;
+    }
+
+
     @Override
     public void set(Double value, Attributes attachment) {
         observableDoubleGauge.record(value, attachment);
@@ -38,7 +45,7 @@ public class DoubleObserverGauge implements ObservableGauge<Double, Attributes, 
 
     @Override
     public String getMetricName() {
-        return "observableDoubleGauge";
+        return this.metricName;
     }
 
     @Override

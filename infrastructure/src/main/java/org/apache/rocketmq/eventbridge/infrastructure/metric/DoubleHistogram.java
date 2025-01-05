@@ -25,6 +25,12 @@ public class DoubleHistogram implements Histogram<Double, Attributes, io.opentel
 
     private io.opentelemetry.api.metrics.DoubleHistogram doubleHistogram = new NopDoubleHistogram();
 
+    private final String metricName;
+
+    public DoubleHistogram(String metricName) {
+        this.metricName = metricName;
+    }
+
     @Override
     public void update(Double value, Attributes attachment) {
         doubleHistogram.record(value, attachment);
@@ -37,7 +43,7 @@ public class DoubleHistogram implements Histogram<Double, Attributes, io.opentel
 
     @Override
     public String getMetricName() {
-        return "LongHistogram";
+        return this.metricName;
     }
 
     @Override

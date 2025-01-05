@@ -34,22 +34,36 @@ public class EventBridgeMetricsManager {
 
     public final static List<Metric> metrics = new ArrayList<>();
 
-    public static Counter httpCounter = new LongCounter();
+    public static Histogram eventbridgePutEventsLatency = new DoubleHistogram("eventbridge_putevents_latency");
 
-    public static Gauge totalLatencyGauge = new DoubleGauge();;
+    public static Histogram eventbridgePutEventsSize = new DoubleHistogram("eventbridge_putevents_size");
 
-    public static Histogram totalLatencyHistogram = new DoubleHistogram();
+    public static ObservableGauge observableDoubleGauge = new DoubleObserverGauge("eventbridge_event_rule_latency");
 
-    public static ObservableGauge observableDoubleGauge = new DoubleObserverGauge();
+    public static Counter eventbridgeEventRuleLagEventsTotal = new LongCounter("eventbridge_event_rule_lag_events_total");
 
+    public static Counter eventbridgeEventsTransferInTotal = new LongCounter("eventbridge_events_transfer_in_total");
+
+    public static Counter eventbridgeEventsTransferOutTotal = new LongCounter("eventbridge_events_transfer_out_total");
+
+    public static ObservableGauge eventbridgeEventsTransferLatency = new DoubleObserverGauge("eventbridge_events_transfer_latency");
+
+    public static Histogram eventbridgeEventsTriggerLatency = new DoubleHistogram("eventbridge_events_trigger_latency");
+
+    public static ObservableGauge eventbridgeEventsLatency = new DoubleObserverGauge("eventbridge_events_latency");
 
     private final static Map<String, String> LABEL_MAP = new HashMap<>();
 
     static  {
-        metrics.add(httpCounter);
-        metrics.add(totalLatencyHistogram);
-        metrics.add(totalLatencyGauge);
+        metrics.add(eventbridgePutEventsLatency);
+        metrics.add(eventbridgePutEventsSize);
         metrics.add(observableDoubleGauge);
+        metrics.add(eventbridgeEventRuleLagEventsTotal);
+        metrics.add(eventbridgeEventsTransferInTotal);
+        metrics.add(eventbridgeEventsTransferOutTotal);
+        metrics.add(eventbridgeEventsTransferLatency);
+        metrics.add(eventbridgeEventsTriggerLatency);
+        metrics.add(eventbridgeEventsLatency);
     }
 
     public static AttributesBuilder newAttributesBuilder() {

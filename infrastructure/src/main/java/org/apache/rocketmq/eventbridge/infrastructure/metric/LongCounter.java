@@ -25,6 +25,13 @@ public class LongCounter implements Counter<Long, Attributes, io.opentelemetry.a
 
     private io.opentelemetry.api.metrics.LongCounter longCounter = new NopLongCounter();
 
+    private final String metricName;
+
+    public LongCounter(String metricName) {
+        this.metricName = metricName;
+    }
+
+
     @Override
     public void inc(Attributes attachment) {
         longCounter.add(1, attachment);
@@ -37,7 +44,7 @@ public class LongCounter implements Counter<Long, Attributes, io.opentelemetry.a
 
     @Override
     public String getMetricName() {
-        return "longCounter";
+        return this.metricName;
     }
 
     @Override
