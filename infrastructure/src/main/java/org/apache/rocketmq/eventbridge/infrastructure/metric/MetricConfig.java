@@ -46,6 +46,8 @@ public class MetricConfig {
 
     private long loggingExporterIntervalInMills = 10 * 1000;
 
+    private int metricsOtelCardinalityLimit = 50 * 1000;
+
     private int promExporterPort = 5557;
 
     private String promExporterHost = "localhost";

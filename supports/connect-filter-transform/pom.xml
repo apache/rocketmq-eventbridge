@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-eventbridge-common</artifactId>
+            <artifactId>rocketmq-eventbridge-infrastructure</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

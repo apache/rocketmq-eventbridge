@@ -23,6 +23,8 @@ import io.cloudevents.SpecVersion;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternEvaluator;
 import org.apache.rocketmq.eventbridge.tools.pattern.PatternEvaluatorBuilder;
 
@@ -34,6 +36,7 @@ public class EventBridgeFilterTransform implements io.openmessaging.connector.ap
 
     @Override
     public ConnectRecord doTransform(ConnectRecord record) {
+        exportMetrics(record);
         if (!evaluator.evaluateData(new Gson().toJson(record.getData()))) {
             return null;
         } else if (!evaluator.evaluateSpecAttr(this.buildSpecAttr(record))) {
@@ -43,6 +46,18 @@ public class EventBridgeFilterTransform implements io.openmessaging.connector.ap
         } else {
             return record;
         }
+    }
+
+    private static void exportMetrics(ConnectRecord connectRecord) {
+        EventBridgeMetricsManager.eventbridgeEventsTransferInTotal.inc(1L,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, "success")
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, connectRecord.getExtension("runner-name"))
+                        .put(EventBridgeMetricsConstant.LABEL_TRANSFORM_TYPE, "filter").build());
     }
 
     private Map<String, JsonElement> buildSpecAttr(ConnectRecord record) {

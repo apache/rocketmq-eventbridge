@@ -19,6 +19,24 @@ package org.apache.rocketmq.eventbridge.infrastructure.metric;
 
 public class EventBridgeMetricsConstant {
 
+    public static final String HISTOGRAM_EVENTBRIDGE_PUTEVENTS_LATENCY = "eventbridge_putevents_latency";
+
+    public static final String HISTOGRAM_EVENTBRIDGE_PUTEVENTS_SIZE = "eventbridge_putevents_size";
+
+    public static final String GAUGE_EVENTBRIDGE_EVENT_RULE_LATENCY = "eventbridge_event_rule_latency";
+
+    public static final String COUNTER_EVENTBRIDGE_EVENT_RULE_LAG_EVENTS_TOTAL = "eventbridge_event_rule_lag_events_total";
+
+    public static final String COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_IN_TOTAL = "eventbridge_events_transfer_in_total";
+
+    public static final String COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_OUT_TOTAL = "eventbridge_events_transfer_out_total";
+
+    public static final String GAUGE_EVENTBRIDGE_EVENTS_TRANSFER_LATENCY = "eventbridge_events_transfer_latency";
+
+    public static final String HISTOGRAM_EVENTBRIDGE_EVENTS_TRIGGER_LATENCY = "eventbridge_events_trigger_latency";
+
+    public static final String GAUGE_EVENTBRIDGE_EVENTS_LATENCY = "eventbridge_events_latency";
+
     //状态
     public static final String LABEL_STATUS = "status";
 

@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.eventbridge.adapter.storage.rocketmq.impl;
 
+import lombok.Getter;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
@@ -29,6 +30,9 @@ public class DefaultSendCallback implements SendCallback {
 
     PutEventsResponseEntry entry = new PutEventsResponseEntry();
 
+    @Getter
+    private String status;
+
     public DefaultSendCallback(PutEventCallback putEventCallback) {
         this.putEventCallback = putEventCallback;
     }
@@ -37,6 +41,7 @@ public class DefaultSendCallback implements SendCallback {
     public void onSuccess(SendResult sendResult) {
         entry.setEventId(sendResult.getMsgId());
         entry.setErrorCode(DefaultErrorCode.Success.getCode());
+        status = DefaultErrorCode.Success.getCode();
         putEventCallback.endProcess(entry);
     }
 
@@ -44,6 +49,7 @@ public class DefaultSendCallback implements SendCallback {
     public void onException(Throwable throwable) {
         entry.setErrorCode(DefaultErrorCode.InternalError.getCode());
         entry.setErrorMessage(throwable.getMessage());
+        status = DefaultErrorCode.InternalError.getCode();
         putEventCallback.endProcess(entry);
     }
 }

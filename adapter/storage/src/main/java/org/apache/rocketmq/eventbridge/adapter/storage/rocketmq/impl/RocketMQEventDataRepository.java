@@ -30,6 +30,8 @@ import org.apache.rocketmq.eventbridge.domain.model.data.PutEventCallback;
 import org.apache.rocketmq.eventbridge.domain.storage.EventDataRepository;
 import org.apache.rocketmq.eventbridge.event.EventBridgeEvent;
 import org.apache.rocketmq.eventbridge.exception.EventBridgeException;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -74,12 +76,32 @@ public class RocketMQEventDataRepository implements EventDataRepository {
         PutEventCallback putEventCallback) {
         String topicName = this.getTopicName(accountId, eventBusName);
         Message msg = eventDataOnRocketMQConnectAPI.converter(accountId, topicName, eventBridgeEvent);
+        DefaultSendCallback sendCallback = new DefaultSendCallback(putEventCallback);
         try {
-            producer.send(msg, new DefaultSendCallback(putEventCallback), 1000L);
+            producer.send(msg, sendCallback, 1000L);
+            exportMetrics(accountId, eventBusName, eventBridgeEvent, sendCallback);
         } catch (Throwable e) {
             throw new EventBridgeException(EventBridgeErrorCode.InternalError, e);
         }
         return true;
+    }
+
+    private static void exportMetrics(String accountId, String eventBusName, EventBridgeEvent eventBridgeEvent, DefaultSendCallback sendCallback) {
+        EventBridgeMetricsManager.eventbridgePutEventsLatency.update(1D,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, sendCallback.getStatus())
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, eventBusName)
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, accountId)
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, eventBridgeEvent.getSource().toString())
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, eventBridgeEvent.getType()).build());
+
+        EventBridgeMetricsManager.eventbridgePutEventsSize.update(Double.valueOf(String.valueOf(eventBridgeEvent.getData().length)),
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, sendCallback.getStatus())
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, eventBusName)
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, accountId)
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, eventBridgeEvent.getSource().toString())
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, eventBridgeEvent.getType()).build());
     }
 
     @Override

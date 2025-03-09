@@ -27,6 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_IN_TOTAL;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_OUT_TOTAL;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.COUNTER_EVENTBRIDGE_EVENT_RULE_LAG_EVENTS_TOTAL;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.GAUGE_EVENTBRIDGE_EVENTS_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.GAUGE_EVENTBRIDGE_EVENTS_TRANSFER_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.GAUGE_EVENTBRIDGE_EVENT_RULE_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_EVENTS_TRIGGER_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_PUTEVENTS_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_PUTEVENTS_SIZE;
+
 @UtilityClass
 public class EventBridgeMetricsManager {
 
@@ -34,23 +44,23 @@ public class EventBridgeMetricsManager {
 
     public final static List<Metric> metrics = new ArrayList<>();
 
-    public static Histogram eventbridgePutEventsLatency = new DoubleHistogram("eventbridge_putevents_latency");
+    public static Histogram eventbridgePutEventsLatency = new DoubleHistogram(HISTOGRAM_EVENTBRIDGE_PUTEVENTS_LATENCY);
 
-    public static Histogram eventbridgePutEventsSize = new DoubleHistogram("eventbridge_putevents_size");
+    public static Histogram eventbridgePutEventsSize = new DoubleHistogram(HISTOGRAM_EVENTBRIDGE_PUTEVENTS_SIZE);
 
-    public static ObservableGauge observableDoubleGauge = new DoubleObserverGauge("eventbridge_event_rule_latency");
+    public static ObservableGauge observableDoubleGauge = new DoubleObserverGauge(GAUGE_EVENTBRIDGE_EVENT_RULE_LATENCY);
 
-    public static Counter eventbridgeEventRuleLagEventsTotal = new LongCounter("eventbridge_event_rule_lag_events_total");
+    public static Counter eventbridgeEventRuleLagEventsTotal = new LongCounter(COUNTER_EVENTBRIDGE_EVENT_RULE_LAG_EVENTS_TOTAL);
 
-    public static Counter eventbridgeEventsTransferInTotal = new LongCounter("eventbridge_events_transfer_in_total");
+    public static Counter eventbridgeEventsTransferInTotal = new LongCounter(COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_IN_TOTAL);
 
-    public static Counter eventbridgeEventsTransferOutTotal = new LongCounter("eventbridge_events_transfer_out_total");
+    public static Counter eventbridgeEventsTransferOutTotal = new LongCounter(COUNTER_EVENTBRIDGE_EVENTS_TRANSFER_OUT_TOTAL);
 
-    public static ObservableGauge eventbridgeEventsTransferLatency = new DoubleObserverGauge("eventbridge_events_transfer_latency");
+    public static ObservableGauge eventbridgeEventsTransferLatency = new DoubleObserverGauge(GAUGE_EVENTBRIDGE_EVENTS_TRANSFER_LATENCY);
 
-    public static Histogram eventbridgeEventsTriggerLatency = new DoubleHistogram("eventbridge_events_trigger_latency");
+    public static Histogram eventbridgeEventsTriggerLatency = new DoubleHistogram(HISTOGRAM_EVENTBRIDGE_EVENTS_TRIGGER_LATENCY);
 
-    public static ObservableGauge eventbridgeEventsLatency = new DoubleObserverGauge("eventbridge_events_latency");
+    public static ObservableGauge eventbridgeEventsLatency = new DoubleObserverGauge(GAUGE_EVENTBRIDGE_EVENTS_LATENCY);
 
     private final static Map<String, String> LABEL_MAP = new HashMap<>();
 

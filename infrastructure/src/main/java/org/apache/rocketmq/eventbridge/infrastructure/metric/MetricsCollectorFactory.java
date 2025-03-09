@@ -30,9 +30,11 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,22 +48,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_EVENTS_TRIGGER_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_PUTEVENTS_LATENCY;
+import static org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant.HISTOGRAM_EVENTBRIDGE_PUTEVENTS_SIZE;
+
 @Slf4j
 public class MetricsCollectorFactory {
-    public static final String OPEN_TELEMETRY_METER_NAME = "eventbridge-meter";
-
-    public static final String HISTOGRAM_MESSAGE_SIZE = "eventbridge_message_size";
-
-    public static final String EVENTBUS_IN_EVENTS_TOTAL = "eventbridge_eventbus_in_events_total";
-
-    public static final String EVENTRULE_FILTER_EVENTS_TOTAL = "eventbridge_eventrule_filter_events_total";
-
-    public static final String EVENTRULE_LATENCY_SECONDS = "eventbridge_eventrule_latency_seconds";
-
-    public static final String EVENTRULE_TRIGGER_LATENCY = "eventbridge_eventrule_trigger_latency";
-
-
-    private final static Map<String, String> LABEL_MAP = new HashMap<>();
+    private static final String OPEN_TELEMETRY_METER_NAME = "eventbridge-meter";
 
     private static class MetricsCollectorHolder{
         static MetricsCollectorFactory instance = new MetricsCollectorFactory();
@@ -152,7 +145,7 @@ public class MetricsCollectorFactory {
             providerBuilder.registerMetricReader(periodicMetricReader);
         }
 
-        registerMetricsView(providerBuilder);
+        registerMetricsView(providerBuilder, metricConfig);
 
         Meter brokerMeter = OpenTelemetrySdk.builder()
                 .setMeterProvider(providerBuilder.build())
@@ -181,7 +174,28 @@ public class MetricsCollectorFactory {
         return false;
     }
 
-    private void registerMetricsView(SdkMeterProviderBuilder providerBuilder) {
+    private void registerMetricsView(SdkMeterProviderBuilder providerBuilder, MetricConfig metricConfig) {
+
+        //putevents latency buckets
+        List<Double> puteventsLatencyBuckets = Arrays.asList(
+                (double) Duration.ofMillis(1).toMillis(),
+                (double) Duration.ofMillis(5).toMillis(),
+                (double) Duration.ofMillis(20).toMillis(),
+                (double) Duration.ofMillis(100).toMillis(),
+                (double) Duration.ofMillis(1000).toMillis(),
+                (double) Duration.ofMillis(5000).toMillis(),
+                (double) Duration.ofSeconds(10000).toMillis()
+        );
+        InstrumentSelector puteventsLatencyBucketsSelector = InstrumentSelector.builder()
+                .setType(InstrumentType.HISTOGRAM)
+                .setName(HISTOGRAM_EVENTBRIDGE_PUTEVENTS_LATENCY)
+                .build();
+        ViewBuilder puteventsLatencyBucketsView = View.builder()
+                .setAggregation(Aggregation.explicitBucketHistogram(puteventsLatencyBuckets));
+        SdkMeterProviderUtil.setCardinalityLimit(puteventsLatencyBucketsView, metricConfig.getMetricsOtelCardinalityLimit());
+        providerBuilder.registerView(puteventsLatencyBucketsSelector, puteventsLatencyBucketsView.build());
+
+
         // message size buckets, 1k, 4k, 512k, 1M, 2M, 4M
         List<Double> messageSizeBuckets = Arrays.asList(
                 1d * 1024, //1KB
@@ -191,36 +205,35 @@ public class MetricsCollectorFactory {
                 2d * 1024 * 1024, //2MB
                 4d * 1024 * 1024 //4MB
         );
+
         InstrumentSelector messageSizeSelector = InstrumentSelector.builder()
                 .setType(InstrumentType.HISTOGRAM)
-                .setName(HISTOGRAM_MESSAGE_SIZE)
+                .setName(HISTOGRAM_EVENTBRIDGE_PUTEVENTS_SIZE)
                 .build();
 
-        View messageSizeView = View.builder()
-                .setAggregation(Aggregation.explicitBucketHistogram(messageSizeBuckets))
-                .build();
-        providerBuilder.registerView(messageSizeSelector, messageSizeView);
+        ViewBuilder messageSizeView = View.builder()
+                .setAggregation(Aggregation.explicitBucketHistogram(messageSizeBuckets));
+        SdkMeterProviderUtil.setCardinalityLimit(messageSizeView, metricConfig.getMetricsOtelCardinalityLimit());
+        providerBuilder.registerView(messageSizeSelector, messageSizeView.build());
 
-        List<Double> rpcCostTimeBuckets = Arrays.asList(
+        //events trigger latency
+        List<Double> eventsTriggerLatencyBuckets = Arrays.asList(
                 (double) Duration.ofMillis(1).toMillis(),
-                (double) Duration.ofMillis(3).toMillis(),
                 (double) Duration.ofMillis(5).toMillis(),
-                (double) Duration.ofMillis(7).toMillis(),
-                (double) Duration.ofMillis(10).toMillis(),
+                (double) Duration.ofMillis(20).toMillis(),
                 (double) Duration.ofMillis(100).toMillis(),
-                (double) Duration.ofSeconds(1).toMillis(),
-                (double) Duration.ofSeconds(2).toMillis(),
-                (double) Duration.ofSeconds(3).toMillis()
+                (double) Duration.ofMillis(1000).toMillis(),
+                (double) Duration.ofMillis(5000).toMillis(),
+                (double) Duration.ofSeconds(10000).toMillis()
         );
-        InstrumentSelector selector = InstrumentSelector.builder()
+        InstrumentSelector eventsTriggerLatencySelector = InstrumentSelector.builder()
                 .setType(InstrumentType.HISTOGRAM)
-                .setName(EVENTRULE_TRIGGER_LATENCY)
+                .setName(HISTOGRAM_EVENTBRIDGE_EVENTS_TRIGGER_LATENCY)
                 .build();
-        View view = View.builder()
-                .setAggregation(Aggregation.explicitBucketHistogram(rpcCostTimeBuckets))
-                .build();
-
-        providerBuilder.registerView(selector, view);
+        ViewBuilder eventsTriggerLatencyView = View.builder()
+                .setAggregation(Aggregation.explicitBucketHistogram(eventsTriggerLatencyBuckets));
+        SdkMeterProviderUtil.setCardinalityLimit(eventsTriggerLatencyView, metricConfig.getMetricsOtelCardinalityLimit());
+        providerBuilder.registerView(eventsTriggerLatencySelector, eventsTriggerLatencyView.build());
     }
 
 }
