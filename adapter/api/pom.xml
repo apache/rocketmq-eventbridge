@@ -31,10 +31,6 @@
         <!-- Project modules -->
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-eventbridge-adapter-persistence</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-eventbridge-domain</artifactId>
         </dependency>
         <!-- Framework -->
