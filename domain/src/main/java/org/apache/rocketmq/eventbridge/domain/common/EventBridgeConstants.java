@@ -53,7 +53,7 @@ public class EventBridgeConstants {
 
     public static final String SYSTEM_ENVIRONMENT_ACCOUNT_ID = "AccountId";
 
-    public static final int EVENT_ENDPOINT_MAX_LENGTH = 127;
+    public static final int EVENT_ENDPOINT_MAX_LENGTH = 511;
 
     public static final int EVENT_ENDPOINT_MIN_LENGTH = 1;
 
