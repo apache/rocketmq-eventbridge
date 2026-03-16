@@ -22,6 +22,8 @@ import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.component.ComponentContext;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import io.openmessaging.connector.api.data.SchemaBuilder;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsManager;
 import org.apache.rocketmq.eventbridge.tools.transform.*;
 
 import java.util.Map;
@@ -46,7 +48,30 @@ public class EventBridgeTransform implements io.openmessaging.connector.api.comp
                     record.addExtension(entry.getKey(), ((StringData) data).getData());
                 }
             });
+        exportMetrics(record);
         return record;
+    }
+
+    private static void exportMetrics(ConnectRecord connectRecord) {
+        EventBridgeMetricsManager.eventbridgeEventsTransferOutTotal.inc(1L,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, "success")
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, connectRecord.getExtension("runner-name"))
+                        .put(EventBridgeMetricsConstant.LABEL_TRANSFORM_TYPE, "filter").build());
+
+        EventBridgeMetricsManager.eventbridgeEventsTransferLatency.set(1D,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, "success")
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, connectRecord.getExtension("runner-name"))
+                        .put(EventBridgeMetricsConstant.LABEL_TRANSFORM_TYPE, "filter").build());
     }
 
     @Override

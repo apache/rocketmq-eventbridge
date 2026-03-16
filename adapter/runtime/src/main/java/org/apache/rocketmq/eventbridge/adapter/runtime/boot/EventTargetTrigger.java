@@ -31,6 +31,8 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorCon
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,13 +76,37 @@ public class EventTargetTrigger extends ServiceThread {
                     try {
                         sinkTask.put(triggerRecords);
                         offsetManager.commit(triggerRecords);
+                        exportMetrics(triggerRecords.get(0), "success");
                     } catch (Exception exception) {
                         LOGGER.error(getServiceName() + " push target exception, stackTrace-", exception);
                         triggerRecords.forEach(triggerRecord -> errorHandler.handle(triggerRecord, exception));
+                        exportMetrics(triggerRecords.get(0), "failed");
                     }
                 });
             }
         }
+    }
+
+    private static void exportMetrics(ConnectRecord connectRecord, String status) {
+        EventBridgeMetricsManager.eventbridgeEventsTriggerLatency.update(1D,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, "success")
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, connectRecord.getExtension("runner-name"))
+                        .put(EventBridgeMetricsConstant.LABEL_TRANSFORM_TYPE, "filter").build());
+
+        EventBridgeMetricsManager.eventbridgeEventsLatency.set(1D,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, "success")
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, connectRecord.getExtension("runner-name"))
+                        .put(EventBridgeMetricsConstant.LABEL_TRANSFORM_TYPE, "filter").build());
     }
 
     @Override

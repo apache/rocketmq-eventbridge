@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-eventbridge-common</artifactId>
+            <artifactId>rocketmq-eventbridge-infrastructure</artifactId>
             <version>1.1.0</version>
         </dependency>
         <dependency>

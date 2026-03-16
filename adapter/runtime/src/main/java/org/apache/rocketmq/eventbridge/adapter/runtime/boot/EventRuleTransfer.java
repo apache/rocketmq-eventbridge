@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.eventbridge.adapter.runtime.boot;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.openmessaging.connector.api.data.ConnectRecord;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections.MapUtils;
 import org.apache.rocketmq.eventbridge.adapter.runtime.boot.common.CirculatorContext;
@@ -33,6 +33,8 @@ import org.apache.rocketmq.eventbridge.adapter.runtime.boot.transfer.TransformEn
 import org.apache.rocketmq.eventbridge.adapter.runtime.common.ServiceThread;
 import org.apache.rocketmq.eventbridge.adapter.runtime.error.ErrorHandler;
 import org.apache.rocketmq.eventbridge.adapter.runtime.utils.ExceptionUtil;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsConstant;
+import org.apache.rocketmq.eventbridge.infrastructure.metric.EventBridgeMetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,9 +92,11 @@ public class EventRuleTransfer extends ServiceThread {
                     TransformEngine<ConnectRecord> curTransformEngine = latestTransformMap.get(runnerName);
                     List<ConnectRecord> curEventRecords = eventRecordMap.get(runnerName);
                     curEventRecords.forEach(pullRecord -> {
+                        AtomicReference<Throwable> resultException = new AtomicReference<>();
                         CompletableFuture<Void> transformFuture = CompletableFuture.supplyAsync(() -> curTransformEngine.doTransforms(pullRecord))
                             .exceptionally((exception) -> {
                                 LOGGER.error("transfer do transform event record failed, stackTrace-", exception);
+                                resultException.set(exception);
                                 errorHandler.handle(pullRecord, exception);
                                 return null;
                             })
@@ -103,6 +107,7 @@ public class EventRuleTransfer extends ServiceThread {
                                     offsetManager.commit(pullRecord);
                                 }
                             });
+                        exportMetrics(pullRecord, runnerName, resultException);
                         completableFutures.add(transformFuture);
                     });
                 }
@@ -116,6 +121,33 @@ public class EventRuleTransfer extends ServiceThread {
 
         }
     }
+
+    private static void exportMetrics(ConnectRecord connectRecord, String ruleName, AtomicReference<Throwable> resultException) {
+        String status = "success";
+        if (resultException.get() != null) {
+            status = "failed";
+            resultException.set(null);
+        }
+        EventBridgeMetricsManager.observableDoubleGauge.set(1D,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, status)
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, ruleName).build());
+
+        EventBridgeMetricsManager.eventbridgeEventRuleLagEventsTotal.inc(1L,
+                EventBridgeMetricsManager.newAttributesBuilder()
+                        .put(EventBridgeMetricsConstant.LABEL_STATUS, status)
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_BUS_NAME, connectRecord.getExtension("eventbusname"))
+                        .put(EventBridgeMetricsConstant.LABEL_ACCOUNT_ID, connectRecord.getExtension("id"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_SOURCE, connectRecord.getExtension("source"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_TYPE, connectRecord.getExtension("type"))
+                        .put(EventBridgeMetricsConstant.LABEL_EVENT_RULE_NAME, ruleName).build());
+    }
+
+
 
     @Override
     public void start() {
