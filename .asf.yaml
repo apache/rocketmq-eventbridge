@@ -21,6 +21,19 @@ github:
     issues: true
     # Enable projects for project management boards
     projects: true
+  rulesets:
+    - name: "Default Branch Protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "release/*"
+          - "rel/*"
+        excludes: []
+      bypass_teams:
+        - root
+      restrict_deletion: true
+      restrict_force_push: true
 notifications:
   commits: commits@rocketmq.apache.org
   issues: commits@rocketmq.apache.org
